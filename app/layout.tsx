@@ -52,6 +52,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${outfit.variable} antialiased`}>
+      <head>
+        <link rel="preload" href="/hero-bg-image.webp" as="image" />
+      </head>
       <body>{children}</body>
     </html>
   );
