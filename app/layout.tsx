@@ -23,10 +23,10 @@ export const metadata: Metadata = {
     siteName: "First Option Agency",
     images: [
       {
-        url: "/og-image.webp",
+        url: "/whatsapp.png",
         width: 1200,
         height: 630,
-        alt: "First Option Agency - Performance Marketing",
+        alt: "First Option Agency - Performance Marketing Excellence",
       },
     ],
     locale: "en_US",
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "First Option Agency | ROI-driven Performance Marketing",
     description: "We build systems that turn enquiries into paying clients.",
-    images: ["/og-image.webp"],
+    images: ["/whatsapp.png"],
   },
   icons: {
     icon: "/meta-logo.webp",
@@ -56,6 +56,28 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preload" href="/hero-bg-image.webp" as="image" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "ProfessionalService",
+              "name": "First Option Agency",
+              "url": "https://firstoptionagency.com",
+              "logo": "https://firstoptionagency.com/meta-logo.webp",
+              "image": "https://firstoptionagency.com/og-image.webp",
+              "description": "Leading ROI-driven Performance Marketing Agency specializing in lead generation, sales funnels, and SEO for B2B and High-End services.",
+              "address": {
+                "@type": "PostalAddress",
+                "addressCountry": "IN"
+              },
+              "sameAs": [
+                "https://www.linkedin.com/company/first-option-agency",
+                "https://twitter.com/firstoption"
+              ]
+            }),
+          }}
+        />
       </head>
       <body>{children}</body>
     </html>

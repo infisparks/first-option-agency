@@ -30,6 +30,34 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": service.title,
+            "description": service.fullDesc,
+            "provider": {
+              "@type": "ProfessionalService",
+              "name": "First Option Agency",
+              "url": "https://firstoptionagency.com"
+            },
+            "areaServed": "Worldwide",
+            "hasOfferCatalog": {
+              "@type": "OfferCatalog",
+              "name": "Performance Marketing Services",
+              "itemListElement": service.benefits.map((benefit, i) => ({
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": benefit
+                }
+              }))
+            }
+          }),
+        }}
+      />
       <Navbar />
       <main style={{ background: "#F5F6F8", minHeight: "100vh", paddingTop: "clamp(120px, 15vw, 160px)", paddingBottom: "100px" }}>
         <ServiceContent service={service} />
