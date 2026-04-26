@@ -78,6 +78,7 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
         <span style={{ lineHeight: 1.3 }}>Smart Sales Funnels now available </span>
         <a
           href="#services"
+          aria-label="See our smart sales funnels"
           style={{
             color: "#ffffff",
             textDecoration: "underline",
@@ -118,6 +119,8 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             className="navbar-logo"
+            aria-label="First Option Agency Home"
+            role="button"
           >
             <Image 
               src="/logo.webp" 
@@ -158,6 +161,7 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
             <a
               href="https://wa.me/918329494445"
               target="_blank"
+              aria-label="Chat with us on WhatsApp"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -181,6 +185,7 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
 
             <motion.button
               onClick={onBookDemo}
+              aria-label="Book a free growth session"
               className="glow-btn-primary"
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
@@ -207,6 +212,7 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
           <motion.button
             onClick={() => setIsOpen(!isOpen)}
             whileTap={{ scale: 0.9 }}
+            aria-label={isOpen ? "Close menu" : "Open menu"}
             style={{
               background: isOpen ? "rgba(124, 58, 237, 0.1)" : "white",
               border: "1px solid rgba(124, 58, 237, 0.22)",

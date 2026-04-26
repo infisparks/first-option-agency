@@ -140,6 +140,7 @@ export default function HowItWorks() {
           <motion.a
             href="https://wa.me/918329494445"
             target="_blank"
+            aria-label="Message us on WhatsApp for your growth roadmap"
             initial={{ opacity: 0, x: 12 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}

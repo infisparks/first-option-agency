@@ -98,12 +98,12 @@ export default function Industries() {
               </div>
 
               <div style={{ marginBottom: "20px" }}>
-                <h4 style={{ fontSize: "0.85rem", fontWeight: 700, color: item.color, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>
-                  {item.subtitle}
-                </h4>
-                <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111827", lineHeight: 1.2 }}>
+                <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111827", lineHeight: 1.2, marginBottom: "4px" }}>
                   {item.title}
                 </h3>
+                <h4 style={{ fontSize: "0.85rem", fontWeight: 700, color: item.color, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  {item.subtitle}
+                </h4>
               </div>
 
               <p style={{ color: "#4B5563", marginBottom: "24px", lineHeight: 1.6, fontSize: "0.95rem" }}>

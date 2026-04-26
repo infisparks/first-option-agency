@@ -376,7 +376,7 @@ function FeatureSection({ feature, index, onImageClick }: { feature: any; index:
           </p>
         </div>
 
-        <Link href={`/services/${feature.slug}`} className="group/btn" style={{ textDecoration: 'none' }}>
+        <Link href={`/services/${feature.slug}`} className="group/btn" style={{ textDecoration: 'none' }} aria-label={`Explore Service: ${feature.title}`}>
           <button 
             style={{ 
               padding: '12px 24px', 

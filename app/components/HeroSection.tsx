@@ -39,10 +39,10 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
         <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
           <Image
             src="/hero-bg-image.webp"
-            alt="Advanced Marketing Interface"
+            alt="Advanced Marketing Interface backdrop"
             fill
             priority
-            quality={100}
+            quality={80}
             style={{ objectFit: "cover", objectPosition: "center", opacity: 0.15 }}
           />
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.88) 100%)" }} />
@@ -68,7 +68,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
               background: "rgba(255,255,255,0.78)",
               border: "1px solid rgba(124,58,237,0.16)",
               borderRadius: "9999px",
-              color: "var(--color-primary)",
+              color: "var(--color-accent)",
               fontSize: "clamp(0.58rem, 1.8vw, 0.67rem)",
               fontWeight: 700,
               textTransform: "uppercase",
@@ -163,6 +163,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
           >
             <motion.button
               onClick={onBookDemo}
+              aria-label="Book a free growth session demo"
               whileHover={{ scale: 1.05, boxShadow: "0 20px 40px -8px rgba(124,58,237,0.42)" }}
               whileTap={{ scale: 0.97 }}
               className="glow-btn-primary"
@@ -186,7 +187,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
 
 
 
-            <a href="https://wa.me/918329494445" target="_blank" style={{ textDecoration: "none" }}>
+            <a href="https://wa.me/918329494445" target="_blank" aria-label="Message us on WhatsApp" style={{ textDecoration: "none" }}>
               <motion.button
                 whileHover={{ background: "rgba(255,255,255,1)", transform: "translateY(-2px)", boxShadow: "0 10px 20px rgba(0,0,0,0.05)" }}
                 whileTap={{ scale: 0.97 }}

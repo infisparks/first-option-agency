@@ -80,6 +80,7 @@ export default function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
             <div className="modal-right" style={{ padding: "clamp(28px, 4.5vw, 52px)", borderLeft: "1px solid rgba(0, 0, 0, 0.03)", position: "relative" }}>
                <button 
                  onClick={onClose}
+                 aria-label="Close modal"
                  style={{ position: "absolute", top: 24, right: 30, color: "var(--text-muted)", background: "transparent", border: "none", cursor: "pointer", transition: "color 0.3s" }}
                  onMouseEnter={(e) => e.currentTarget.style.color = "var(--color-primary)"}
                  onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-muted)"}
@@ -94,6 +95,7 @@ export default function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
 
                  <button
                    className="glow-btn-primary"
+                   aria-label="Submit growth session request"
                    style={{ 
                      padding: "clamp(12px, 2vw, 16px)", 
                      borderRadius: "50px", 

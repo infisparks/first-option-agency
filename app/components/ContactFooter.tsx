@@ -65,6 +65,7 @@ export default function ContactFooter() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               style={{ marginBottom: "24px" }}
+              aria-label="First Option Agency"
             >
                <Image 
                 src="/logo.webp" 
@@ -133,6 +134,7 @@ export default function ContactFooter() {
                 <motion.a
                   key={info.title}
                   href={info.href}
+                  aria-label={info.title}
                   initial={{ opacity: 0, x: -14 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
@@ -196,6 +198,7 @@ export default function ContactFooter() {
               href="https://wa.me/919958399157"
               target="_blank"
               rel="noopener"
+              aria-label="Direct WhatsApp message"
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -302,6 +305,7 @@ export default function ContactFooter() {
 
               <motion.button
                 type="submit"
+                aria-label="Submit growth session request"
                 className="glow-btn-primary"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -359,9 +363,9 @@ export default function ContactFooter() {
               Building smart acquisition systems that turn inquiries into paying clients. Predictable growth for modern businesses.
             </p>
             <div style={{ display: "flex", gap: 10, marginTop: "clamp(18px, 2.5vw, 28px)" }}>
-              <SocialLink icon={<Instagram size={15} />} color="#E1306C" />
-              <SocialLink icon={<Linkedin size={15} />} color="#0A66C2" />
-              <SocialLink icon={<Twitter size={15} />} color="#1DA1F2" />
+              <SocialLink icon={<Instagram size={15} />} color="#E1306C" label="Follow us on Instagram" />
+              <SocialLink icon={<Linkedin size={15} />} color="#0A66C2" label="Connect with us on LinkedIn" />
+              <SocialLink icon={<Twitter size={15} />} color="#1DA1F2" label="Follow us on Twitter" />
             </div>
           </div>
 
@@ -574,10 +578,11 @@ function FooterLink({ text, href = "#" }: { text: string; href?: string }) {
   );
 }
 
-function SocialLink({ icon, color }: { icon: any; color: string }) {
+function SocialLink({ icon, color, label }: { icon: any; color: string; label: string }) {
   return (
     <motion.a
       href="#"
+      aria-label={label}
       whileHover={{ y: -3, borderColor: color, color }}
       style={{
         width: 36,

@@ -122,7 +122,7 @@ p  { font-size: clamp(0.8rem, 1.5vw, 0.9rem); line-height: 1.65; }
   background: rgba(124, 58, 237, 0.07);
   border: 1px solid rgba(124, 58, 237, 0.14);
   border-radius: 9999px;
-  color: var(--color-primary);
+  color: var(--color-accent);
   font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
