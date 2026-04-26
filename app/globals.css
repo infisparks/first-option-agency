@@ -279,3 +279,25 @@ p  { font-size: clamp(0.8rem, 1.5vw, 0.9rem); line-height: 1.65; }
 .ticker-track:hover {
   animation-play-state: paused;
 }
+/* ─── CARD HOVERS ─── */
+.blog-card, .service-card {
+  transition: all 0.3s var(--ease-soft);
+}
+
+.blog-card:hover, .service-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+  border-color: #7C3AED !important;
+}
+
+/* ─── BLOG CONTENT STYLES ─── */
+.blog-content h2 { font-size: 1.8rem; font-weight: 800; color: #111827; margin-top: 40px; margin-bottom: 20px; letter-spacing: -0.02em; }
+.blog-content p { margin-bottom: 24px; }
+.blog-content ul { margin-bottom: 24px; padding-left: 20px; }
+.blog-content li { margin-bottom: 12px; }
+
+@media (max-width: 640px) {
+  .category-tag-container {
+    display: none !important;
+  }
+}

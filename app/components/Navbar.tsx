@@ -6,10 +6,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ArrowUpRight, Phone } from "lucide-react";
 
 interface NavbarProps {
-  onBookDemo: () => void;
+  onBookDemo?: () => void;
 }
 
-export default function Navbar({ onBookDemo }: NavbarProps) {
+export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -28,7 +28,8 @@ export default function Navbar({ onBookDemo }: NavbarProps) {
 
   const navLinks = [
     { title: "Home", href: "/" },
-    { title: "Roadmap", href: "/view-brochure" },
+    { title: "Services", href: "/services" },
+    { title: "Blog", href: "/blog" },
     { title: "Contact", href: "/#contact" },
   ];
 

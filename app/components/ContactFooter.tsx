@@ -32,8 +32,8 @@ export default function ContactFooter() {
     },
     {
       icon: <MapPin size={17} />,
-      title: "Headquarters",
-      value: "Bandra Kurla Complex (BKC), Mumbai",
+      title: "Global Presence",
+      value: "Remote First | Serving Clients Worldwide",
       href: "#",
       color: "var(--color-accent)",
     },

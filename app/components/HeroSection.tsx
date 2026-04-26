@@ -82,8 +82,8 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
               <span style={{ position: "absolute", width: 7, height: 7, borderRadius: "50%", background: "var(--color-primary)", animation: "badge-ping 1.8s ease-out infinite" }} />
               <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--color-primary)", display: "inline-block" }} />
             </span>
-            Smart Funnels That Drive Customers
-            <span style={{ background: "rgba(124,58,237,0.1)", borderRadius: "999px", padding: "1px 7px", fontSize: "0.55rem", fontWeight: 800, letterSpacing: "0.08em" }}>ROI</span>
+            ROI-Driven Performance Marketing Worldwide
+            <span style={{ background: "rgba(124,58,237,0.1)", borderRadius: "999px", padding: "1px 7px", fontSize: "0.55rem", fontWeight: 800, letterSpacing: "0.08em" }}>TOP RATED</span>
           </motion.div>
 
           {/* Main headline */}
@@ -102,7 +102,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
               color: "var(--text-main)",
             }}
           >
-            Turn Your Business Into a <br className="headline-break" />
+            The World’s Result-First <br className="headline-break" />
             <span
               className="hero-purple-box"
               style={{
@@ -118,7 +118,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                 textAlign: "center"
               }}
             >
-              Client-Getting Machine.
+              Performance Agency.
             </span>
           </motion.h1>
 
@@ -134,7 +134,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
               letterSpacing: "-0.02em",
             }}
           >
-            Turn Clicks into Real Appointments & Sales — On Autopilot
+            We Don’t Just Drive Traffic — We Drive Revenue & Qualified Leads.
           </motion.h2>
 
           {/* Paragraph with yellow highlights */}
@@ -184,29 +184,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
               <ArrowRight size={16} strokeWidth={2.5} />
             </motion.button>
 
-            <Link href="/view-brochure" style={{ textDecoration: "none" }}>
-              <motion.button
-                whileHover={{ background: "rgba(255,255,255,0.1)", transform: "translateY(-2px)" }}
-                whileTap={{ scale: 0.97 }}
-                style={{
-                  padding: "clamp(12px, 2vw, 18px) clamp(24px, 4vw, 36px)",
-                  borderRadius: "9999px",
-                  backgroundColor: "transparent",
-                  border: "1.5px solid rgba(124,58,237,0.3)",
-                  color: "var(--color-primary)",
-                  fontSize: "clamp(0.8rem, 1.2vw, 0.95rem)",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 10,
-                  transition: "border 0.3s ease",
-                  whiteSpace: "nowrap"
-                }}
-              >
-                VIEW STRATEGY ROADMAP
-              </motion.button>
-            </Link>
+
 
             <a href="https://wa.me/918329494445" target="_blank" style={{ textDecoration: "none" }}>
               <motion.button

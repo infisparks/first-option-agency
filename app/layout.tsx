@@ -10,15 +10,15 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "First Option Agency | Smart Funnels That Drive Customers",
+  title: "ROI-driven Performance Marketing Agency | First Option",
   description:
-    "We build systems that turn enquiries into paying clients. Predictable growth, serious inquiries, and real revenue for Doctors, Manufacturers, and IT Companies.",
+    "Leading Performance Marketing Agency specializing in ROI-driven lead generation, sales funnels, and SEO for Manufacturers, IT Companies, and Healthcare across the globe.",
   keywords:
-    "marketing agency, sales funnels, lead generation, conversion rate optimization, ROI marketing, performance marketing, First Option Agency",
+    "performance marketing agency, best SEO agency, lead generation company, sales funnel expert, ROI marketing, First Option Agency",
   authors: [{ name: "First Option Agency" }],
   openGraph: {
-    title: "First Option Agency | Modern Performance Marketing & Scalable Acquisition Systems",
-    description: "Empowering Doctors, Manufacturers, and IT Companies with high-conversion marketing funnels and ROI-driven ad strategies.",
+    title: "First Option Agency | Global ROI-driven Performance Marketing",
+    description: "Build high-conversion marketing funnels and ROI-driven ad strategies for predictable business growth worldwide.",
     url: "https://firstoptionagency.com",
     siteName: "First Option Agency",
     images: [
@@ -29,12 +29,12 @@ export const metadata: Metadata = {
         alt: "First Option Agency - Performance Marketing",
       },
     ],
-    locale: "en_IN",
+    locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "First Option Agency | Smart Funnels That Drive Customers",
+    title: "First Option Agency | ROI-driven Performance Marketing",
     description: "We build systems that turn enquiries into paying clients.",
     images: ["/og-image.webp"],
   },

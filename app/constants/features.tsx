@@ -78,7 +78,7 @@ export const FEATURES: Feature[] = [
         "Empowers data-driven financial decisions",
         "Simplifies complex financial auditing"
       ],
-      seoKeywords: ["hospital revenue management software", "healthcare analytics dashboard", "RCM software India", "best hms software Mumbai"]
+      seoKeywords: ["hospital revenue management software", "healthcare analytics dashboard", "RCM software", "best hms software"]
     }
   },
   {
@@ -105,7 +105,7 @@ export const FEATURES: Feature[] = [
         "Improves front-desk productivity",
         "Smoother patient check-in experience"
       ],
-      seoKeywords: ["doctor appointment booking system", "hospital patient registration software", "clinic management software Mumbai", "best healthcare software India"]
+      seoKeywords: ["doctor appointment booking system", "hospital patient registration software", "clinic management software", "best healthcare software"]
     }
   },
   {
@@ -132,7 +132,7 @@ export const FEATURES: Feature[] = [
         "Provides predictable wait times",
         "Enhances overall patient journey"
       ],
-      seoKeywords: ["patient queue management system", "hospital flow optimization", "healthcare traffic management", "best hms software India"]
+      seoKeywords: ["patient queue management system", "hospital flow optimization", "healthcare traffic management", "best hms software"]
     }
   },
   {
@@ -159,7 +159,7 @@ export const FEATURES: Feature[] = [
         "Improves surgical outcome tracking",
         "Enhances staff accountability"
       ],
-      seoKeywords: ["healthcare specialist analytics", "doctor performance tracking", "hospital KPI software", "best hms software Mumbai"]
+      seoKeywords: ["healthcare specialist analytics", "doctor performance tracking", "hospital KPI software", "best hms software"]
     }
   },
   {
@@ -186,7 +186,7 @@ export const FEATURES: Feature[] = [
         "Enables longitudinal health tracking",
         "Improves diagnostic accuracy"
       ],
-      seoKeywords: ["best lab management software", "LIS software India", "diagnostic lab system Mumbai", "blood test software company"]
+      seoKeywords: ["best lab management software", "LIS software", "diagnostic lab system", "blood test software company"]
     }
   },
   {
@@ -213,7 +213,7 @@ export const FEATURES: Feature[] = [
         "Enhanced security of sensitive health data",
         "Coordinated care across medical teams"
       ],
-      seoKeywords: ["IPD management software India", "paperless hospital management", "EMR software Mumbai", "indoor patient file system"]
+      seoKeywords: ["IPD management software", "paperless hospital management", "EMR software", "indoor patient file system"]
     }
   },
   {
@@ -240,7 +240,7 @@ export const FEATURES: Feature[] = [
         "Reduces physical storage costs",
         "Enhances patient data privacy"
       ],
-      seoKeywords: ["medical document archive system", "secure health record storage", "HIPAA compliant HMS", "best medical software India"]
+      seoKeywords: ["medical document archive system", "secure health record storage", "HIPAA compliant HMS", "best medical software"]
     }
   },
   {
@@ -267,7 +267,7 @@ export const FEATURES: Feature[] = [
         "Reduces errors in medication passing",
         "Improves shift-handover efficiency"
       ],
-      seoKeywords: ["nursing station software", "ward management system", "digital nurse charting", "best hms software Mumbai"]
+      seoKeywords: ["nursing station software", "ward management system", "digital nurse charting", "best hms software"]
     }
   },
   {
@@ -294,7 +294,7 @@ export const FEATURES: Feature[] = [
         "Enables data extraction for research",
         "Higher accuracy in capturing symptoms"
       ],
-      seoKeywords: ["clinical charting software", "medical observation digitization", "EHR systems India", "best hms software company"]
+      seoKeywords: ["clinical charting software", "medical observation digitization", "EHR systems", "best hms software company"]
     }
   },
   {
@@ -321,7 +321,7 @@ export const FEATURES: Feature[] = [
         "Improved hospital bed management",
         "Better clinical outcome correlation"
       ],
-      seoKeywords: ["centralized patient records", "hospital ADT software", "patient intelligence system", "best HMS software Mumbai"]
+      seoKeywords: ["centralized patient records", "hospital ADT software", "patient intelligence system", "best HMS software"]
     }
   },
   {
@@ -348,7 +348,7 @@ export const FEATURES: Feature[] = [
         "Enhances administrative accountability",
         "Highlights operational bottlenecks daily"
       ],
-      seoKeywords: ["hospital performance metrics", "healthcare operational reporting", "daily hospital report software", "best hms software India"]
+      seoKeywords: ["hospital performance metrics", "healthcare operational reporting", "daily hospital report software", "best hms software"]
     }
   },
   {
@@ -375,7 +375,7 @@ export const FEATURES: Feature[] = [
         "Improves documentation of surgeries",
         "Enhances surgical safety compliance"
       ],
-      seoKeywords: ["operation theatre software", "surgical management system India", "OT scheduling software", "best hms software Mumbai"]
+      seoKeywords: ["operation theatre software", "surgical management system", "OT scheduling software", "best hms software"]
     }
   },
   {
@@ -402,7 +402,7 @@ export const FEATURES: Feature[] = [
         "Faster pharmacy service times",
         "Accurate drug margin analysis"
       ],
-      seoKeywords: ["hospital pharmacy software Mumbai", "inventory management for hospitals", "drug expiry tracking system", "best medical store software"]
+      seoKeywords: ["hospital pharmacy software", "inventory management for hospitals", "drug expiry tracking system", "best medical store software"]
     }
   },
   {
@@ -429,7 +429,7 @@ export const FEATURES: Feature[] = [
         "Seamless integration with OT/IPD",
         "Meets regulatory compliance standards"
       ],
-      seoKeywords: ["blood bank management software India", "blood center system Mumbai", "best blood bank software", "clinical blood tracking"]
+      seoKeywords: ["blood bank management software", "blood center system", "best blood bank software", "clinical blood tracking"]
     }
   },
   {
@@ -456,7 +456,7 @@ export const FEATURES: Feature[] = [
         "Eliminates paper-based reporting",
         "Better coordination with clinical teams"
       ],
-      seoKeywords: ["radiology software India", "RIS system Mumbai", "imaging management software", "best diagnostic software"]
+      seoKeywords: ["radiology software", "RIS system", "imaging management software", "best diagnostic software"]
     }
   },
   {
@@ -483,7 +483,7 @@ export const FEATURES: Feature[] = [
         "Improves patient's cashless experience",
         "Clear visibility on outstanding dues"
       ],
-      seoKeywords: ["hospital TPA management software", "insurance claims system India", "cashless hospital billing", "best hms software Mumbai"]
+      seoKeywords: ["hospital TPA management software", "insurance claims system", "cashless hospital billing", "best hms software"]
     }
   },
   {
@@ -510,7 +510,7 @@ export const FEATURES: Feature[] = [
         "Reduces staff administrative burden",
         "Higher staff satisfaction rates"
       ],
-      seoKeywords: ["hospital HR software India", "healthcare payroll system", "doctor incentive management", "best hospital staff software"]
+      seoKeywords: ["hospital HR software", "healthcare payroll system", "doctor incentive management", "best hospital staff software"]
     }
   },
   {
@@ -537,7 +537,7 @@ export const FEATURES: Feature[] = [
         "Smoother transition from ER to Ward",
         "Increases casualty survival rates"
       ],
-      seoKeywords: ["ambulance management software", "ER system India", "emergency response software", "best hms software Mumbai"]
+      seoKeywords: ["ambulance management software", "ER system", "emergency response software", "best hms software"]
     }
   },
   {
@@ -564,7 +564,7 @@ export const FEATURES: Feature[] = [
         "Reduced clinic waiting room load",
         "Additional revenue stream for doctors"
       ],
-      seoKeywords: ["best telemedicine software India", "virtual clinic platform Mumbai", "teleconsultation system", "hospital video consult software"]
+      seoKeywords: ["best telemedicine software", "virtual clinic platform", "teleconsultation system", "hospital video consult software"]
     }
   },
   {
@@ -591,7 +591,7 @@ export const FEATURES: Feature[] = [
         "Better patient follow-up compliance",
         "Modern and tech-savvy brand image"
       ],
-      seoKeywords: ["patient portal software India", "hospital mobile app Mumbai", "healthcare patient app", "best HMS patient software"]
+      seoKeywords: ["patient portal software", "hospital mobile app", "healthcare patient app", "best HMS patient software"]
     }
   },
   {
@@ -618,7 +618,7 @@ export const FEATURES: Feature[] = [
         "Reduces environmental risk",
         "Safer hospital environment"
       ],
-      seoKeywords: ["hospital waste management software", "BMW tracking system India", "medical compliance software Mumbai", "best HMS compliance"]
+      seoKeywords: ["hospital waste management software", "BMW tracking system", "medical compliance software", "best HMS compliance"]
     }
   },
   {
@@ -645,7 +645,7 @@ export const FEATURES: Feature[] = [
         "Drives strategic growth planning",
         "Higher ROI on hospital resources"
       ],
-      seoKeywords: ["hospital business intelligence", "healthcare MIS software India", "hospital data analytics Mumbai", "best healthcare management Reports"]
+      seoKeywords: ["hospital business intelligence", "healthcare MIS software", "hospital data analytics", "best healthcare management Reports"]
     }
   },
   {
@@ -672,7 +672,7 @@ export const FEATURES: Feature[] = [
         "Ensures no dietary errors for patients",
         "Better patient satisfaction scores"
       ],
-      seoKeywords: ["hospital diet software India", "kitchen management for healthcare", "patient nutrition software Mumbai", "best hms software"]
+      seoKeywords: ["hospital diet software", "kitchen management for healthcare", "patient nutrition software", "best hms software"]
     }
   },
   {
@@ -699,7 +699,7 @@ export const FEATURES: Feature[] = [
         "Optimized center revenue management",
         "Superior experience for referring doctors"
       ],
-      seoKeywords: ["diagnostic center software India", "imaging center system Mumbai", "best diagnostic HMS", "X-ray and scan software"]
+      seoKeywords: ["diagnostic center software", "imaging center system", "best diagnostic HMS", "X-ray and scan software"]
     }
   },
 ];

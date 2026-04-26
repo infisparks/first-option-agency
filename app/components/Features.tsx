@@ -3,67 +3,24 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence, useScroll, useTransform, useInView } from "framer-motion";
-import { Maximize2, Zap, Layout, Mic, UserPlus, Database, PieChart, Activity, DollarSign, Stethoscope, FileText, Calendar, Plus, Minus, X, Search } from "lucide-react";
+import { Maximize2, Zap, Layout, Mic, UserPlus, Database, PieChart, Activity, DollarSign, Stethoscope, FileText, Calendar, Plus, Minus, X, Search, ArrowRight } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 
 /* ═══════════════════════════════════════════════════════
    Feature Data — Updated with custom IPD images
    ═══════════════════════════════════════════════════════ */
 
-interface Feature {
-  id: number;
-  image: string;
-  title: string;
-  description: string;
-  tag: string;
-  icon?: any;
-}
-
-const features = [
-  {
-    id: 1, image: "/service/1.webp", tag: "Strategy",
-    title: "Deep Business Audit",
-    description: "We analyze your current business position, identify opportunities, and uncover bottlenecks that limit your growth potential. Competitive landscape analysis, conversion rate assessment, and customer journey mapping.",
-    icon: <Search size={18} />
-  },
-  {
-    id: 2, image: "/service/2.webp", tag: "Operations",
-    title: "Strategic Marketing Operations",
-    description: "We execute data-driven campaigns that focus on key performance indicators and strategic business objectives. KPI-focused campaign management, performance tracking & reporting, and target audience segmentation.",
-    icon: <Zap size={18} />
-  },
-  {
-    id: 3, image: "/service/3.webp", tag: "Optimization",
-    title: "Sales Funnel Optimisation",
-    description: "We design and optimise high-converting sales funnels that turn prospects into customers and maximise your ROI. Conversion-focused landing pages, email automation sequences, and A/B testing & optimisation.",
-    icon: <Layout size={18} />
-  },
-  {
-    id: 4, image: "/service/4.webp", tag: "Creative",
-    title: "Persuasive Content Creation",
-    description: "We develop compelling content that connects with your audience's psychology and drives action. Sales copywriting, social media content planning, and irresistible offer creation.",
-    icon: <FileText size={18} />
-  },
-  {
-    id: 5, image: "/service/5.webp", tag: "Paid",
-    title: "Paid Media Management",
-    description: "We create and manage targeted advertising campaigns that deliver measurable results across multiple platforms. Facebook & Instagram Ads, Google Ads & Display, and Retargeting campaigns.",
-    icon: <Activity size={18} />
-  },
-  {
-    id: 6, image: "/service/6.webp", tag: "Growth",
-    title: "CRM & Growth Operations",
-    description: "We implement and optimise CRM systems that nurture leads through the entire customer journey. CRM implementation & setup, lead nurturing automation, and sales process optimisation.",
-    icon: <Database size={18} />
-  },
-];
+import { SERVICES } from "../constants/services";
+import Link from "next/link";
 
 const tagColors: Record<string, string> = {
-  Strategy: "#7C3AED",
-  Operations: "#6D28D9",
-  Optimization: "#8B5CF6",
-  Creative: "#F59E0B",
-  Paid: "#10B981",
-  Growth: "#0891B2",
+  "Strategy": "#7C3AED",
+  "Operations": "#6D28D9",
+  "Conversion": "#8B5CF6",
+  "Creative": "#F59E0B",
+  "Paid Ads": "#10B981",
+  "Leads": "#0891B2",
+  "SEO": "#7C3AED",
 };
 
 // Optimized Animation Configuration
@@ -128,9 +85,9 @@ export default function Features() {
 
         {/* Feature Items */}
         <div style={{ display: "flex", flexDirection: "column", gap: "clamp(56px, 9vw, 96px)" }}>
-          {features.map((feature, index) => (
+          {SERVICES.map((feature, index) => (
             <FeatureSection 
-                key={feature.id} 
+                key={feature.slug} 
                 feature={feature} 
                 index={index} 
                 onImageClick={openLightbox} 
@@ -278,7 +235,7 @@ export default function Features() {
   );
 }
 
-function FeatureSection({ feature, index, onImageClick }: { feature: Feature; index: number; onImageClick: (url: string) => void }) {
+function FeatureSection({ feature, index, onImageClick }: { feature: any; index: number; onImageClick: (url: string) => void }) {
   const displayNum = index + 1;
   const isOdd = displayNum % 2 !== 0;
   const imagePath = feature.image;
@@ -328,6 +285,8 @@ function FeatureSection({ feature, index, onImageClick }: { feature: Feature; in
     }
   };
 
+  const IconComp = (LucideIcons as any)[feature.icon] || LucideIcons.Zap;
+
   return (
     <div
       className={`feature-section flex flex-col gap-8 md:gap-16 items-center py-8 md:py-16 px-4 ${
@@ -343,7 +302,7 @@ function FeatureSection({ feature, index, onImageClick }: { feature: Feature; in
         style={{ willChange: "transform, opacity" }}
         className="w-[85%] md:w-[32%] relative flex justify-center py-10 mx-auto md:mx-0"
       >
-        {/* Optimized Glow - Hidden on mobile to prevent side gaps */}
+        {/* Optimized Glow */}
         {!isMobile && (
           <div 
             className="absolute inset-[-40px] opacity-[0.08] pointer-events-none blur-[60px] rounded-full"
@@ -372,6 +331,8 @@ function FeatureSection({ feature, index, onImageClick }: { feature: Feature; in
                   className="w-full h-auto block object-contain"
                   loading={displayNum <= 2 ? "eager" : "lazy"}
                   priority={displayNum <= 2}
+                  onClick={() => onImageClick(imagePath)}
+                  style={{ cursor: 'pointer' }}
                 />
             </div>
           </div>
@@ -396,7 +357,7 @@ function FeatureSection({ feature, index, onImageClick }: { feature: Feature; in
               color: tagColor,
             }}
           >
-            {feature.icon}
+            <IconComp size={18} />
           </div>
           <span 
             className="text-[0.75rem] font-bold tracking-[0.1em] uppercase opacity-80"
@@ -411,9 +372,31 @@ function FeatureSection({ feature, index, onImageClick }: { feature: Feature; in
             {feature.title}
           </h3>
           <p style={{ fontSize: "clamp(0.76rem, 1.5vw, 0.88rem)", color: '#475569', lineHeight: 1.65, fontWeight: 500 }}>
-            {feature.description}
+            {feature.shortDesc}
           </p>
         </div>
+
+        <Link href={`/services/${feature.slug}`} className="group/btn" style={{ textDecoration: 'none' }}>
+          <button 
+            style={{ 
+              padding: '12px 24px', 
+              borderRadius: '12px', 
+              background: 'white', 
+              border: `1.5px solid ${tagColor}30`, 
+              color: tagColor, 
+              fontWeight: 700, 
+              fontSize: '0.85rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            Explore Service
+            <LucideIcons.ArrowRight size={16} className="transition-transform group-hover/btn:translate-x-1" />
+          </button>
+        </Link>
 
         <div className="flex items-center gap-3 mt-2 group">
             <div 
