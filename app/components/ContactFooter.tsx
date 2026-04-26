@@ -195,7 +195,7 @@ export default function ContactFooter() {
 
             {/* WhatsApp CTA pill */}
             <motion.a
-              href="https://wa.me/919958399157"
+              href="https://wa.me/918329494445"
               target="_blank"
               rel="noopener"
               aria-label="Direct WhatsApp message"

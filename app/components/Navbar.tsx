@@ -274,7 +274,7 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
                 <div style={{ height: 1, background: "rgba(226,232,240,0.7)", margin: "6px 0" }} />
                 {/* Phone row */}
                 <a
-                  href="https://wa.me/919958399157"
+                  href="https://wa.me/918329494445"
                   target="_blank"
                   style={{
                     display: "flex",
