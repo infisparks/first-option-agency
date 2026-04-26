@@ -180,9 +180,33 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                 letterSpacing: "0.01em",
               }}
             >
-              Discuss Your Growth Strategy
+              BOOK A FREE DEMO
               <ArrowRight size={16} strokeWidth={2.5} />
             </motion.button>
+
+            <Link href="/view-brochure" style={{ textDecoration: "none" }}>
+              <motion.button
+                whileHover={{ background: "rgba(255,255,255,0.1)", transform: "translateY(-2px)" }}
+                whileTap={{ scale: 0.97 }}
+                style={{
+                  padding: "clamp(12px, 2vw, 18px) clamp(24px, 4vw, 36px)",
+                  borderRadius: "9999px",
+                  backgroundColor: "transparent",
+                  border: "1.5px solid rgba(124,58,237,0.3)",
+                  color: "var(--color-primary)",
+                  fontSize: "clamp(0.8rem, 1.2vw, 0.95rem)",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 10,
+                  transition: "border 0.3s ease",
+                  whiteSpace: "nowrap"
+                }}
+              >
+                VIEW STRATEGY ROADMAP
+              </motion.button>
+            </Link>
 
             <a href="https://wa.me/918329494445" target="_blank" style={{ textDecoration: "none" }}>
               <motion.button

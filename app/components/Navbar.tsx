@@ -28,9 +28,7 @@ export default function Navbar({ onBookDemo }: NavbarProps) {
 
   const navLinks = [
     { title: "Home", href: "/" },
-    { title: "Services", href: "/#services" },
-    { title: "How It Works", href: "/#how-it-works" },
-    { title: "Industries", href: "/#industries" },
+    { title: "Roadmap", href: "/view-brochure" },
     { title: "Contact", href: "/#contact" },
   ];
 
