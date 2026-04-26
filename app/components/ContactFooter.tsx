@@ -61,6 +61,21 @@ export default function ContactFooter() {
           {/* Left: Copy & Contact Info */}
           <div style={{ alignSelf: "center" }}>
             <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              style={{ marginBottom: "24px" }}
+            >
+               <Image 
+                src="/logo.png" 
+                alt="First Option Agency Logo" 
+                width={180} 
+                height={50} 
+                style={{ objectFit: "contain", width: "auto", height: "clamp(34px, 6vw, 48px)" }}
+              />
+            </motion.div>
+
+            <motion.div
               initial={{ opacity: 0, x: -10 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}

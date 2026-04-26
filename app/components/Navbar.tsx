@@ -119,14 +119,14 @@ export default function Navbar({ onBookDemo }: NavbarProps) {
             whileTap={{ scale: 0.97 }}
             className="navbar-logo"
           >
-            <span style={{ 
-              fontSize: "1.2rem", 
-              fontWeight: 900, 
-              color: "var(--color-primary)",
-              letterSpacing: "-0.02em"
-            }}>
-              FIRST<span style={{ color: "var(--text-main)" }}>OPTION</span>
-            </span>
+            <Image 
+              src="/logo.png" 
+              alt="First Option Agency Logo" 
+              width={180} 
+              height={50} 
+              priority
+              style={{ objectFit: "contain", width: "auto", height: "clamp(32px, 6vw, 42px)" }}
+            />
           </motion.div>
 
           {/* Desktop Links */}

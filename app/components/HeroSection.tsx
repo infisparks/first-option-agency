@@ -278,11 +278,11 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
       {/* ── SCROLLING TICKER ── */}
       <div
         style={{
-          background: "linear-gradient(90deg, #0F172A, #1E3A8A)",
+          background: "linear-gradient(90deg, #1E1B4B, #4C1D95)",
           padding: "10px 0",
           overflow: "hidden",
-          borderTop: "1px solid rgba(37,99,235,0.2)",
-          borderBottom: "1px solid rgba(37,99,235,0.2)",
+          borderTop: "1px solid rgba(124, 58, 237, 0.2)",
+          borderBottom: "1px solid rgba(124, 58, 237, 0.2)",
           position: "relative",
           zIndex: 5,
         }}
