@@ -43,14 +43,14 @@ const fadeUp = {
   initial: { opacity: 0, y: 24 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true, margin: "-60px" },
-  transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
+  transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] as any },
 };
 
 const stagger = (i: number) => ({
   initial: { opacity: 0, y: 20 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true },
-  transition: { duration: 0.5, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] },
+  transition: { duration: 0.5, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] as any },
 });
 
 // ── Inline Sample Request Form Modal ─────────────────────────────
@@ -81,7 +81,7 @@ function SampleFormModal({ open, onClose }: { open: boolean; onClose: () => void
             initial={{ opacity: 0, scale: 0.94, y: 24 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.94, y: 24 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] as any }}
             onClick={(e) => e.stopPropagation()}
             style={{ backgroundColor: "#fff", borderRadius: "24px", border: `1px solid ${BD}`, boxShadow: "0 40px 80px -10px rgba(124,58,237,0.2),0 8px 32px rgba(0,0,0,0.08)", width: "100%", maxWidth: "440px", overflow: "hidden" }}
           >
@@ -300,33 +300,23 @@ export default function AluminaFunnelPage() {
           <motion.div
             initial={{ opacity: 0, y: 40, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            style={{ position: "relative", borderRadius: "24px", overflow: "hidden", border: "6px solid #fff", boxShadow: "0 30px 80px -16px rgba(124,58,237,0.18),0 8px 32px rgba(0,0,0,0.06)" }}
+            transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] as any }}
+            style={{ position: "relative", borderRadius: "0 0 24px 24px", overflow: "hidden", border: "6px solid #fff", borderTop: "none", boxShadow: "0 30px 80px -16px rgba(124,58,237,0.18),0 8px 32px rgba(0,0,0,0.06)", maxWidth: "1000px", margin: "0 auto" }}
           >
-            <Image src="/funnel/residue-bag.png" alt="Alumina Residue Oxide Powder" width={1400} height={700} style={{ width: "100%", height: "auto", display: "block" }} priority />
-            <div style={{ position: "absolute", top: "16px", left: "16px", backgroundColor: "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)", borderRadius: "12px", padding: "10px 16px", display: "flex", alignItems: "center", gap: "10px", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
-              <div style={{ width: "36px", height: "36px", backgroundColor: PL, borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", color: P }}>
-                <FlaskConical size={18} />
-              </div>
-              <div>
-                <div style={{ fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: TD }}>Quality Assured</div>
-                <div style={{ fontSize: "13px", fontWeight: 800, color: TM }}>~76% Al₂O₃ Content</div>
-              </div>
-            </div>
+            <Image src="/funnel/alumina-residue/alumina-residue-powder-industrial-benefit.png" alt="High Alumina Residue Oxide Powder Industrial Benefit" width={1400} height={700} style={{ width: "100%", height: "auto", display: "block" }} priority />
             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "80px", background: "linear-gradient(to top,rgba(255,255,255,0.4),transparent)" }} />
           </motion.div>
         </div>
       </section>
 
-      {/* ── STAT BAR ── */}
-      <section style={{ backgroundColor: "#fff", borderTop: `1px solid ${BD}`, borderBottom: `1px solid ${BD}`, padding: "28px 20px" }}>
-        <div style={{ maxWidth: "1100px", margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: "16px" }}>
+      <section style={{ backgroundColor: "#fff", borderTop: `1px solid ${BD}`, borderBottom: `1px solid ${BD}`, padding: "20px 10px" }}>
+        <div style={{ maxWidth: "1100px", margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px" }}>
           {stats.map((s, i) => (
             <motion.div key={i} {...stagger(i)} style={{ textAlign: "center" }}>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: "4px", color: P, fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>
-                {s.icon} {s.label}
+              <div style={{ display: "inline-flex", alignItems: "center", gap: "2px", color: P, fontSize: "8px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.02em", marginBottom: "2px" }}>
+                {s.label}
               </div>
-              <div style={{ fontSize: "clamp(22px,3vw,30px)", fontWeight: 900, color: TM, letterSpacing: "-0.03em" }}>{s.val}</div>
+              <div style={{ fontSize: "clamp(14px, 4vw, 22px)", fontWeight: 900, color: TM, letterSpacing: "-0.03em" }}>{s.val}</div>
             </motion.div>
           ))}
         </div>
@@ -377,21 +367,10 @@ export default function AluminaFunnelPage() {
             </h2>
           </motion.div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(420px,1fr))", gap: "20px", alignItems: "start" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "32px", alignItems: "start" }}>
             {/* Left: image with stat overlay */}
-            <motion.div {...stagger(0)} style={{ position: "relative", borderRadius: "20px", overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.08)" }}>
-              <Image src="/funnel/powder-specs.png" alt="Lab tested alumina powder" width={700} height={500} style={{ width: "100%", height: "auto", display: "block" }} />
-              {/* Floating stat card */}
-              <div style={{ position: "absolute", bottom: "20px", left: "20px", right: "20px", backgroundColor: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)", borderRadius: "14px", padding: "14px 18px", display: "flex", alignItems: "center", gap: "16px", boxShadow: "0 8px 24px rgba(0,0,0,0.08)" }}>
-                <div style={{ width: "40px", height: "40px", background: `linear-gradient(135deg,${P},${PD})`, borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <FlaskConical size={20} color="#fff" />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: "10px", fontWeight: 700, color: TD, textTransform: "uppercase", letterSpacing: "0.05em" }}>Multi-Stage Lab Verified</div>
-                  <div style={{ fontSize: "13px", fontWeight: 800, color: TM }}>Full report available on request</div>
-                </div>
-                <div style={{ backgroundColor: "#DCFCE7", color: "#166534", fontSize: "10px", fontWeight: 800, padding: "4px 10px", borderRadius: "100px" }}>CERTIFIED</div>
-              </div>
+            <motion.div {...stagger(0)} style={{ position: "relative", borderRadius: "20px", overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.08)", maxWidth: "800px", margin: "0 auto" }}>
+              <Image src="/funnel/alumina-residue/high-alumina-residue-powder-specifications.png" alt="High Alumina Residue Oxide Powder Lab Tested Specifications" width={700} height={500} style={{ width: "100%", height: "auto", display: "block" }} />
             </motion.div>
 
             {/* Right: progress bar spec cards */}
@@ -420,7 +399,7 @@ export default function AluminaFunnelPage() {
                       initial={{ width: 0 }}
                       whileInView={{ width: `${s.bar}%` }}
                       viewport={{ once: true }}
-                      transition={{ duration: 1, delay: i * 0.15, ease: [0.16, 1, 0.3, 1] }}
+                      transition={{ duration: 1, delay: i * 0.15, ease: [0.16, 1, 0.3, 1] as any }}
                       style={{ height: "100%", background: `linear-gradient(90deg,${s.color}88,${s.color})`, borderRadius: "100px" }}
                     />
                   </div>
@@ -479,8 +458,8 @@ export default function AluminaFunnelPage() {
           >
             <div style={{ position: "absolute", top: "-60px", right: "-60px", width: "240px", height: "240px", border: "2px solid rgba(255,255,255,0.08)", borderRadius: "50%", pointerEvents: "none" }} />
             <div style={{ position: "absolute", top: "-20px", right: "-20px", width: "140px", height: "140px", border: "2px solid rgba(255,255,255,0.06)", borderRadius: "50%", pointerEvents: "none" }} />
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(340px,1fr))", alignItems: "center" }}>
-              <div style={{ padding: "clamp(32px,5vw,56px)" }}>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div style={{ padding: "clamp(32px,5vw,56px) clamp(32px,5vw,56px) 24px" }}>
                 <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", backgroundColor: "rgba(255,255,255,0.15)", color: "#fff", padding: "5px 12px", borderRadius: "100px", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "16px" }}>
                   <Package size={12} /> Sample & Bulk Supply Available
                 </div>
@@ -515,9 +494,8 @@ export default function AluminaFunnelPage() {
                   Minimum Order Quantity Applicable · Industrial Use Only
                 </p>
               </div>
-              <div style={{ position: "relative", minHeight: "340px" }}>
-                <Image src="/funnel/powder-samples.png" alt="Alumina powder samples" fill style={{ objectFit: "cover", borderRadius: "0 28px 28px 0" }} />
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right,rgba(109,40,217,0.6),transparent 50%)", borderRadius: "0 28px 28px 0" }} />
+              <div style={{ position: "relative", minHeight: "clamp(300px, 46vw, 540px)", backgroundColor: "#fff", width: "100%", borderTop: "none" }}>
+                <Image src="/funnel/alumina-residue/alumina-residue-powder-samples-and-supply.png" alt="Alumina Residue Oxide Powder Product Samples and Supply" fill style={{ objectFit: "contain" }} />
               </div>
             </div>
           </motion.div>
