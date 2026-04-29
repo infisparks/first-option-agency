@@ -10,7 +10,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.firstoptionagency.com"),
+  metadataBase: new URL("https://firstoptionagency.com"),
   title: "ROI-driven Performance Marketing Agency | First Option",
   description:
     "Leading Performance Marketing Agency specializing in ROI-driven lead generation, sales funnels, and SEO for Manufacturers, IT Companies, and Healthcare across the globe.",
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "First Option Agency | Global ROI-driven Performance Marketing",
     description: "Build high-conversion marketing funnels and ROI-driven ad strategies for predictable business growth worldwide.",
-    url: "https://www.firstoptionagency.com",
+    url: "https://firstoptionagency.com",
     siteName: "First Option Agency",
     images: [
       {
@@ -67,9 +67,9 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "ProfessionalService",
               "name": "First Option Agency",
-              "url": "https://www.firstoptionagency.com",
-              "logo": "https://www.firstoptionagency.com/meta-logo.webp",
-              "image": "https://www.firstoptionagency.com/og-image.webp",
+              "url": "https://firstoptionagency.com",
+              "logo": "https://firstoptionagency.com/meta-logo.webp",
+              "image": "https://firstoptionagency.com/og-image.webp",
               "description": "Leading ROI-driven Performance Marketing Agency specializing in lead generation, sales funnels, and SEO for B2B and High-End services.",
               "address": {
                 "@type": "PostalAddress",

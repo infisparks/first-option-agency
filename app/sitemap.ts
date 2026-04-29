@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { BLOG_POSTS } from './constants/blogs';
 import { SERVICES } from './constants/services';
 
-const DOMAIN = 'https://www.firstoptionagency.com';
+const DOMAIN = 'https://firstoptionagency.com';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const blogEntries = BLOG_POSTS.map((post) => ({

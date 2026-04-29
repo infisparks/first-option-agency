@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/private/'],
     },
-    sitemap: 'https://www.firstoptionagency.com/sitemap.xml',
+    sitemap: 'https://firstoptionagency.com/sitemap.xml',
   };
 }

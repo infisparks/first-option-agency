@@ -41,7 +41,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
             "provider": {
               "@type": "ProfessionalService",
               "name": "First Option Agency",
-              "url": "https://www.firstoptionagency.com"
+              "url": "https://firstoptionagency.com"
             },
             "areaServed": "Worldwide",
             "hasOfferCatalog": {
