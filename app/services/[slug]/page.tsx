@@ -20,6 +20,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: `${service.title} | First Option Agency`,
     description: service.fullDesc,
     keywords: `${service.mainKeyword}, marketing services, global`,
+    alternates: {
+      canonical: `/services/${slug}`,
+    },
   };
 }
 

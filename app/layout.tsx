@@ -17,9 +17,6 @@ export const metadata: Metadata = {
   keywords:
     "performance marketing agency, best SEO agency, lead generation company, sales funnel expert, ROI marketing, First Option Agency",
   authors: [{ name: "First Option Agency" }],
-  alternates: {
-    canonical: "/",
-  },
   openGraph: {
     title: "First Option Agency | Global ROI-driven Performance Marketing",
     description: "Build high-conversion marketing funnels and ROI-driven ad strategies for predictable business growth worldwide.",

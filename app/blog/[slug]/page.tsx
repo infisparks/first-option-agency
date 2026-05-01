@@ -23,6 +23,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     description: post.excerpt,
     keywords: post.keywords.join(", "),
     authors: [{ name: "Faiz Ansari" }],
+    alternates: {
+      canonical: `/blog/${slug}`,
+    },
   };
 }
 

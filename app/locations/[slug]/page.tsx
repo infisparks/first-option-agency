@@ -29,6 +29,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: `Best Performance Marketing Agency in ${loc.Name} | ROI Driven SEO`,
     description: `Accelerate your business growth in ${loc.Name} with our expert performance marketing, SEO, and lead generation services tailored for high-growth businesses.`,
     keywords: `marketing agency in ${loc.Name}, SEO agency ${loc.Name}, lead generation ${loc.Name}`,
+    alternates: {
+      canonical: `/locations/${slug}`,
+    },
   };
 }
 

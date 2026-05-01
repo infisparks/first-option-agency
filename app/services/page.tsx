@@ -9,6 +9,9 @@ import * as LucideIcons from "lucide-react";
 export const metadata = {
   title: "Performance Marketing & Growth Services | First Option Agency",
   description: "Explore our range of ROI-driven performance marketing, SEO, and lead generation services designed for global business growth.",
+  alternates: {
+    canonical: "/services",
+  },
 };
 
 export default function ServicesListPage() {

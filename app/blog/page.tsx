@@ -9,6 +9,9 @@ import BlogSearch from "@/app/components/BlogSearch";
 export const metadata = {
   title: "Marketing Insights & Performance Strategies Blog | First Option Agency",
   description: "Stay updated with the latest trends in performance marketing, SEO, and sales funnels. ROI-driven insights for global growth-focused businesses.",
+  alternates: {
+    canonical: "/blog",
+  },
 };
 
 export default function BlogListPage() {
