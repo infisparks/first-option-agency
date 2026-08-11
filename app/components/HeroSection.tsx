@@ -414,7 +414,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
 
           {/* ═══════════════════════════════════════════════════════
               2. MOBILE / TABLET VERSION (screens < 1024px)
-              Creative Stack: Header -> Floating Graphic -> CTA Buttons
+              Compact & Space-Saving: Header -> Floating Graphic -> 1-Row CTA Buttons
               ═══════════════════════════════════════════════════════ */}
           <div className="hero-mobile-stack lg:hidden" style={{ textAlign: "center" }}>
             {/* Top Status Pill */}
@@ -425,24 +425,24 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: 7,
-                padding: "4px 11px",
+                gap: 6,
+                padding: "3px 10px",
                 background: "rgba(255, 255, 255, 0.05)",
                 border: "1px solid rgba(139, 92, 246, 0.32)",
                 borderRadius: "9999px",
-                fontSize: "clamp(0.6rem, 2.5vw, 0.66rem)",
+                fontSize: "clamp(0.58rem, 2.2vw, 0.64rem)",
                 fontWeight: 700,
-                letterSpacing: "0.08em",
+                letterSpacing: "0.06em",
                 textTransform: "uppercase",
-                marginBottom: 12,
+                marginBottom: 8,
                 backdropFilter: "blur(16px)",
-                boxShadow: "0 0 20px rgba(124, 58, 237, 0.2), 0 1px 0 rgba(255, 255, 255, 0.15) inset",
+                boxShadow: "0 0 16px rgba(124, 58, 237, 0.2), 0 1px 0 rgba(255, 255, 255, 0.15) inset",
                 color: "#E2E8F0",
               }}
             >
-              <span style={{ position: "relative", width: 7, height: 7, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ position: "absolute", width: 7, height: 7, borderRadius: "50%", background: "#10B981", animation: "badge-ping 1.8s ease-out infinite" }} />
-                <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#10B981", display: "inline-block" }} />
+              <span style={{ position: "relative", width: 6, height: 6, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ position: "absolute", width: 6, height: 6, borderRadius: "50%", background: "#10B981", animation: "badge-ping 1.8s ease-out infinite" }} />
+                <span style={{ width: 4, height: 4, borderRadius: "50%", background: "#10B981", display: "inline-block" }} />
               </span>
               <span>AI Performance Engine</span>
               <span
@@ -450,11 +450,11 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                   background: "linear-gradient(135deg, rgba(124, 58, 237, 0.35), rgba(139, 92, 246, 0.2))",
                   border: "1px solid rgba(167, 139, 250, 0.4)",
                   borderRadius: "999px",
-                  padding: "1px 6px",
-                  fontSize: "0.54rem",
+                  padding: "1px 5px",
+                  fontSize: "0.52rem",
                   fontWeight: 800,
                   color: "#C4B5FD",
-                  letterSpacing: "0.06em",
+                  letterSpacing: "0.04em",
                 }}
               >
                 5.0 ★ TOP RATED
@@ -467,11 +467,11 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: EASE, delay: 0.05 }}
               style={{
-                fontSize: "clamp(1.75rem, 6.5vw, 2.5rem)",
+                fontSize: "clamp(1.55rem, 5.8vw, 2.25rem)",
                 fontWeight: 900,
                 lineHeight: 1.12,
-                letterSpacing: "-0.04em",
-                marginBottom: 10,
+                letterSpacing: "-0.035em",
+                marginBottom: 8,
                 color: "#FFFFFF",
                 textShadow: "0 2px 20px rgba(0, 0, 0, 0.5)",
               }}
@@ -481,14 +481,14 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                 style={{
                   background: "linear-gradient(135deg, #8B5CF6 0%, #7C3AED 50%, #6D28D9 100%)",
                   color: "#FFFFFF",
-                  padding: "3px 12px",
-                  borderRadius: 8,
+                  padding: "2px 10px",
+                  borderRadius: 7,
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  marginTop: 6,
+                  marginTop: 4,
                   lineHeight: "1.15",
-                  boxShadow: "0 0 30px rgba(124, 58, 237, 0.45), 0 2px 0 rgba(255, 255, 255, 0.25) inset",
+                  boxShadow: "0 0 25px rgba(124, 58, 237, 0.45), 0 2px 0 rgba(255, 255, 255, 0.25) inset",
                   border: "1px solid rgba(196, 181, 253, 0.35)",
                 }}
               >
@@ -502,12 +502,12 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: EASE, delay: 0.1 }}
               style={{
-                fontSize: "clamp(0.85rem, 3.2vw, 1.05rem)",
+                fontSize: "clamp(0.8rem, 2.9vw, 0.96rem)",
                 fontWeight: 700,
                 color: "#E2E8F0",
-                marginBottom: 8,
-                letterSpacing: "-0.02em",
-                lineHeight: 1.35,
+                marginBottom: 6,
+                letterSpacing: "-0.015em",
+                lineHeight: 1.32,
               }}
             >
               We Don’t Just Drive Traffic — We Engineer <span style={{ color: "#38BDF8" }}>Predictable Buyers</span> &amp; <span style={{ color: "#34D399" }}>High-Margin Revenue</span>.
@@ -519,12 +519,12 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: EASE, delay: 0.15 }}
               style={{
-                fontSize: "clamp(0.74rem, 2.8vw, 0.84rem)",
+                fontSize: "clamp(0.7rem, 2.5vw, 0.78rem)",
                 color: "#94A3B8",
-                marginBottom: 14,
-                lineHeight: 1.52,
+                marginBottom: 10,
+                lineHeight: 1.46,
                 fontWeight: 400,
-                maxWidth: 480,
+                maxWidth: 420,
                 marginInline: "auto",
               }}
             >
@@ -532,14 +532,14 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
             </motion.p>
 
             {/* FLOATING 3D GRAPHIC (ABOVE BUTTONS ON MOBILE - NO CARD/BOX) */}
-            <div style={{ position: "relative", width: "100%", maxWidth: 620, marginInline: "auto", marginBottom: 16 }}>
+            <div style={{ position: "relative", width: "100%", maxWidth: 520, marginInline: "auto", marginBottom: 12 }}>
               {/* Atmospheric Glow */}
               <div
                 style={{
                   position: "absolute",
                   inset: "10% 5%",
                   background: "radial-gradient(ellipse at center, rgba(124, 58, 237, 0.28) 0%, rgba(56, 189, 248, 0.1) 50%, transparent 70%)",
-                  filter: "blur(30px)",
+                  filter: "blur(25px)",
                   pointerEvents: "none",
                   zIndex: 0,
                 }}
@@ -552,7 +552,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                 style={{
                   position: "relative",
                   width: "100%",
-                  aspectRatio: "16 / 10",
+                  aspectRatio: "16 / 9.6",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -565,7 +565,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                   fill
                   priority
                   unoptimized
-                  sizes="(max-width: 768px) 100vw, 620px"
+                  sizes="(max-width: 768px) 100vw, 520px"
                   style={{
                     objectFit: "contain",
                     objectPosition: "center",
@@ -575,44 +575,50 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
               </motion.div>
             </div>
 
-            {/* DUAL CTA BUTTONS (DIRECTLY UNDER THUMBNAIL ON MOBILE) */}
+            {/* ── DUAL CTA BUTTONS IN 1 SINGLE ROW ON MOBILE (Saves Space) ── */}
             <motion.div
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: EASE, delay: 0.26 }}
+              transition={{ duration: 0.5, ease: EASE, delay: 0.26 }}
               style={{
                 display: "flex",
-                gap: 10,
+                flexDirection: "row",
+                gap: 8,
                 justifyContent: "center",
                 alignItems: "center",
-                flexWrap: "wrap",
-                marginBottom: 14,
+                width: "100%",
+                maxWidth: 420,
+                marginInline: "auto",
+                marginBottom: 12,
               }}
             >
               <motion.button
                 onClick={onBookDemo}
                 aria-label="Book a free growth session demo"
-                whileTap={{ scale: 0.97 }}
+                whileTap={{ scale: 0.96 }}
                 className="glow-btn-primary"
                 style={{
-                  padding: "11px 22px",
+                  flex: "1 1 56%",
+                  padding: "10px 8px",
                   borderRadius: "9999px",
                   border: "1px solid rgba(255, 255, 255, 0.25)",
                   color: "#FFFFFF",
-                  fontSize: "clamp(0.72rem, 2.6vw, 0.84rem)",
+                  fontSize: "clamp(0.68rem, 2.5vw, 0.78rem)",
                   fontWeight: 800,
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 7,
+                  justifyContent: "center",
+                  gap: 5,
                   cursor: "pointer",
-                  letterSpacing: "0.02em",
+                  letterSpacing: "0.01em",
+                  whiteSpace: "nowrap",
                   background: "linear-gradient(135deg, #7C3AED 0%, #6D28D9 60%, #5B21B6 100%)",
-                  boxShadow: "0 0 25px rgba(124, 58, 237, 0.45), 0 1px 0 rgba(255, 255, 255, 0.3) inset",
+                  boxShadow: "0 0 20px rgba(124, 58, 237, 0.4), 0 1px 0 rgba(255, 255, 255, 0.3) inset",
                 }}
               >
-                <Sparkles size={13} className="text-yellow-300" />
-                BOOK A FREE DEMO
-                <ArrowRight size={14} strokeWidth={2.5} />
+                <Sparkles size={12} className="text-yellow-300" />
+                <span>BOOK A FREE DEMO</span>
+                <ArrowRight size={13} strokeWidth={2.5} />
               </motion.button>
 
               <a
@@ -620,28 +626,31 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Message us on WhatsApp"
-                style={{ textDecoration: "none" }}
+                style={{ textDecoration: "none", flex: "1 1 44%", display: "flex" }}
               >
                 <motion.button
-                  whileTap={{ scale: 0.97 }}
+                  whileTap={{ scale: 0.96 }}
                   style={{
-                    padding: "11px 20px",
+                    width: "100%",
+                    padding: "10px 8px",
                     borderRadius: "9999px",
                     border: "1.5px solid #10B981",
                     color: "#34D399",
-                    fontSize: "clamp(0.72rem, 2.6vw, 0.84rem)",
+                    fontSize: "clamp(0.68rem, 2.5vw, 0.78rem)",
                     fontWeight: 700,
                     background: "rgba(16, 185, 129, 0.08)",
                     cursor: "pointer",
                     backdropFilter: "blur(12px)",
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: 6,
+                    justifyContent: "center",
+                    gap: 5,
+                    whiteSpace: "nowrap",
                     letterSpacing: "0.01em",
                   }}
                 >
-                  <MessageCircle size={14} strokeWidth={2.2} />
-                  WhatsApp Direct
+                  <MessageCircle size={13} strokeWidth={2.2} />
+                  <span>WhatsApp Direct</span>
                 </motion.button>
               </a>
             </motion.div>
@@ -655,9 +664,9 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 12,
+                gap: "6px 12px",
                 flexWrap: "wrap",
-                marginBottom: 20,
+                marginBottom: 16,
               }}
             >
               {[
@@ -668,7 +677,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
               ].map((item) => (
                 <div key={item} style={{ display: "flex", alignItems: "center", gap: 4 }}>
                   <CheckCircle size={11} strokeWidth={2.5} style={{ color: "#34D399", flexShrink: 0 }} />
-                  <span style={{ fontSize: "clamp(0.62rem, 2.2vw, 0.68rem)", fontWeight: 600, color: "#CBD5E1" }}>
+                  <span style={{ fontSize: "clamp(0.6rem, 2.1vw, 0.66rem)", fontWeight: 600, color: "#CBD5E1" }}>
                     {item}
                   </span>
                 </div>
