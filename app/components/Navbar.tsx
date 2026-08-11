@@ -12,11 +12,30 @@ interface NavbarProps {
 export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isPastHero, setIsPastHero] = useState(false);
 
   useEffect(() => {
-    const updateScroll = () => setScrolled(window.scrollY > 20);
+    const updateScroll = () => {
+      const scrollY = window.scrollY;
+      setScrolled(scrollY > 15);
+
+      const heroEl = document.getElementById("hero");
+      if (heroEl) {
+        const heroRect = heroEl.getBoundingClientRect();
+        // If the bottom of the hero section is at or above 80px, user has scrolled past hero
+        setIsPastHero(heroRect.bottom <= 80);
+      } else {
+        setIsPastHero(scrollY > 680);
+      }
+    };
+
+    updateScroll();
     window.addEventListener("scroll", updateScroll, { passive: true });
-    return () => window.removeEventListener("scroll", updateScroll);
+    window.addEventListener("resize", updateScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", updateScroll);
+      window.removeEventListener("resize", updateScroll);
+    };
   }, []);
 
   const navLinks = [
@@ -25,6 +44,9 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
     { title: "Blog", href: "/blog" },
     { title: "Contact", href: "/#contact" },
   ];
+
+  // While in hero: dark header with white logo/text. When past hero: light header.
+  const isDarkHeader = !isPastHero;
 
   return (
     <header
@@ -86,18 +108,26 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
 
       <nav
         style={{
-          padding: scrolled ? "12px 0" : "clamp(16px, 4vw, 22px) 0",
-          background: scrolled
+          padding: scrolled ? "10px 0" : "clamp(14px, 3.5vw, 18px) 0",
+          background: isDarkHeader
+            ? scrolled
+              ? "rgba(9, 6, 21, 0.88)"
+              : "rgba(10, 7, 24, 0.75)"
+            : scrolled
             ? "rgba(255, 255, 255, 0.98)"
             : "rgba(255, 255, 255, 0.94)",
           backdropFilter: "blur(20px) saturate(180%)",
-          borderBottom: scrolled
+          borderBottom: isDarkHeader
+            ? "1px solid rgba(139, 92, 246, 0.22)"
+            : scrolled
             ? "1px solid rgba(226, 232, 240, 0.8)"
             : "1px solid rgba(255, 255, 255, 0.4)",
-          boxShadow: scrolled
+          boxShadow: isDarkHeader
+            ? "0 4px 30px rgba(0, 0, 0, 0.4)"
+            : scrolled
             ? "0 4px 20px -4px rgba(124, 58, 237, 0.12)"
             : "none",
-          transition: "all 0.3s ease",
+          transition: "background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, padding 0.3s ease",
         }}
         className="navbar-content"
       >
@@ -116,12 +146,18 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
             role="button"
           >
             <Image 
-              src="/logo.webp" 
+              src={isDarkHeader ? "/logo-white.webp" : "/logo.webp"} 
               alt="First Option Agency Logo" 
               width={220} 
               height={60} 
               priority
-              style={{ objectFit: "contain", width: "auto", height: "clamp(38px, 7vw, 48px)" }}
+              unoptimized
+              style={{
+                objectFit: "contain",
+                width: "auto",
+                height: "clamp(36px, 6.5vw, 46px)",
+                transition: "filter 0.35s ease",
+              }}
             />
           </motion.div>
 
@@ -136,7 +172,7 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
                   style={{
                     fontSize: "0.82rem",
                     fontWeight: 600,
-                    color: "#475569",
+                    color: isDarkHeader ? "#F8FAFC" : "#475569",
                     textDecoration: "none",
                     position: "relative",
                     transition: "color 0.3s ease",
@@ -161,12 +197,12 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
                 gap: 5,
                 fontSize: "0.78rem",
                 fontWeight: 600,
-                color: "#10B981",
+                color: isDarkHeader ? "#34D399" : "#10B981",
                 textDecoration: "none",
                 padding: "6px 12px",
                 borderRadius: "8px",
-                background: "rgba(16,185,129,0.06)",
-                border: "1px solid rgba(16,185,129,0.18)",
+                background: isDarkHeader ? "rgba(16, 185, 129, 0.12)" : "rgba(16, 185, 129, 0.06)",
+                border: isDarkHeader ? "1px solid rgba(16, 185, 129, 0.32)" : "1px solid rgba(16, 185, 129, 0.18)",
                 transition: "all 0.3s ease",
                 letterSpacing: "0.01em",
               }}
@@ -185,7 +221,7 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
               style={{
                 padding: "8px 18px",
                 borderRadius: "50px",
-                border: "none",
+                border: isDarkHeader ? "1px solid rgba(255, 255, 255, 0.25)" : "none",
                 color: "#fff",
                 fontWeight: 700,
                 fontSize: "0.78rem",
@@ -194,6 +230,10 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
                 gap: 6,
                 cursor: "pointer",
                 letterSpacing: "0.01em",
+                background: "linear-gradient(135deg, #7C3AED 0%, #6D28D9 60%, #5B21B6 100%)",
+                boxShadow: isDarkHeader
+                  ? "0 0 20px rgba(124, 58, 237, 0.45)"
+                  : "0 4px 14px rgba(124, 58, 237, 0.28)",
               }}
             >
               Growth Session
@@ -207,15 +247,24 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
             whileTap={{ scale: 0.9 }}
             aria-label={isOpen ? "Close menu" : "Open menu"}
             style={{
-              background: isOpen ? "rgba(124, 58, 237, 0.1)" : "white",
-              border: "1px solid rgba(124, 58, 237, 0.22)",
+              background: isDarkHeader
+                ? isOpen
+                  ? "rgba(139, 92, 246, 0.25)"
+                  : "rgba(255, 255, 255, 0.08)"
+                : isOpen
+                ? "rgba(124, 58, 237, 0.1)"
+                : "white",
+              border: isDarkHeader
+                ? "1px solid rgba(139, 92, 246, 0.35)"
+                : "1px solid rgba(124, 58, 237, 0.22)",
               borderRadius: "10px",
-              color: "var(--color-primary)", 
+              color: isDarkHeader ? "#FFFFFF" : "var(--color-primary)", 
               cursor: "pointer",
               alignItems: "center",
               justifyContent: "center",
               padding: "7px",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+              boxShadow: isDarkHeader ? "0 0 15px rgba(124, 58, 237, 0.2)" : "0 2px 8px rgba(0,0,0,0.05)",
+              transition: "all 0.3s ease",
             }}
             className="mobile-nav-toggle"
           >
@@ -223,7 +272,7 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
           </motion.button>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu Dropdown */}
         <AnimatePresence>
           {isOpen && (
             <motion.div
@@ -236,11 +285,13 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
                 top: "100%",
                 left: 0,
                 right: 0,
-                background: "rgba(255,255,255,0.98)",
+                background: isDarkHeader ? "rgba(9, 6, 21, 0.98)" : "rgba(255,255,255,0.98)",
                 backdropFilter: "blur(20px)",
-                borderBottom: "1px solid rgba(226, 232, 240, 0.8)",
+                borderBottom: isDarkHeader
+                  ? "1px solid rgba(139, 92, 246, 0.25)"
+                  : "1px solid rgba(226, 232, 240, 0.8)",
                 overflow: "hidden",
-                boxShadow: "0 16px 32px -8px rgba(124, 58, 237, 0.08)",
+                boxShadow: "0 16px 32px -8px rgba(0, 0, 0, 0.3)",
               }}
             >
               <div
@@ -258,7 +309,7 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
                     style={{
                       fontSize: "0.88rem",
                       fontWeight: 600,
-                      color: "#0F172A",
+                      color: isDarkHeader ? "#F8FAFC" : "#0F172A",
                       textDecoration: "none",
                       padding: "11px 14px",
                       borderRadius: "10px",
@@ -271,7 +322,13 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
                     {link.title}
                   </motion.a>
                 ))}
-                <div style={{ height: 1, background: "rgba(226,232,240,0.7)", margin: "6px 0" }} />
+                <div
+                  style={{
+                    height: 1,
+                    background: isDarkHeader ? "rgba(139, 92, 246, 0.2)" : "rgba(226,232,240,0.7)",
+                    margin: "6px 0",
+                  }}
+                />
                 {/* Phone row */}
                 <a
                   href="https://wa.me/918329494445"
@@ -283,11 +340,11 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
                     padding: "10px 14px",
                     fontSize: "0.82rem",
                     fontWeight: 600,
-                    color: "#10B981",
+                    color: "#34D399",
                     textDecoration: "none",
                     borderRadius: "10px",
-                    background: "rgba(16,185,129,0.04)",
-                    border: "1px solid rgba(16,185,129,0.14)",
+                    background: isDarkHeader ? "rgba(16,185,129,0.12)" : "rgba(16,185,129,0.04)",
+                    border: isDarkHeader ? "1px solid rgba(16,185,129,0.28)" : "1px solid rgba(16,185,129,0.14)",
                     marginBottom: 6,
                   }}
                 >
@@ -303,13 +360,14 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
                   style={{
                     padding: "13px",
                     borderRadius: "12px",
-                    border: "none",
+                    border: "1px solid rgba(255, 255, 255, 0.2)",
                     color: "#fff",
                     fontWeight: 700,
                     fontSize: "0.85rem",
                     cursor: "pointer",
                     letterSpacing: "0.01em",
                     marginTop: 2,
+                    background: "linear-gradient(135deg, #7C3AED 0%, #6D28D9 60%, #5B21B6 100%)",
                   }}
                 >
                   Growth Session →
@@ -333,11 +391,11 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
             .phone-link-nav { display: none !important; }
           }
 
-          .nav-link:hover { color: var(--color-primary) !important; }
+          .nav-link:hover { color: #C4B5FD !important; }
 
           .mobile-link:hover {
-            background: rgba(124, 58, 237, 0.05) !important;
-            color: var(--color-primary) !important;
+            background: rgba(139, 92, 246, 0.15) !important;
+            color: #C4B5FD !important;
           }
         `}</style>
       </nav>

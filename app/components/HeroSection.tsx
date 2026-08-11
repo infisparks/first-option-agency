@@ -412,38 +412,6 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                       : "drop-shadow(0 0 10px rgba(139, 92, 246, 0.28)) drop-shadow(0 6px 16px rgba(0, 0, 0, 0.55))",
                   }}
                 />
-
-                {/* ── Alpha-Masked Shine Sweep (Strictly on image pixels only, zero spill on transparent areas) ── */}
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    pointerEvents: "none",
-                    zIndex: 2,
-                    maskImage: "url(/header.webp)",
-                    WebkitMaskImage: "url(/header.webp)",
-                    maskSize: "contain",
-                    WebkitMaskSize: "contain",
-                    maskPosition: "center",
-                    WebkitMaskPosition: "center",
-                    maskRepeat: "no-repeat",
-                    WebkitMaskRepeat: "no-repeat",
-                    overflow: "hidden",
-                  }}
-                >
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "-25%",
-                      bottom: "-25%",
-                      width: "42%",
-                      background: "linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.15) 20%, rgba(255, 255, 255, 0.85) 50%, rgba(216, 180, 254, 0.9) 68%, transparent 100%)",
-                      mixBlendMode: "screen",
-                      filter: "blur(1.5px)",
-                      animation: "image-shine-sweep 3s cubic-bezier(0.4, 0, 0.2, 1) infinite",
-                    }}
-                  />
-                </div>
               </motion.div>
             </div>
           </div>
@@ -611,38 +579,6 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                     filter: "drop-shadow(0 0 10px rgba(139, 92, 246, 0.28)) drop-shadow(0 6px 14px rgba(0, 0, 0, 0.55))",
                   }}
                 />
-
-                {/* ── Alpha-Masked Shine Sweep for Mobile (Strictly on image pixels only) ── */}
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    pointerEvents: "none",
-                    zIndex: 2,
-                    maskImage: "url(/header.webp)",
-                    WebkitMaskImage: "url(/header.webp)",
-                    maskSize: "contain",
-                    WebkitMaskSize: "contain",
-                    maskPosition: "center",
-                    WebkitMaskPosition: "center",
-                    maskRepeat: "no-repeat",
-                    WebkitMaskRepeat: "no-repeat",
-                    overflow: "hidden",
-                  }}
-                >
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "-25%",
-                      bottom: "-25%",
-                      width: "42%",
-                      background: "linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.15) 20%, rgba(255, 255, 255, 0.85) 50%, rgba(216, 180, 254, 0.9) 68%, transparent 100%)",
-                      mixBlendMode: "screen",
-                      filter: "blur(1.5px)",
-                      animation: "image-shine-sweep 3s cubic-bezier(0.4, 0, 0.2, 1) infinite",
-                    }}
-                  />
-                </div>
               </motion.div>
             </div>
 
@@ -1036,15 +972,6 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
           }
           50% {
             transform: translateY(-4px);
-          }
-        }
-
-        @keyframes image-shine-sweep {
-          0% {
-            transform: translateX(-190%) skewX(-24deg);
-          }
-          45%, 100% {
-            transform: translateX(400%) skewX(-24deg);
           }
         }
       `}</style>
