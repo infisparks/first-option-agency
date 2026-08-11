@@ -16,6 +16,7 @@ const benefits = [
   {
     icon: <Zap size={20} />,
     title: "1. We Find Your Buyer",
+    
     description: "We identify who actually pays you, not just who clicks. Precision targeting that finds the highest intent buyers for your business.",
     color: "#7C3AED",
     stat: "High",
