@@ -50,8 +50,8 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
         id="hero"
         style={{
           position: "relative",
-          paddingTop: "clamp(88px, 10vh, 124px)",
-          paddingBottom: "clamp(36px, 4vh, 56px)",
+          paddingTop: "clamp(76px, 9vh, 116px)",
+          paddingBottom: "clamp(24px, 3vh, 48px)",
           minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
@@ -361,18 +361,19 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
               </motion.div>
             </div>
 
-            {/* Right Column: Floating 3D Transparent Workflow Graphic (No enclosing card/box) */}
+            {/* Right Column: Floating 3D Transparent Workflow Graphic with Subtle Elegant Glow */}
             <div style={{ width: "100%", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {/* Atmospheric Luminous Underglow */}
+              {/* Subtle Luminous Underglow */}
               <div
                 style={{
                   position: "absolute",
-                  width: "100%",
-                  height: "85%",
-                  background: "radial-gradient(ellipse at center, rgba(124, 58, 237, 0.32) 0%, rgba(56, 189, 248, 0.12) 45%, transparent 70%)",
-                  filter: "blur(40px)",
+                  width: "90%",
+                  height: "80%",
+                  background: "radial-gradient(ellipse at center, rgba(139, 92, 246, 0.2) 0%, rgba(56, 189, 248, 0.08) 45%, transparent 70%)",
+                  filter: "blur(36px)",
                   pointerEvents: "none",
                   zIndex: 0,
+                  animation: "hero-glow-pulse 5s ease-in-out infinite",
                 }}
               />
 
@@ -389,6 +390,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                   alignItems: "center",
                   justifyContent: "center",
                   zIndex: 1,
+                  animation: "hero-float-gentle 7s ease-in-out infinite",
                 }}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
@@ -404,8 +406,10 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                     objectFit: "contain",
                     objectPosition: "center",
                     transition: "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease",
-                    transform: isHovered ? "scale(1.04)" : "scale(1)",
-                    filter: isHovered ? "drop-shadow(0 15px 35px rgba(124, 58, 237, 0.4))" : "drop-shadow(0 10px 25px rgba(0, 0, 0, 0.6))",
+                    transform: isHovered ? "scale(1.03)" : "scale(1)",
+                    filter: isHovered
+                      ? "drop-shadow(0 0 16px rgba(139, 92, 246, 0.45)) drop-shadow(0 8px 20px rgba(0, 0, 0, 0.6))"
+                      : "drop-shadow(0 0 10px rgba(139, 92, 246, 0.28)) drop-shadow(0 6px 16px rgba(0, 0, 0, 0.55))",
                   }}
                 />
               </motion.div>
@@ -531,17 +535,19 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
               We build high-converting acquisition funnels, laser-targeted paid campaigns, and verified pipeline systems for Doctors, Manufacturers, IT Companies &amp; Scaling Brands.
             </motion.p>
 
-            {/* FLOATING 3D GRAPHIC (ABOVE BUTTONS ON MOBILE - NO CARD/BOX) */}
-            <div style={{ position: "relative", width: "100%", maxWidth: 520, marginInline: "auto", marginBottom: 12 }}>
-              {/* Atmospheric Glow */}
+            {/* FLOATING 3D GRAPHIC WITH SUBTLE GLOW (ABOVE BUTTONS ON MOBILE) */}
+            <div style={{ position: "relative", width: "100%", maxWidth: 520, marginInline: "auto", marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {/* Subtle Luminous Underglow */}
               <div
                 style={{
                   position: "absolute",
-                  inset: "10% 5%",
-                  background: "radial-gradient(ellipse at center, rgba(124, 58, 237, 0.28) 0%, rgba(56, 189, 248, 0.1) 50%, transparent 70%)",
-                  filter: "blur(25px)",
+                  width: "85%",
+                  height: "75%",
+                  background: "radial-gradient(ellipse at center, rgba(139, 92, 246, 0.18) 0%, rgba(56, 189, 248, 0.06) 45%, transparent 70%)",
+                  filter: "blur(26px)",
                   pointerEvents: "none",
                   zIndex: 0,
+                  animation: "hero-glow-pulse 5s ease-in-out infinite",
                 }}
               />
 
@@ -557,6 +563,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                   alignItems: "center",
                   justifyContent: "center",
                   zIndex: 1,
+                  animation: "hero-float-gentle 7s ease-in-out infinite",
                 }}
               >
                 <Image
@@ -569,7 +576,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                   style={{
                     objectFit: "contain",
                     objectPosition: "center",
-                    filter: "drop-shadow(0 8px 20px rgba(0, 0, 0, 0.65))",
+                    filter: "drop-shadow(0 0 10px rgba(139, 92, 246, 0.28)) drop-shadow(0 6px 14px rgba(0, 0, 0, 0.55))",
                   }}
                 />
               </motion.div>
@@ -942,6 +949,30 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
           grid-template-columns: 1fr 1.05fr;
           gap: clamp(28px, 4vw, 52px);
           align-items: center;
+        }
+
+        @keyframes hero-glow-pulse {
+          0% {
+            opacity: 0.65;
+            transform: scale(0.98);
+          }
+          50% {
+            opacity: 0.9;
+            transform: scale(1.02);
+          }
+          100% {
+            opacity: 0.65;
+            transform: scale(0.98);
+          }
+        }
+
+        @keyframes hero-float-gentle {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-4px);
+          }
         }
       `}</style>
     </>
