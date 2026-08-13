@@ -203,7 +203,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                   textShadow: "0 2px 20px rgba(0, 0, 0, 0.5)",
                 }}
               >
-                Stop Wasting Ad Spend. <br />
+                Stop Wasting Ad Spend. Start Scaling <br />
                 <span
                   style={{
                     background: "linear-gradient(135deg, #3B82F6 0%, #2563EB 50%, #1D4ED8 100%)",
@@ -219,7 +219,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                     border: "1px solid rgba(191, 219, 254, 0.35)",
                   }}
                 >
-                  Start Scaling
+                  Real Revenue.
                 </span>
               </motion.h1>
 
@@ -237,7 +237,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                   maxWidth: 520,
                 }}
               >
-                Full-funnel performance marketing built on <span style={{ color: "#38BDF8", fontWeight: 700 }}>real ROAS</span> — not impressions, likes, or empty reports.
+                Full-funnel performance marketing built on <span style={{ color: "#38BDF8", fontWeight: 700 }}>real ROAS</span> — not impressions, vanity likes, or empty agency reports.
               </motion.p>
 
               {/* CTA Action Buttons */}
@@ -462,7 +462,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                 textShadow: "0 2px 20px rgba(0, 0, 0, 0.5)",
               }}
             >
-              Stop Wasting Ad Spend. <br />
+              Stop Wasting Ad Spend. Start Scaling <br />
               <span
                 style={{
                   background: "linear-gradient(135deg, #3B82F6 0%, #2563EB 50%, #1D4ED8 100%)",
@@ -478,7 +478,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                   border: "1px solid rgba(191, 219, 254, 0.35)",
                 }}
               >
-                Start Scaling
+                Real Revenue.
               </span>
             </motion.h1>
 
@@ -497,7 +497,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                 marginInline: "auto",
               }}
             >
-              Full-funnel performance marketing built on <span style={{ color: "#38BDF8", fontWeight: 700 }}>real ROAS</span> — not impressions, likes, or empty reports.
+              Full-funnel performance marketing built on <span style={{ color: "#38BDF8", fontWeight: 700 }}>real ROAS</span> — not impressions, vanity likes, or empty agency reports.
             </motion.p>
 
             {/* FLOATING 3D GRAPHIC WITH SUBTLE GLOW (ABOVE BUTTONS ON MOBILE) */}
