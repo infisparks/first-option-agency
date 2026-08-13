@@ -18,7 +18,7 @@ const benefits = [
     title: "1. We Find Your Buyer",
     
     description: "We identify who actually pays you, not just who clicks. Precision targeting that finds the highest intent buyers for your business.",
-    color: "#2563EB",
+    color: "#1E3A8A",
     stat: "High",
     statLabel: "Intent",
   },
@@ -42,7 +42,7 @@ const benefits = [
     icon: <Clock size={20} />,
     title: "4. We Send Them to a Funnel",
     description: "Landing pages that convert traffic into booked calls. Seamless transitions from click to conversion.",
-    color: "#3B82F6",
+    color: "#1D4ED8",
     stat: "Conv.",
     statLabel: "Rate",
   },
@@ -50,7 +50,7 @@ const benefits = [
     icon: <Briefcase size={20} />,
     title: "5. You Get Appointments",
     description: "You only talk to people who are ready. Predictable, qualified appointment flow for your sales team.",
-    color: "#1D4ED8",
+    color: "#0F172A",
     stat: "100%",
     statLabel: "Qualified",
   },
@@ -64,9 +64,9 @@ export default function HowItWorks() {
         position: "relative",
         padding: "clamp(56px, 9vw, 100px) 0",
         overflow: "hidden",
-        background: "linear-gradient(165deg, #F8FAFC 0%, #EFF6FF 50%, #DBEAFE 100%)",
-        borderTop: "1px solid rgba(37, 99, 235, 0.1)",
-        borderBottom: "1px solid rgba(37, 99, 235, 0.1)",
+        background: "linear-gradient(165deg, #F8FAFC 0%, #F0F4FF 50%, #E0E7FF 100%)",
+        borderTop: "1px solid rgba(30, 58, 138, 0.12)",
+        borderBottom: "1px solid rgba(30, 58, 138, 0.12)",
       }}
     >
       {/* Dot grid */}
@@ -76,8 +76,8 @@ export default function HowItWorks() {
       />
 
       {/* Glow accents */}
-      <div style={{ position: "absolute", top: "-10%", right: "-5%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(37,99,235,0.05) 0%, transparent 70%)", filter: "blur(60px)", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", bottom: "-10%", left: "-5%", width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle, rgba(37,99,235,0.04) 0%, transparent 70%)", filter: "blur(60px)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: "-10%", right: "-5%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(30,58,138,0.06) 0%, transparent 70%)", filter: "blur(60px)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: "-10%", left: "-5%", width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle, rgba(30,58,138,0.05) 0%, transparent 70%)", filter: "blur(60px)", pointerEvents: "none" }} />
 
       <div className="container-main" style={{ position: "relative", zIndex: 1 }}>
         {/* Header — compact 2-col layout on desktop */}
@@ -110,7 +110,7 @@ export default function HowItWorks() {
               Build Your{" "}
               <span
                 style={{
-                  background: "linear-gradient(135deg, #2563EB 0%, #3B82F6 100%)",
+                  background: "linear-gradient(135deg, #0F172A 0%, #1E3A8A 60%, #1D4ED8 100%)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                 }}
@@ -154,7 +154,7 @@ export default function HowItWorks() {
               gap: 7,
               padding: "10px 20px",
               borderRadius: "9999px",
-              border: "1.5px solid rgba(37, 99, 235, 0.25)",
+              border: "1.5px solid rgba(30, 58, 138, 0.25)",
               color: "var(--color-primary)",
               fontSize: "0.78rem",
               fontWeight: 700,

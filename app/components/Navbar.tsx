@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ArrowUpRight, Phone } from "lucide-react";
@@ -10,9 +11,10 @@ interface NavbarProps {
 }
 
 export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [isPastHero, setIsPastHero] = useState(false);
+  const [isPastHero, setIsPastHero] = useState(pathname !== "/");
 
   useEffect(() => {
     const updateScroll = () => {
@@ -25,7 +27,8 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
         // If the bottom of the hero section is at or above 80px, user has scrolled past hero
         setIsPastHero(heroRect.bottom <= 80);
       } else {
-        setIsPastHero(scrollY > 680);
+        // Non-home pages without dark hero section should always use light header
+        setIsPastHero(true);
       }
     };
 
@@ -36,7 +39,7 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
       window.removeEventListener("scroll", updateScroll);
       window.removeEventListener("resize", updateScroll);
     };
-  }, []);
+  }, [pathname]);
 
   const navLinks = [
     { title: "Home", href: "/" },
@@ -137,7 +140,13 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
         >
           {/* Logo / Brand Name */}
           <motion.div
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            onClick={() => {
+              if (pathname === "/") {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              } else {
+                window.location.href = "/";
+              }
+            }}
             style={{ cursor: "pointer", position: "relative" }}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}

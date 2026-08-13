@@ -12,7 +12,8 @@ import {
   Sparkles, 
   Target, 
   BarChart3,
-  MessageCircle
+  MessageCircle,
+  FileText
 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
@@ -170,7 +171,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                   <span style={{ position: "absolute", width: 7, height: 7, borderRadius: "50%", background: "#10B981", animation: "badge-ping 1.8s ease-out infinite" }} />
                   <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#10B981", display: "inline-block" }} />
                 </span>
-                <span>AI-Driven Performance Engine</span>
+                <span>India’s ROI-First Agency</span>
                 <span
                   style={{
                     background: "linear-gradient(135deg, rgba(37, 99, 235, 0.35), rgba(59, 130, 246, 0.2))",
@@ -197,12 +198,12 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                   fontWeight: 900,
                   lineHeight: 1.12,
                   letterSpacing: "-0.04em",
-                  marginBottom: 12,
+                  marginBottom: 16,
                   color: "#FFFFFF",
                   textShadow: "0 2px 20px rgba(0, 0, 0, 0.5)",
                 }}
               >
-                The World’s Result-First <br />
+                Stop Wasting Ad Spend. <br />
                 <span
                   style={{
                     background: "linear-gradient(135deg, #3B82F6 0%, #2563EB 50%, #1D4ED8 100%)",
@@ -218,42 +219,25 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                     border: "1px solid rgba(191, 219, 254, 0.35)",
                   }}
                 >
-                  Performance Agency.
+                  Start Scaling
                 </span>
               </motion.h1>
 
-              {/* Subheadline */}
-              <motion.h2
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: EASE, delay: 0.1 }}
-                style={{
-                  fontSize: "1.05rem",
-                  fontWeight: 700,
-                  color: "#E2E8F0",
-                  marginBottom: 12,
-                  letterSpacing: "-0.02em",
-                  lineHeight: 1.38,
-                }}
-              >
-                We Don’t Just Drive Traffic — We Engineer <span style={{ color: "#38BDF8" }}>Predictable Buyers</span> &amp; <span style={{ color: "#34D399" }}>High-Margin Revenue</span>.
-              </motion.h2>
-
-              {/* Paragraph */}
+              {/* Subheadline / Value Prop */}
               <motion.p
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.55, ease: EASE, delay: 0.15 }}
                 style={{
-                  fontSize: "0.82rem",
-                  color: "#94A3B8",
-                  marginBottom: 20,
-                  lineHeight: 1.58,
-                  fontWeight: 400,
-                  maxWidth: 500,
+                  fontSize: "0.95rem",
+                  color: "#CBD5E1",
+                  marginBottom: 24,
+                  lineHeight: 1.6,
+                  fontWeight: 500,
+                  maxWidth: 520,
                 }}
               >
-                We build high-converting acquisition funnels, laser-targeted paid campaigns, and verified pipeline systems for Doctors, Manufacturers, IT Companies &amp; Scaling Brands.
+                Full-funnel performance marketing built on <span style={{ color: "#38BDF8", fontWeight: 700 }}>real ROAS</span> — not impressions, likes, or empty reports.
               </motion.p>
 
               {/* CTA Action Buttons */}
@@ -292,32 +276,30 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                   }}
                 >
                   <Sparkles size={14} className="text-yellow-300" />
-                  BOOK A FREE DEMO
+                  GET MY FREE AUDIT
                   <ArrowRight size={15} strokeWidth={2.5} />
                 </motion.button>
 
                 <a
-                  href="https://wa.me/918329494445"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Message us on WhatsApp"
+                  href="/view-brochure"
+                  aria-label="View Case Studies"
                   style={{ textDecoration: "none" }}
                 >
                   <motion.button
                     whileHover={{
                       scale: 1.04,
-                      background: "rgba(16, 185, 129, 0.18)",
-                      boxShadow: "0 0 25px rgba(16, 185, 129, 0.35)",
+                      background: "rgba(37, 99, 235, 0.18)",
+                      boxShadow: "0 0 25px rgba(37, 99, 235, 0.35)",
                     }}
                     whileTap={{ scale: 0.97 }}
                     style={{
                       padding: "12px 24px",
                       borderRadius: "9999px",
-                      border: "1.5px solid #10B981",
-                      color: "#34D399",
+                      border: "1.5px solid #3B82F6",
+                      color: "#60A5FA",
                       fontSize: "0.82rem",
                       fontWeight: 700,
-                      background: "rgba(16, 185, 129, 0.08)",
+                      background: "rgba(37, 99, 235, 0.08)",
                       cursor: "pointer",
                       backdropFilter: "blur(12px)",
                       display: "inline-flex",
@@ -327,8 +309,8 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                       letterSpacing: "0.01em",
                     }}
                   >
-                    <MessageCircle size={15} strokeWidth={2.2} />
-                    WhatsApp Direct
+                    <FileText size={15} strokeWidth={2.2} />
+                    View Case Studies
                   </motion.button>
                 </a>
               </motion.div>
@@ -448,7 +430,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                 <span style={{ position: "absolute", width: 6, height: 6, borderRadius: "50%", background: "#10B981", animation: "badge-ping 1.8s ease-out infinite" }} />
                 <span style={{ width: 4, height: 4, borderRadius: "50%", background: "#10B981", display: "inline-block" }} />
               </span>
-              <span>AI Performance Engine</span>
+              <span>India’s ROI-First Agency</span>
               <span
                 style={{
                   background: "linear-gradient(135deg, rgba(37, 99, 235, 0.35), rgba(59, 130, 246, 0.2))",
@@ -475,12 +457,12 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                 fontWeight: 900,
                 lineHeight: 1.12,
                 letterSpacing: "-0.035em",
-                marginBottom: 8,
+                marginBottom: 10,
                 color: "#FFFFFF",
                 textShadow: "0 2px 20px rgba(0, 0, 0, 0.5)",
               }}
             >
-              The World’s Result-First <br />
+              Stop Wasting Ad Spend. <br />
               <span
                 style={{
                   background: "linear-gradient(135deg, #3B82F6 0%, #2563EB 50%, #1D4ED8 100%)",
@@ -496,43 +478,26 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                   border: "1px solid rgba(191, 219, 254, 0.35)",
                 }}
               >
-                Performance Agency.
+                Start Scaling
               </span>
             </motion.h1>
 
-            {/* Subheadline */}
-            <motion.h2
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: EASE, delay: 0.1 }}
-              style={{
-                fontSize: "clamp(0.8rem, 2.9vw, 0.96rem)",
-                fontWeight: 700,
-                color: "#E2E8F0",
-                marginBottom: 6,
-                letterSpacing: "-0.015em",
-                lineHeight: 1.32,
-              }}
-            >
-              We Don’t Just Drive Traffic — We Engineer <span style={{ color: "#38BDF8" }}>Predictable Buyers</span> &amp; <span style={{ color: "#34D399" }}>High-Margin Revenue</span>.
-            </motion.h2>
-
-            {/* Value Paragraph */}
+            {/* Subheadline / Value Prop */}
             <motion.p
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: EASE, delay: 0.15 }}
               style={{
-                fontSize: "clamp(0.7rem, 2.5vw, 0.78rem)",
-                color: "#94A3B8",
-                marginBottom: 10,
-                lineHeight: 1.46,
-                fontWeight: 400,
+                fontSize: "clamp(0.78rem, 2.7vw, 0.88rem)",
+                color: "#CBD5E1",
+                marginBottom: 12,
+                lineHeight: 1.5,
+                fontWeight: 500,
                 maxWidth: 420,
                 marginInline: "auto",
               }}
             >
-              We build high-converting acquisition funnels, laser-targeted paid campaigns, and verified pipeline systems for Doctors, Manufacturers, IT Companies &amp; Scaling Brands.
+              Full-funnel performance marketing built on <span style={{ color: "#38BDF8", fontWeight: 700 }}>real ROAS</span> — not impressions, likes, or empty reports.
             </motion.p>
 
             {/* FLOATING 3D GRAPHIC WITH SUBTLE GLOW (ABOVE BUTTONS ON MOBILE) */}
@@ -624,15 +589,13 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                 }}
               >
                 <Sparkles size={12} className="text-yellow-300" />
-                <span>BOOK A FREE DEMO</span>
+                <span>GET MY FREE AUDIT</span>
                 <ArrowRight size={13} strokeWidth={2.5} />
               </motion.button>
 
               <a
-                href="https://wa.me/918329494445"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Message us on WhatsApp"
+                href="/view-brochure"
+                aria-label="View Case Studies"
                 style={{ textDecoration: "none", flex: "1 1 44%", display: "flex" }}
               >
                 <motion.button
@@ -641,11 +604,11 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                     width: "100%",
                     padding: "10px 8px",
                     borderRadius: "9999px",
-                    border: "1.5px solid #10B981",
-                    color: "#34D399",
+                    border: "1.5px solid #3B82F6",
+                    color: "#60A5FA",
                     fontSize: "clamp(0.68rem, 2.5vw, 0.78rem)",
                     fontWeight: 700,
-                    background: "rgba(16, 185, 129, 0.08)",
+                    background: "rgba(37, 99, 235, 0.08)",
                     cursor: "pointer",
                     backdropFilter: "blur(12px)",
                     display: "inline-flex",
@@ -656,8 +619,8 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                     letterSpacing: "0.01em",
                   }}
                 >
-                  <MessageCircle size={13} strokeWidth={2.2} />
-                  <span>WhatsApp Direct</span>
+                  <FileText size={13} strokeWidth={2.2} />
+                  <span>View Case Studies</span>
                 </motion.button>
               </a>
             </motion.div>
