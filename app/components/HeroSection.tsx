@@ -86,7 +86,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
               transform: "translateX(-50%)",
               width: "clamp(300px, 60vw, 850px)",
               height: "clamp(250px, 40vw, 450px)",
-              background: "radial-gradient(ellipse at center, rgba(124, 58, 237, 0.28) 0%, rgba(99, 102, 241, 0.12) 45%, transparent 75%)",
+              background: "radial-gradient(ellipse at center, rgba(37, 99, 235, 0.28) 0%, rgba(59, 130, 246, 0.12) 45%, transparent 75%)",
               filter: "blur(60px)",
             }}
           />
@@ -162,7 +162,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                   textTransform: "uppercase",
                   marginBottom: 14,
                   backdropFilter: "blur(16px)",
-                  boxShadow: "0 0 20px rgba(124, 58, 237, 0.2), 0 1px 0 rgba(255, 255, 255, 0.15) inset",
+                  boxShadow: "0 0 20px rgba(37, 99, 235, 0.2), 0 1px 0 rgba(255, 255, 255, 0.15) inset",
                   color: "#E2E8F0",
                 }}
               >
@@ -173,13 +173,13 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                 <span>AI-Driven Performance Engine</span>
                 <span
                   style={{
-                    background: "linear-gradient(135deg, rgba(124, 58, 237, 0.35), rgba(139, 92, 246, 0.2))",
-                    border: "1px solid rgba(167, 139, 250, 0.4)",
+                    background: "linear-gradient(135deg, rgba(37, 99, 235, 0.35), rgba(59, 130, 246, 0.2))",
+                    border: "1px solid rgba(147, 197, 253, 0.4)",
                     borderRadius: "999px",
                     padding: "1px 7px",
                     fontSize: "0.55rem",
                     fontWeight: 800,
-                    color: "#C4B5FD",
+                    color: "#BFDBFE",
                     letterSpacing: "0.06em",
                   }}
                 >
@@ -205,7 +205,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                 The World’s Result-First <br />
                 <span
                   style={{
-                    background: "linear-gradient(135deg, #8B5CF6 0%, #7C3AED 50%, #6D28D9 100%)",
+                    background: "linear-gradient(135deg, #3B82F6 0%, #2563EB 50%, #1D4ED8 100%)",
                     color: "#FFFFFF",
                     padding: "3px 14px",
                     borderRadius: 10,
@@ -214,8 +214,8 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                     justifyContent: "center",
                     marginTop: 6,
                     lineHeight: "1.15",
-                    boxShadow: "0 0 30px rgba(124, 58, 237, 0.45), 0 2px 0 rgba(255, 255, 255, 0.25) inset",
-                    border: "1px solid rgba(196, 181, 253, 0.35)",
+                    boxShadow: "0 0 30px rgba(37, 99, 235, 0.45), 0 2px 0 rgba(255, 255, 255, 0.25) inset",
+                    border: "1px solid rgba(191, 219, 254, 0.35)",
                   }}
                 >
                   Performance Agency.
@@ -272,7 +272,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                 <motion.button
                   onClick={onBookDemo}
                   aria-label="Book a free growth session demo"
-                  whileHover={{ scale: 1.04, boxShadow: "0 0 35px rgba(124, 58, 237, 0.65)" }}
+                  whileHover={{ scale: 1.04, boxShadow: "0 0 35px rgba(37, 99, 235, 0.65)" }}
                   whileTap={{ scale: 0.97 }}
                   className="glow-btn-primary"
                   style={{
@@ -287,8 +287,8 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                     gap: 8,
                     cursor: "pointer",
                     letterSpacing: "0.02em",
-                    background: "linear-gradient(135deg, #7C3AED 0%, #6D28D9 60%, #5B21B6 100%)",
-                    boxShadow: "0 0 25px rgba(124, 58, 237, 0.45), 0 1px 0 rgba(255, 255, 255, 0.3) inset",
+                    background: "linear-gradient(135deg, #2563EB 0%, #1D4ED8 60%, #1E3A8A 100%)",
+                    boxShadow: "0 0 25px rgba(37, 99, 235, 0.45), 0 1px 0 rgba(255, 255, 255, 0.3) inset",
                   }}
                 >
                   <Sparkles size={14} className="text-yellow-300" />
@@ -440,7 +440,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                 textTransform: "uppercase",
                 marginBottom: 8,
                 backdropFilter: "blur(16px)",
-                boxShadow: "0 0 16px rgba(124, 58, 237, 0.2), 0 1px 0 rgba(255, 255, 255, 0.15) inset",
+                boxShadow: "0 0 16px rgba(37, 99, 235, 0.2), 0 1px 0 rgba(255, 255, 255, 0.15) inset",
                 color: "#E2E8F0",
               }}
             >
@@ -451,13 +451,13 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
               <span>AI Performance Engine</span>
               <span
                 style={{
-                  background: "linear-gradient(135deg, rgba(124, 58, 237, 0.35), rgba(139, 92, 246, 0.2))",
-                  border: "1px solid rgba(167, 139, 250, 0.4)",
+                  background: "linear-gradient(135deg, rgba(37, 99, 235, 0.35), rgba(59, 130, 246, 0.2))",
+                  border: "1px solid rgba(147, 197, 253, 0.4)",
                   borderRadius: "999px",
                   padding: "1px 5px",
                   fontSize: "0.52rem",
                   fontWeight: 800,
-                  color: "#C4B5FD",
+                  color: "#BFDBFE",
                   letterSpacing: "0.04em",
                 }}
               >
@@ -483,7 +483,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
               The World’s Result-First <br />
               <span
                 style={{
-                  background: "linear-gradient(135deg, #8B5CF6 0%, #7C3AED 50%, #6D28D9 100%)",
+                  background: "linear-gradient(135deg, #3B82F6 0%, #2563EB 50%, #1D4ED8 100%)",
                   color: "#FFFFFF",
                   padding: "2px 10px",
                   borderRadius: 7,
@@ -492,8 +492,8 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                   justifyContent: "center",
                   marginTop: 4,
                   lineHeight: "1.15",
-                  boxShadow: "0 0 25px rgba(124, 58, 237, 0.45), 0 2px 0 rgba(255, 255, 255, 0.25) inset",
-                  border: "1px solid rgba(196, 181, 253, 0.35)",
+                  boxShadow: "0 0 25px rgba(37, 99, 235, 0.45), 0 2px 0 rgba(255, 255, 255, 0.25) inset",
+                  border: "1px solid rgba(191, 219, 254, 0.35)",
                 }}
               >
                 Performance Agency.
@@ -619,8 +619,8 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                   cursor: "pointer",
                   letterSpacing: "0.01em",
                   whiteSpace: "nowrap",
-                  background: "linear-gradient(135deg, #7C3AED 0%, #6D28D9 60%, #5B21B6 100%)",
-                  boxShadow: "0 0 20px rgba(124, 58, 237, 0.4), 0 1px 0 rgba(255, 255, 255, 0.3) inset",
+                  background: "linear-gradient(135deg, #2563EB 0%, #1D4ED8 60%, #1E3A8A 100%)",
+                  boxShadow: "0 0 20px rgba(37, 99, 235, 0.4), 0 1px 0 rgba(255, 255, 255, 0.3) inset",
                 }}
               >
                 <Sparkles size={12} className="text-yellow-300" />
@@ -814,8 +814,8 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                   width: 5,
                   height: 5,
                   borderRadius: "50%",
-                  background: "#8B5CF6",
-                  boxShadow: "0 0 8px #8B5CF6",
+                  background: "#3B82F6",
+                  boxShadow: "0 0 8px #3B82F6",
                   display: "inline-block",
                   flexShrink: 0,
                 }}
@@ -830,11 +830,11 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
           ═══════════════════════════════════════════════════════ */}
       <section
         style={{
-          background: "linear-gradient(165deg, #F8FAFC 0%, #F5F3FF 50%, #EDE9FE 100%)",
+          background: "linear-gradient(165deg, #F8FAFC 0%, #EFF6FF 50%, #DBEAFE 100%)",
           padding: "clamp(48px, 6vw, 72px) 0",
           position: "relative",
           zIndex: 10,
-          borderBottom: "1px solid rgba(124, 58, 237, 0.1)",
+          borderBottom: "1px solid rgba(37, 99, 235, 0.1)",
         }}
       >
         <div style={{ position: "absolute", inset: 0, opacity: 0.35 }} className="bg-dot-grid" />
@@ -891,7 +891,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
               icon={<Target size={18} strokeWidth={2} />}
               title="Unified Acquisition Funnels"
               desc="Full visibility into your customer journey, from first impression to closed deal, in a single real-time dashboard."
-              color="#7C3AED"
+              color="#2563EB"
             />
             <MetricCard
               icon={<Sparkles size={18} strokeWidth={2} />}
@@ -909,7 +909,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
               icon={<BarChart3 size={18} strokeWidth={2} />}
               title="Predictable ROAS & Profit"
               desc="Track true profitability, customer lifetime value, and cost-per-acquisition with zero guesswork."
-              color="#6D28D9"
+              color="#1D4ED8"
             />
           </div>
 
@@ -924,14 +924,14 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
               padding: "clamp(12px, 2vw, 18px)",
               background: "rgba(255, 255, 255, 0.8)",
               borderRadius: "14px",
-              border: "1px solid rgba(124, 58, 237, 0.15)",
+              border: "1px solid rgba(37, 99, 235, 0.15)",
               backdropFilter: "blur(8px)",
-              boxShadow: "0 4px 20px -2px rgba(124, 58, 237, 0.06)",
+              boxShadow: "0 4px 20px -2px rgba(37, 99, 235, 0.06)",
             }}
           >
             {[
-              { icon: <TrendingUp size={13} />, label: "Avg. 4.8x ROI Boost", color: "#7C3AED" },
-              { icon: <Users size={13} />, label: "150+ Brands Scaled", color: "#6D28D9" },
+              { icon: <TrendingUp size={13} />, label: "Avg. 4.8x ROI Boost", color: "#2563EB" },
+              { icon: <Users size={13} />, label: "150+ Brands Scaled", color: "#1D4ED8" },
               { icon: <ShieldCheck size={13} />, label: "Zero Guesswork Ad Spend", color: "#10B981" },
               { icon: <Star size={13} />, label: "5.0/5.0 Excellence Rating", color: "#F59E0B" },
             ].map((kpi) => (

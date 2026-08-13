@@ -95,12 +95,12 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </div>
 
           {/* CTA Box */}
-          <div style={{ marginTop: "clamp(40px, 8vw, 80px)", background: "linear-gradient(135deg, #6D28D9 0%, #4C1D95 100%)", borderRadius: "clamp(20px, 3vw, 32px)", padding: "clamp(32px, 5vw, 48px) clamp(16px, 3vw, 32px)", textAlign: "center", color: "#FFFFFF" }}>
+          <div style={{ marginTop: "clamp(40px, 8vw, 80px)", background: "linear-gradient(135deg, #1D4ED8 0%, #1E3A8A 100%)", borderRadius: "clamp(20px, 3vw, 32px)", padding: "clamp(32px, 5vw, 48px) clamp(16px, 3vw, 32px)", textAlign: "center", color: "#FFFFFF" }}>
             <h2 style={{ fontSize: "clamp(1.5rem, 3vw, 1.8rem)", fontWeight: 800, marginBottom: 16, color: "#FFFFFF" }}>Want results like these?</h2>
             <p style={{ opacity: 0.9, marginBottom: 32, maxWidth: 500, marginInline: "auto", fontSize: "clamp(0.85rem, 1.2vw, 1rem)" }}>
               Let&apos;s build your custom performance marketing engine. Book a growth session with Faiz Ansari today.
             </p>
-            <button className="glow-btn-primary" style={{ background: "#FFF", color: "#7C3AED", padding: "12px 32px", borderRadius: 9999, border: "none", fontWeight: 700, cursor: "pointer", fontSize: "0.85rem" }}>
+            <button className="glow-btn-primary" style={{ background: "#FFF", color: "#2563EB", padding: "12px 32px", borderRadius: 9999, border: "none", fontWeight: 700, cursor: "pointer", fontSize: "0.85rem" }}>
               BOOK A FREE STRATEGY SESSION
             </button>
           </div>

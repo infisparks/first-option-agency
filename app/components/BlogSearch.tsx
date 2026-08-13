@@ -47,7 +47,7 @@ export default function BlogSearch() {
           />
           <Search 
             size={24} 
-            style={{ position: "absolute", left: 24, top: "50%", transform: "translateY(-50%)", color: "#6366F1" }} 
+            style={{ position: "absolute", left: 24, top: "50%", transform: "translateY(-50%)", color: "#2563EB" }} 
           />
         </div>
 
@@ -74,9 +74,9 @@ export default function BlogSearch() {
                 cursor: "pointer",
                 whiteSpace: "nowrap",
                 transition: "all 0.3s ease",
-                background: activeTab === cat ? "#6366F1" : "#F3F4F6",
+                background: activeTab === cat ? "#2563EB" : "#F3F4F6",
                 color: activeTab === cat ? "#FFFFFF" : "#4B5563",
-                boxShadow: activeTab === cat ? "0 4px 12px rgba(99, 102, 241, 0.3)" : "none"
+                boxShadow: activeTab === cat ? "0 4px 12px rgba(37, 99, 235, 0.3)" : "none"
               }}
             >
               {cat}
@@ -114,7 +114,7 @@ export default function BlogSearch() {
                     position: "absolute", 
                     bottom: 16, 
                     right: 16, 
-                    background: "rgba(99, 102, 241, 0.95)", 
+                    background: "rgba(37, 99, 235, 0.95)", 
                     padding: "6px 14px", 
                     borderRadius: "10px", 
                     fontSize: "0.65rem", 
@@ -133,7 +133,7 @@ export default function BlogSearch() {
               <div style={{ padding: "28px 24px", flex: 1, display: "flex", flexDirection: "column" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 16, color: "#9CA3AF", fontSize: "0.85rem", marginBottom: 16 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <Calendar size={14} style={{ color: "#6366F1" }} />
+                    <Calendar size={14} style={{ color: "#2563EB" }} />
                     {post.date}
                   </div>
                   <div style={{ height: 4, width: 4, borderRadius: "50%", background: "#E5E7EB" }} />
@@ -148,7 +148,7 @@ export default function BlogSearch() {
                   {post.excerpt}
                 </p>
                 <div style={{ marginTop: "auto" }}>
-                  <Link href={`/blog/${post.slug}`} style={{ display: "flex", alignItems: "center", gap: 8, color: "#6366F1", fontWeight: 700, fontSize: "0.95rem", textDecoration: "none" }}>
+                  <Link href={`/blog/${post.slug}`} style={{ display: "flex", alignItems: "center", gap: 8, color: "#2563EB", fontWeight: 700, fontSize: "0.95rem", textDecoration: "none" }}>
                     Read Insights <ArrowRight size={18} />
                   </Link>
                 </div>
@@ -166,13 +166,13 @@ export default function BlogSearch() {
 
       <style jsx>{`
         .search-input:focus {
-          border-color: #6366F1 !important;
-          box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.1), 0 10px 10px -5px rgba(99, 102, 241, 0.04) !important;
+          border-color: #2563EB !important;
+          box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.1), 0 10px 10px -5px rgba(37, 99, 235, 0.04) !important;
         }
         .blog-card:hover {
           transform: translateY(-8px);
-          box-shadow: 0 30px 60px -15px rgba(99, 102, 241, 0.15), 0 10px 15px -3px rgba(0, 0, 0, 0.05) !important;
-          border-color: #6366F1 !important;
+          box-shadow: 0 30px 60px -15px rgba(37, 99, 235, 0.15), 0 10px 15px -3px rgba(0, 0, 0, 0.05) !important;
+          border-color: #2563EB !important;
         }
         .blog-card:hover .blog-thumb {
           transform: scale(1.08);

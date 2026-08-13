@@ -38,7 +38,7 @@ export default function ServiceContent({ service }: ServiceContentProps) {
         {service.secondaryImage && (
           <div style={{ padding: "clamp(20px, 4vw, 40px)", background: "#F9FAFB", borderBottom: "1px solid #F3F4F6" }}>
             <div style={{ textAlign: "center", marginBottom: "clamp(12px, 2vw, 24px)" }}>
-               <span style={{ background: "rgba(124, 58, 237, 0.1)", color: "#7C3AED", padding: "4px 12px", borderRadius: 999, fontSize: "0.7rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em" }}>STRATEGY BLUEPRINT</span>
+               <span style={{ background: "rgba(37, 99, 235, 0.1)", color: "#2563EB", padding: "4px 12px", borderRadius: 999, fontSize: "0.7rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em" }}>STRATEGY BLUEPRINT</span>
             </div>
             <div style={{ 
               position: "relative", 
@@ -68,7 +68,7 @@ export default function ServiceContent({ service }: ServiceContentProps) {
         {/* 2. Header & Description (MIDDLE) */}
         <div style={{ padding: "clamp(24px, 5vw, 60px)", borderBottom: "1px solid #F3F4F6" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-            <div style={{ background: "rgba(79, 70, 229, 0.1)", color: "#4F46E5", padding: "6px 14px", borderRadius: 8, fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase" }}>
+            <div style={{ background: "rgba(37, 99, 235, 0.1)", color: "#2563EB", padding: "6px 14px", borderRadius: 8, fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase" }}>
               {service.tag}
             </div>
             <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#D1D5DB" }} />
@@ -98,7 +98,7 @@ export default function ServiceContent({ service }: ServiceContentProps) {
                   transition={{ delay: i * 0.08 }}
                   style={{ display: "flex", alignItems: "flex-start", gap: 14, background: "#F9FAFB", padding: "14px 18px", borderRadius: 14, border: "1px solid #F3F4F6" }}
                 >
-                  <div style={{ background: "#7C3AED", color: "white", padding: 5, borderRadius: 6, display: "flex", flexShrink: 0 }}>
+                  <div style={{ background: "#2563EB", color: "white", padding: 5, borderRadius: 6, display: "flex", flexShrink: 0 }}>
                     <LucideIcons.Check size={14} strokeWidth={3.5} />
                   </div>
                   <span style={{ fontSize: "0.95rem", color: "#374151", fontWeight: 600, lineHeight: 1.4 }}>{benefit}</span>

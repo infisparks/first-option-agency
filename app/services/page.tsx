@@ -25,12 +25,12 @@ export default function ServicesListPage() {
         
         <div className="container-main" style={{ position: "relative", zIndex: 1 }}>
           <div style={{ textAlign: "center", marginBottom: "clamp(60px, 8vw, 80px)", maxWidth: 800, marginInline: "auto" }}>
-            <span className="section-badge" style={{ display: "inline-block", background: "rgba(124, 58, 237, 0.1)", color: "#7C3AED", padding: "6px 16px", borderRadius: 9999, fontSize: "0.85rem", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 20 }}>
+            <span className="section-badge" style={{ display: "inline-block", background: "rgba(37, 99, 235, 0.1)", color: "#2563EB", padding: "6px 16px", borderRadius: 9999, fontSize: "0.85rem", fontWeight: 700, letterSpacing: "0.05em", marginBottom: 20 }}>
               OUR EXPERTISE
             </span>
             <h1 style={{ fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 900, color: "#111827", letterSpacing: "-0.04em", lineHeight: 1.1, marginBottom: 24 }}>
               Impact-Driven Services to <br />
-              <span style={{ color: "#7C3AED", backgroundImage: "linear-gradient(90deg, #7C3AED, #4F46E5)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Scale Your Business</span>
+              <span style={{ color: "#2563EB", backgroundImage: "linear-gradient(90deg, #2563EB, #1D4ED8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Scale Your Business</span>
             </h1>
             <p style={{ fontSize: "clamp(1rem, 1.2vw, 1.125rem)", color: "#6B7280", lineHeight: 1.6 }}>
               Tailored growth performance marketing and digital acquisition systems designed for high-end service, SaaS, and B2B brands globally.
@@ -86,7 +86,7 @@ export default function ServicesListPage() {
                         display: "flex", 
                         alignItems: "center", 
                         justifyContent: "center", 
-                        color: "#7C3AED",
+                        color: "#2563EB",
                         boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
                         zIndex: 2
                       }}>
@@ -134,7 +134,7 @@ export default function ServicesListPage() {
                       paddingTop: 20,
                       paddingInline: 8
                     }}>
-                      <span style={{ color: "#7C3AED", fontWeight: 700, fontSize: "0.95rem", display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ color: "#2563EB", fontWeight: 700, fontSize: "0.95rem", display: "flex", alignItems: "center", gap: 6 }}>
                         Explore Strategy
                       </span>
                       <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#F5F6F8", display: "flex", alignItems: "center", justifyContent: "center", color: "#4B5563" }} className="arrow-btn">
@@ -154,7 +154,7 @@ export default function ServicesListPage() {
         .service-card:hover {
           transform: translateY(-8px);
           box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-          border-color: rgba(124, 58, 237, 0.2) !important;
+          border-color: rgba(37, 99, 235, 0.2) !important;
         }
         .service-card:hover .service-img {
           transform: scale(1.05);
@@ -163,7 +163,7 @@ export default function ServicesListPage() {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .service-card:hover .arrow-btn {
-          background: #7C3AED !important;
+          background: #2563EB !important;
           color: white !important;
           transform: translateX(4px);
         }

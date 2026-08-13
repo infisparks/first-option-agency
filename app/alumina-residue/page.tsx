@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import BookDemoModal from "@/app/components/BookDemoModal";
 
-const PRIMARY_COLOR = "#6366F1"; // Indigo
+const PRIMARY_COLOR = "#2563EB"; // Blue
 const BG_COLOR = "#F5F6F8";
 const CARD_BG = "#FFFFFF";
 const BORDER_COLOR = "#E5E7EB";

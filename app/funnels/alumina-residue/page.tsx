@@ -28,10 +28,10 @@ import {
 } from "lucide-react";
 
 // ── Brand tokens ─────────────────────────────────────────────────
-const P  = "#7C3AED";
-const PD = "#6D28D9";
-const PL = "#F5F3FF";
-const PB = "rgba(124,58,237,0.08)";
+const P  = "#2563EB";
+const PD = "#1D4ED8";
+const PL = "#EFF6FF";
+const PB = "rgba(37,99,235,0.08)";
 const TM = "#111827";
 const TD = "#4B5563";
 const BG = "#F8FAFC";
@@ -83,7 +83,7 @@ function SampleFormModal({ open, onClose }: { open: boolean; onClose: () => void
             exit={{ opacity: 0, scale: 0.94, y: 24 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] as any }}
             onClick={(e) => e.stopPropagation()}
-            style={{ backgroundColor: "#fff", borderRadius: "24px", border: `1px solid ${BD}`, boxShadow: "0 40px 80px -10px rgba(124,58,237,0.2),0 8px 32px rgba(0,0,0,0.08)", width: "100%", maxWidth: "440px", overflow: "hidden" }}
+            style={{ backgroundColor: "#fff", borderRadius: "24px", border: `1px solid ${BD}`, boxShadow: "0 40px 80px -10px rgba(37,99,235,0.2),0 8px 32px rgba(0,0,0,0.08)", width: "100%", maxWidth: "440px", overflow: "hidden" }}
           >
             {/* Header Strip */}
             <div style={{ background: `linear-gradient(135deg,${P},${PD})`, padding: "24px 28px 20px" }}>
@@ -249,17 +249,17 @@ export default function AluminaFunnelPage() {
         </div>
         <button
           onClick={() => setFormOpen(true)}
-          style={{ background: `linear-gradient(135deg,${P},${PD})`, color: "#fff", border: "none", padding: "8px 20px", borderRadius: "10px", fontSize: "12px", fontWeight: 700, cursor: "pointer", letterSpacing: "0.01em", display: "flex", alignItems: "center", gap: "6px", boxShadow: `0 4px 14px rgba(124,58,237,0.25)` }}
+          style={{ background: `linear-gradient(135deg,${P},${PD})`, color: "#fff", border: "none", padding: "8px 20px", borderRadius: "10px", fontSize: "12px", fontWeight: 700, cursor: "pointer", letterSpacing: "0.01em", display: "flex", alignItems: "center", gap: "6px", boxShadow: `0 4px 14px rgba(37,99,235,0.25)` }}
         >
           <Package size={13} /> Request Sample
         </button>
       </nav>
 
       {/* ── HERO ── */}
-      <section style={{ padding: "clamp(48px,8vw,96px) 20px 0", background: `radial-gradient(ellipse at 80% 0%,rgba(124,58,237,0.06),transparent 60%)` }}>
+      <section style={{ padding: "clamp(48px,8vw,96px) 20px 0", background: `radial-gradient(ellipse at 80% 0%,rgba(37,99,235,0.06),transparent 60%)` }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
           <motion.div {...fadeUp} style={{ textAlign: "center", marginBottom: "clamp(32px,5vw,56px)" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", backgroundColor: PB, border: `1px solid rgba(124,58,237,0.15)`, color: P, padding: "5px 14px", borderRadius: "100px", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "20px" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", backgroundColor: PB, border: `1px solid rgba(37,99,235,0.15)`, color: P, padding: "5px 14px", borderRadius: "100px", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "20px" }}>
               <ShieldCheck size={12} /> Lab-Tested Industrial Grade
             </div>
             <h1 style={{ fontSize: "clamp(28px,5vw,58px)", fontWeight: 900, lineHeight: 1.06, letterSpacing: "-0.04em", color: TM, marginBottom: "16px" }}>
@@ -273,7 +273,7 @@ export default function AluminaFunnelPage() {
             </p>
             <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "8px", marginBottom: "32px" }}>
               {["✓ 76% Al₂O₃", "✓ Bulk Supply", "✓ Lab Certified", "✓ Direct Source"].map(t => (
-                <span key={t} style={{ fontSize: "11px", fontWeight: 700, color: P, backgroundColor: PL, border: `1px solid rgba(124,58,237,0.12)`, padding: "5px 12px", borderRadius: "100px" }}>{t}</span>
+                <span key={t} style={{ fontSize: "11px", fontWeight: 700, color: P, backgroundColor: PL, border: `1px solid rgba(37,99,235,0.12)`, padding: "5px 12px", borderRadius: "100px" }}>{t}</span>
               ))}
             </div>
             <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "12px" }}>
@@ -301,7 +301,7 @@ export default function AluminaFunnelPage() {
             initial={{ opacity: 0, y: 40, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] as any }}
-            style={{ position: "relative", borderRadius: "0 0 24px 24px", overflow: "hidden", border: "6px solid #fff", borderTop: "none", boxShadow: "0 30px 80px -16px rgba(124,58,237,0.18),0 8px 32px rgba(0,0,0,0.06)", maxWidth: "1000px", margin: "0 auto" }}
+            style={{ position: "relative", borderRadius: "0 0 24px 24px", overflow: "hidden", border: "6px solid #fff", borderTop: "none", boxShadow: "0 30px 80px -16px rgba(37,99,235,0.18),0 8px 32px rgba(0,0,0,0.06)", maxWidth: "1000px", margin: "0 auto" }}
           >
             <Image src="/funnel/alumina-residue/alumina-residue-powder-industrial-benefit.png" alt="High Alumina Residue Oxide Powder Industrial Benefit" width={1400} height={700} style={{ width: "100%", height: "auto", display: "block" }} priority />
             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "80px", background: "linear-gradient(to top,rgba(255,255,255,0.4),transparent)" }} />
@@ -334,7 +334,7 @@ export default function AluminaFunnelPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: "16px" }}>
             {industries.map((item, i) => (
               <motion.div key={i} {...stagger(i)}
-                whileHover={{ y: -4, boxShadow: `0 16px 40px rgba(124,58,237,0.1)` }}
+                whileHover={{ y: -4, boxShadow: `0 16px 40px rgba(37,99,235,0.1)` }}
                 style={{ backgroundColor: "#fff", borderRadius: "16px", border: `1px solid ${BD}`, padding: "24px", transition: "all 0.3s ease" }}
               >
                 <div style={{ display: "flex", alignItems: "flex-start", gap: "14px" }}>
@@ -407,7 +407,7 @@ export default function AluminaFunnelPage() {
               ))}
 
               {/* CTA inside the specs block */}
-              <motion.div {...stagger(5)} style={{ backgroundColor: PL, border: `1px solid rgba(124,58,237,0.12)`, borderRadius: "16px", padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
+              <motion.div {...stagger(5)} style={{ backgroundColor: PL, border: `1px solid rgba(37,99,235,0.12)`, borderRadius: "16px", padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
                 <div>
                   <div style={{ fontSize: "12px", fontWeight: 800, color: TM, marginBottom: "2px" }}>Ready to Test Quality?</div>
                   <div style={{ fontSize: "11px", color: TD }}>Get a free sample dispatched to your plant.</div>

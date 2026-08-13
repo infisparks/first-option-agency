@@ -37,7 +37,7 @@ export default function BrochurePage() {
       
       {/* ── IMMERSIVE FULL-SCREEN BROCHURE HERO ── */}
       <section style={{ padding: 'clamp(80px, 10vw, 120px) 0 40px', position: 'relative', overflow: 'hidden', background: '#fff' }}>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'radial-gradient(circle at 50% 50%, rgba(124, 58, 237, 0.04) 0%, transparent 100%)', zIndex: 0 }} />
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.04) 0%, transparent 100%)', zIndex: 0 }} />
         
         <div className="container-main" style={{ position: 'relative', zIndex: 1 }}>
           {/* Re-designed One-Line Header */}
@@ -57,7 +57,7 @@ export default function BrochurePage() {
              <motion.div 
                initial={{ opacity: 0, x: 10 }}
                animate={{ opacity: 1, x: 0 }}
-               style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--color-primary)', fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em', padding: '6px 14px', background: 'rgba(124, 58, 237, 0.05)', borderRadius: '50px', border: '1px solid rgba(124, 58, 237, 0.1)' }}
+               style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--color-primary)', fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em', padding: '6px 14px', background: 'rgba(37, 99, 235, 0.05)', borderRadius: '50px', border: '1px solid rgba(37, 99, 235, 0.1)' }}
              >
                 <TrendingUp size={12} /> Strategic Portfolio
              </motion.div>
@@ -73,8 +73,8 @@ export default function BrochurePage() {
               maxWidth: '1100px',
               margin: '0 auto',
               borderRadius: 'clamp(16px, 3vw, 32px)',
-              boxShadow: '0 50px 120px -20px rgba(124, 58, 237, 0.2)',
-              border: '1px solid rgba(124, 58, 237, 0.12)',
+              boxShadow: '0 50px 120px -20px rgba(37, 99, 235, 0.2)',
+              border: '1px solid rgba(37, 99, 235, 0.12)',
               background: '#fff',
               position: 'relative'
             }}
@@ -108,7 +108,7 @@ export default function BrochurePage() {
                     cursor: 'pointer', 
                     border: 'none', 
                     color: '#fff',
-                    boxShadow: '0 15px 30px rgba(124, 58, 237, 0.25)'
+                    boxShadow: '0 15px 30px rgba(37, 99, 235, 0.25)'
                   }}
                >
                   <Download size={20} /> Download Guide
@@ -197,15 +197,15 @@ export default function BrochurePage() {
       {/* ── FINAL CTA: CINEMATIC RE-DESIGN ── */}
       <section style={{ 
         padding: 'clamp(80px, 10vw, 140px) 0', 
-        background: 'linear-gradient(135deg, #4C1D95 0%, #6D28D9 50%, #4F46E5 100%)', 
+        background: 'linear-gradient(135deg, #1E3A8A 0%, #1D4ED8 50%, #2563EB 100%)', 
         color: '#fff', 
         textAlign: 'center', 
         overflow: 'hidden', 
         position: 'relative',
         borderTop: '1px solid rgba(255,255,255,0.1)'
       }}>
-         <div style={{ position: 'absolute', top: '-20%', left: '10%', width: '40%', height: '80%', background: 'radial-gradient(circle, rgba(139,92,246,0.3) 0%, transparent 70%)', filter: 'blur(60px)', zIndex: 0 }} />
-         <div style={{ position: 'absolute', bottom: '-20%', right: '10%', width: '40%', height: '80%', background: 'radial-gradient(circle, rgba(99,102,241,0.25) 0%, transparent 70%)', filter: 'blur(60px)', zIndex: 0 }} />
+         <div style={{ position: 'absolute', top: '-20%', left: '10%', width: '40%', height: '80%', background: 'radial-gradient(circle, rgba(59,130,246,0.3) 0%, transparent 70%)', filter: 'blur(60px)', zIndex: 0 }} />
+         <div style={{ position: 'absolute', bottom: '-20%', right: '10%', width: '40%', height: '80%', background: 'radial-gradient(circle, rgba(37,99,235,0.25) 0%, transparent 70%)', filter: 'blur(60px)', zIndex: 0 }} />
          
          <div className="container-main" style={{ position: 'relative', zIndex: 1 }}>
             <motion.div

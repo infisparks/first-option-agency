@@ -23,7 +23,7 @@ export default function BlogListPage() {
           <div style={{ textAlign: "center", marginBottom: 60 }}>
             <span className="section-badge">OUR BLOG</span>
             <h1 style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 900, color: "#111827", letterSpacing: "-0.04em", marginTop: 12 }}>
-              Marketing Insights for <br /><span style={{ color: "#7C3AED" }}>High-Growth Brands</span>
+              Marketing Insights for <br /><span style={{ color: "#2563EB" }}>High-Growth Brands</span>
             </h1>
           </div>
 

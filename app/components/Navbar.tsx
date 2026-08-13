@@ -62,7 +62,7 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
       {/* ─── Announcement Bar ─── */}
       <div
         style={{
-          background: "linear-gradient(90deg, #6D28D9, #7C3AED, #8B5CF6)",
+          background: "linear-gradient(90deg, #1D4ED8, #2563EB, #3B82F6)",
           color: "#fff",
           textAlign: "center",
           padding: "7px 16px",
@@ -125,7 +125,7 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
           boxShadow: isDarkHeader
             ? "0 4px 30px rgba(0, 0, 0, 0.4)"
             : scrolled
-            ? "0 4px 20px -4px rgba(124, 58, 237, 0.12)"
+            ? "0 4px 20px -4px rgba(37, 99, 235, 0.12)"
             : "none",
           transition: "background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, padding 0.3s ease",
         }}
@@ -230,10 +230,10 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
                 gap: 6,
                 cursor: "pointer",
                 letterSpacing: "0.01em",
-                background: "linear-gradient(135deg, #7C3AED 0%, #6D28D9 60%, #5B21B6 100%)",
+                background: "linear-gradient(135deg, #2563EB 0%, #1D4ED8 60%, #1E3A8A 100%)",
                 boxShadow: isDarkHeader
-                  ? "0 0 20px rgba(124, 58, 237, 0.45)"
-                  : "0 4px 14px rgba(124, 58, 237, 0.28)",
+                  ? "0 0 20px rgba(37, 99, 235, 0.45)"
+                  : "0 4px 14px rgba(37, 99, 235, 0.28)",
               }}
             >
               Growth Session
@@ -249,21 +249,21 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
             style={{
               background: isDarkHeader
                 ? isOpen
-                  ? "rgba(139, 92, 246, 0.25)"
+                  ? "rgba(59, 130, 246, 0.25)"
                   : "rgba(255, 255, 255, 0.08)"
                 : isOpen
-                ? "rgba(124, 58, 237, 0.1)"
+                ? "rgba(37, 99, 235, 0.1)"
                 : "white",
               border: isDarkHeader
-                ? "1px solid rgba(139, 92, 246, 0.35)"
-                : "1px solid rgba(124, 58, 237, 0.22)",
+                ? "1px solid rgba(59, 130, 246, 0.35)"
+                : "1px solid rgba(37, 99, 235, 0.22)",
               borderRadius: "10px",
               color: isDarkHeader ? "#FFFFFF" : "var(--color-primary)", 
               cursor: "pointer",
               alignItems: "center",
               justifyContent: "center",
               padding: "7px",
-              boxShadow: isDarkHeader ? "0 0 15px rgba(124, 58, 237, 0.2)" : "0 2px 8px rgba(0,0,0,0.05)",
+              boxShadow: isDarkHeader ? "0 0 15px rgba(37, 99, 235, 0.2)" : "0 2px 8px rgba(0,0,0,0.05)",
               transition: "all 0.3s ease",
             }}
             className="mobile-nav-toggle"
@@ -367,7 +367,7 @@ export default function Navbar({ onBookDemo = () => {} }: NavbarProps) {
                     cursor: "pointer",
                     letterSpacing: "0.01em",
                     marginTop: 2,
-                    background: "linear-gradient(135deg, #7C3AED 0%, #6D28D9 60%, #5B21B6 100%)",
+                    background: "linear-gradient(135deg, #2563EB 0%, #1D4ED8 60%, #1E3A8A 100%)",
                   }}
                 >
                   Growth Session →

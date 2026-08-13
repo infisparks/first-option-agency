@@ -46,14 +46,14 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
       <main style={{ background: "#FFFFFF", minHeight: "100vh", paddingTop: "140px" }}>
         
         {/* Hero Section */}
-        <div style={{ background: "linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%)", padding: "80px 0", marginBottom: 80 }}>
+        <div style={{ background: "linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)", padding: "80px 0", marginBottom: 80 }}>
           <div className="container-main" style={{ textAlign: "center" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#FFF", padding: "8px 16px", borderRadius: 9999, border: "1px solid rgba(124,58,237,0.2)", fontSize: "0.75rem", fontWeight: 700, color: "#7C3AED", marginBottom: 24 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#FFF", padding: "8px 16px", borderRadius: 9999, border: "1px solid rgba(37,99,235,0.2)", fontSize: "0.75rem", fontWeight: 700, color: "#2563EB", marginBottom: 24 }}>
               <MapPin size={14} />
               REGIONAL EXPERTISE: {loc.Name.toUpperCase()}
             </div>
             <h1 style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 900, color: "#111827", letterSpacing: "-0.04em", marginBottom: 20 }}>
-              ROI-driven Performance Marketing <br /> Agency in <span style={{ color: "#7C3AED" }}>{loc.Name}</span>
+              ROI-driven Performance Marketing <br /> Agency in <span style={{ color: "#2563EB" }}>{loc.Name}</span>
             </h1>
             <p style={{ fontSize: "1.1rem", color: "#4B5563", maxWidth: 700, marginInline: "auto", lineHeight: 1.6 }}>
               {loc.desc} We help brands dominate their market with data-driven acquisition systems and localized performance strategies.

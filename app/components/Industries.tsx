@@ -9,7 +9,7 @@ const industries = [
     subtitle: "Healthcare Specialists",
     description: "Personal branding, Reels production, and lead generation funnels for specialists looking to grow their private practice and clinical authority.",
     icon: <Stethoscope size={24} />,
-    color: "#7C3AED",
+    color: "#2563EB",
     features: ["Specialist Branding", "Patient Acquisition", "Authority Content"]
   },
   {
@@ -17,7 +17,7 @@ const industries = [
     subtitle: "Supply Chain & B2B",
     description: "We build B2B discovery systems that put your products in front of retailers and distributors. Direct-to-retailer marketing that bypasses the noise.",
     icon: <Factory size={24} />,
-    color: "#4F46E5",
+    color: "#3B82F6",
     features: ["Retailer Discovery", "B2B Lead Gen", "Market Expansion"]
   },
   {
@@ -25,7 +25,7 @@ const industries = [
     subtitle: "Digital Economy",
     description: "High-ticket client acquisition for SaaS, IT services, and consultants. We build the infrastructure to consistently close premium deals.",
     icon: <Laptop size={24} />,
-    color: "#6D28D9",
+    color: "#1D4ED8",
     features: ["High-Ticket Sales", "SaaS Growth", "LinkedIn Automation"]
   }
 ];

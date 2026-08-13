@@ -14,13 +14,13 @@ import { SERVICES } from "../constants/services";
 import Link from "next/link";
 
 const tagColors: Record<string, string> = {
-  "Strategy": "#7C3AED",
-  "Operations": "#6D28D9",
-  "Conversion": "#8B5CF6",
+  "Strategy": "#2563EB",
+  "Operations": "#1D4ED8",
+  "Conversion": "#3B82F6",
   "Creative": "#F59E0B",
   "Paid Ads": "#10B981",
   "Leads": "#0891B2",
-  "SEO": "#7C3AED",
+  "SEO": "#2563EB",
 };
 
 // Optimized Animation Configuration
@@ -304,13 +304,13 @@ function FeatureSection({ feature, index, onImageClick }: { feature: any; index:
         />
         
         {/* Card Shadow Wrapper */}
-        <div style={{ filter: `drop-shadow(0 30px 50px rgba(124, 58, 237, 0.15))` }}>
+        <div style={{ filter: `drop-shadow(0 30px 50px rgba(37, 99, 235, 0.15))` }}>
           <div 
             className="feature-img-box group relative p-[20px] md:p-[32px] overflow-hidden"
             style={{ 
               background: `linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)`,
               borderRadius: '40px',
-              border: `1.5px solid rgba(124, 58, 237, 0.35)`,
+              border: `1.5px solid rgba(37, 99, 235, 0.35)`,
               maxWidth: '100%',
               transition: 'all 0.4s ease'
             }}

@@ -243,7 +243,7 @@ export default function ContactFooter() {
             }}
           >
             {/* Form top accent */}
-            <div style={{ position: "absolute", top: 0, left: "15%", right: "15%", height: 2.5, background: "linear-gradient(90deg, #2563EB, #6366F1, #3B82F6)", borderRadius: "0 0 5px 5px" }} />
+            <div style={{ position: "absolute", top: 0, left: "15%", right: "15%", height: 2.5, background: "linear-gradient(90deg, #1D4ED8, #2563EB, #3B82F6)", borderRadius: "0 0 5px 5px" }} />
 
             <h3
               style={{
@@ -549,7 +549,7 @@ function FormInput({
           fontSize: "clamp(0.78rem, 1.4vw, 0.88rem)",
           outline: "none",
           transition: "all 0.3s ease",
-          boxShadow: focused ? "0 0 0 3px rgba(124,58,237,0.07)" : "none",
+          boxShadow: focused ? "0 0 0 3px rgba(37,99,235,0.07)" : "none",
           fontFamily: "var(--font-outfit), sans-serif",
           fontWeight: 500,
         }}

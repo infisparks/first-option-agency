@@ -14,7 +14,7 @@ import {
   Layout
 } from "lucide-react";
 
-const PRIMARY_COLOR = "#7C3AED"; // Brand Purple
+const PRIMARY_COLOR = "#2563EB"; // Brand Blue
 const TEXT_PRIMARY = "#111827";
 const TEXT_SECONDARY = "#4B5563";
 const BORDER_COLOR = "#E5E7EB";
