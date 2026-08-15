@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import {
@@ -15,7 +14,6 @@ import {
   Rocket,
   ShieldCheck,
   Quote,
-  Shuffle,
   Crown
 } from "lucide-react";
 
@@ -31,7 +29,7 @@ interface Founder {
   skills: { label: string; icon: React.ReactNode }[];
 }
 
-const INITIAL_FOUNDERS: Founder[] = [
+const FOUNDERS: Founder[] = [
   {
     id: "faiz",
     name: "Faiz Ansari",
@@ -47,23 +45,6 @@ const INITIAL_FOUNDERS: Founder[] = [
       { label: "Revenue Systems", icon: <TrendingUp size={13} /> },
       { label: "High-Ticket Sales Funnels", icon: <Layers size={13} /> },
       { label: "Performance Marketing", icon: <BarChart3 size={13} /> },
-    ],
-  },
-  {
-    id: "mudassir",
-    name: "Shaikh Mudassir",
-    role: "Founder & Head of Technology & Engineering",
-    designation: "Founder",
-    badge: "Technology & AI Systems",
-    badgeColor: "#7C3AED",
-    image: "/founders/Shaikh Mudassir.png",
-    quote:
-      "Modern marketing is nothing without rock-solid tech infrastructure. We build high-converting software ecosystems — from custom CRMs and ERPs to intelligent AI automations and robust APIs that turn data into automated business revenue.",
-    skills: [
-      { label: "AI & Automations", icon: <Cpu size={13} /> },
-      { label: "Software & Web Apps", icon: <Code2 size={13} /> },
-      { label: "Custom CRMs & ERPs", icon: <Database size={13} /> },
-      { label: "APIs & Integrations", icon: <Sparkles size={13} /> },
     ],
   },
   {
@@ -83,28 +64,26 @@ const INITIAL_FOUNDERS: Founder[] = [
       { label: "Creative Campaigns", icon: <Sparkles size={13} /> },
     ],
   },
+  {
+    id: "mudassir",
+    name: "Shaikh Mudassir",
+    role: "Founder & Head of Technology & Engineering",
+    designation: "Founder",
+    badge: "Technology & AI Systems",
+    badgeColor: "#7C3AED",
+    image: "/founders/Shaikh Mudassir.png",
+    quote:
+      "Modern marketing is nothing without rock-solid tech infrastructure. We build high-converting software ecosystems — from custom CRMs and ERPs to intelligent AI automations and robust APIs that turn data into automated business revenue.",
+    skills: [
+      { label: "AI & Automations", icon: <Cpu size={13} /> },
+      { label: "Software & Web Apps", icon: <Code2 size={13} /> },
+      { label: "Custom CRMs & ERPs", icon: <Database size={13} /> },
+      { label: "APIs & Integrations", icon: <Sparkles size={13} /> },
+    ],
+  },
 ];
 
 export default function Founders() {
-  const [founders, setFounders] = useState<Founder[]>(INITIAL_FOUNDERS);
-
-  // Randomize founder order on client mount so no founder is always on top/first
-  useEffect(() => {
-    const shuffled = [...INITIAL_FOUNDERS].sort(() => Math.random() - 0.5);
-    setFounders(shuffled);
-  }, []);
-
-  const handleManualShuffle = () => {
-    setFounders((prev) => {
-      const next = [...prev];
-      for (let i = next.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [next[i], next[j]] = [next[j], next[i]];
-      }
-      return next;
-    });
-  };
-
   return (
     <section
       id="founders"
@@ -191,12 +170,12 @@ export default function Founders() {
               fontWeight: 400,
             }}
           >
-            Direct founder-led execution across revenue strategy, full-stack software & AI
-            automation, and high-performance omni-channel marketing.
+            Direct founder-led execution across revenue strategy, marketing growth,
+            and full-stack software & AI engineering.
           </motion.p>
         </div>
 
-        {/* 3 Founder Cards Grid */}
+        {/* 3 Founder Cards Grid: 1. Faiz, 2. Moin, 3. Mudassir */}
         <div
           style={{
             display: "grid",
@@ -205,17 +184,15 @@ export default function Founders() {
             alignItems: "stretch",
           }}
         >
-          {founders.map((founder, index) => (
+          {FOUNDERS.map((founder, index) => (
             <motion.div
               key={founder.id}
-              layout
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{
                 duration: 0.5,
                 delay: index * 0.1,
-                layout: { duration: 0.4, ease: "easeInOut" },
               }}
               style={{
                 display: "flex",
@@ -485,44 +462,21 @@ export default function Founders() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            gap: 12,
-            flexWrap: "wrap",
+            gap: 8,
           }}
         >
           <span
             style={{
-              fontSize: "0.75rem",
+              fontSize: "0.76rem",
               color: "var(--text-muted)",
               display: "inline-flex",
               alignItems: "center",
               gap: 6,
             }}
           >
-            <ShieldCheck size={14} color="#2563EB" />
-            Direct founder-led strategy & execution on every client account.
+            <ShieldCheck size={15} color="#2563EB" />
+            Direct founder-led strategy, marketing & technology engineering on every client account.
           </span>
-          <button
-            onClick={handleManualShuffle}
-            type="button"
-            title="Randomize founder view order"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 4,
-              fontSize: "0.72rem",
-              color: "var(--color-primary)",
-              background: "rgba(37, 99, 235, 0.06)",
-              border: "1px solid rgba(37, 99, 235, 0.15)",
-              padding: "3px 8px",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontWeight: 600,
-              transition: "all 0.2s ease",
-            }}
-          >
-            <Shuffle size={12} />
-            Rotate Order
-          </button>
         </div>
       </div>
     </section>
