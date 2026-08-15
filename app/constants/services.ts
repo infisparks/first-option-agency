@@ -9,15 +9,16 @@ export interface Service {
   secondaryImage: string;
   benefits: string[];
   mainKeyword: string;
+  ctaText?: string;
 }
 
 export const SERVICES: Service[] = [
   {
     slug: "performance-marketing",
-    title: "Performance Marketing",
+    title: "Performance Ads",
     tag: "Paid Ads",
-    shortDesc: "Drive high-intent traffic and maximize your ROI with data-driven ad campaigns.",
-    fullDesc: "Our performance marketing services are designed for ambitious businesses that demand measurable results. We don't just focus on clicks; we focus on conversions, growth, and sustainable revenue. Our team manages your entire ad ecosystem across Google, Meta, and LinkedIn to ensure every dollar spent contributes to your bottom line.",
+    shortDesc: "High-intent Google & Meta campaigns engineered for conversions, not clicks.",
+    fullDesc: "Our performance ad campaigns are built for ambitious businesses demanding measurable ROI. We manage your entire ad ecosystem across Google, Meta, and LinkedIn with continuous testing and data-driven creative.",
     icon: "Activity",
     image: "/service/performance-marketing-agency-roi.webp",
     secondaryImage: "/service/insideservice/performance-marketing-roi-growth.png",
@@ -27,74 +28,61 @@ export const SERVICES: Service[] = [
       "High-Converting Ad Copy",
       "Strategic Retargeting Sets"
     ],
-    mainKeyword: "performance marketing agency"
+    mainKeyword: "performance marketing agency",
+    ctaText: "Explore Ads →"
   },
   {
     slug: "seo-services",
-    title: "Advanced SEO Solutions",
+    title: "SEO & Content",
     tag: "SEO",
-    shortDesc: "Rank on the first page of Google and capture search intent before your competitors.",
-    fullDesc: "Search Engine Optimization is the backbone of organic growth. We specialize in global SEO strategies, ensuring you rank for high-intent keywords that your customers are searching for across the globe. From technical SEO audits to advanced content engines, we help you dominate search results.",
+    shortDesc: "Rank higher, get found first, and own your industry's search results organically.",
+    fullDesc: "Dominate search engine results with advanced organic strategy. From technical SEO architecture to authoritative content, we turn search intent into sustainable, high-margin customer acquisition.",
     icon: "Search",
     image: "/service/advanced-seo-solutions-agency.webp",
     secondaryImage: "/service/insideservice/advanced-seo-solutions-strategy.png",
     benefits: [
-      "Keyword Research & Strategy",
-      "On-Page Optimization",
-      "Technical SEO Audits",
-      "Quality Link Building"
+      "Keyword Strategy & Mapping",
+      "On-Page & Technical SEO",
+      "Authority Content Engine",
+      "High-Quality Link Building"
     ],
-    mainKeyword: "best SEO agency"
-  },
-  {
-    slug: "lead-generation",
-    title: "Strategic Lead Generation",
-    tag: "Leads",
-    shortDesc: "Consistent flow of qualified leads for B2B, Manufacturers, and IT Companies.",
-    fullDesc: "Stop chasing dead leads. Our global lead generation system uses advanced funnel architecture to qualify prospects before they ever reach your sales team. We help Manufacturers, IT Companies, and Healthcare providers worldwide get serious inquiries that turn into sales.",
-    icon: "UserPlus",
-    image: "/service/strategic-lead-generation-system.webp",
-    secondaryImage: "/service/insideservice/strategic-b2b-lead-generation.png",
-    benefits: [
-      "Qualified Lead Filtering",
-      "Multi-Channel Acquisition",
-      "CRM Integration",
-      "Automated Follow-ups"
-    ],
-    mainKeyword: "lead generation company"
+    mainKeyword: "best SEO agency",
+    ctaText: "Boost Rankings →"
   },
   {
     slug: "sales-funnel-optimization",
-    title: "Sales Funnel Optimization",
+    title: "Landing Page CRO",
     tag: "Conversion",
-    shortDesc: "Convert 3x more visitors into customers with automated high-converting funnels.",
-    fullDesc: "A website without a funnel is just a brochure. We build intelligent sales funnels that guide your prospects through the awareness, consideration, and decision stages automatically. Our funnels are optimized for high-ticket sales and complex buyer journeys.",
+    shortDesc: "Conversion-focused pages that turn traffic into leads and leads into revenue.",
+    fullDesc: "Stop burning ad budget on low-converting pages. We build high-converting landing pages and CRO systems engineered to turn cold visitors into sales-ready leads.",
     icon: "Layout",
     image: "/service/high-converting-sales-funnel-expert.webp",
     secondaryImage: "/service/insideservice/sales-funnel-optimization-conversion.png",
     benefits: [
-      "Landing Page Optimization",
-      "Email Marketing Automation",
-      "A/B Testing Strategies",
-      "Reduced Customer Acquisition Cost"
+      "Conversion-Focused UX Design",
+      "Persuasive Direct Copy",
+      "A/B Split Testing",
+      "Higher Conversion Rates"
     ],
-    mainKeyword: "sales funnel expert"
+    mainKeyword: "sales funnel expert",
+    ctaText: "See Examples →"
   },
   {
-    slug: "content-marketing-strategy",
-    title: "Content Marketing 2.0",
-    tag: "Creative",
-    shortDesc: "Psychology-backed content that builds authority and drives engagement.",
-    fullDesc: "Content is only King if it converts. We create persuasive copy and creative assets that resonate with your target audience's pain points and desires. Our strategy ensures your brand is perceived as the ultimate authority in your industry.",
-    icon: "FileText",
-    image: "/service/authority-content-marketing-strategy.webp",
-    secondaryImage: "/service/insideservice/content-marketing-strategy-authority.png",
+    slug: "lead-generation",
+    title: "Marketing Automation",
+    tag: "Leads",
+    shortDesc: "Smart funnels and email flows that nurture leads while you focus on business.",
+    fullDesc: "Automate your lead qualification and follow-up pipeline. We build smart funnels and email automation flows that engage prospects 24/7 and deliver booked appointments to your team.",
+    icon: "UserPlus",
+    image: "/service/strategic-lead-generation-system.webp",
+    secondaryImage: "/service/insideservice/strategic-b2b-lead-generation.png",
     benefits: [
-      "Authority Building Content",
-      "Persuasive Sales Copy",
-      "Visual Storytelling",
-      "Cross-Platform Strategy"
+      "Automated Nurture Sequences",
+      "CRM & Pipeline Integration",
+      "Lead Scoring & Filtering",
+      "24/7 Prospect Engagement"
     ],
-    mainKeyword: "content marketing agency"
+    mainKeyword: "lead generation company",
+    ctaText: "Automate Growth →"
   }
 ];

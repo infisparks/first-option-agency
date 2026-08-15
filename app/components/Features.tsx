@@ -61,7 +61,7 @@ export default function Features() {
             transition={{ duration: 0.4, ease: ANIMATION_CONFIG.ease }}
             className="section-badge" 
           >
-            OUR SERVICES
+            OUR EXPERTISE
           </motion.span>
           <motion.h2 
             initial={{ opacity: 0, y: 15 }}
@@ -70,7 +70,7 @@ export default function Features() {
             transition={{ duration: 0.5, delay: 0.1, ease: ANIMATION_CONFIG.ease }}
             style={{ fontSize: "clamp(1.3rem, 4vw, 2.6rem)", fontWeight: 800, letterSpacing: "-0.035em", marginTop: "clamp(8px, 1.2vw, 12px)", marginBottom: "clamp(8px, 1.5vw, 14px)", color: 'var(--text-main)', lineHeight: 1.1 }}
           >
-            Strategic Performance <br /><span className="gradient-text-teal">Marketing Solutions</span>
+            Growth Engines <br /><span className="gradient-text-teal">We Build</span>
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 15 }}
@@ -79,7 +79,7 @@ export default function Features() {
             transition={{ duration: 0.5, delay: 0.2, ease: ANIMATION_CONFIG.ease }}
             style={{ color: "var(--text-dim)", fontSize: "clamp(0.76rem, 1.5vw, 0.9rem)", maxWidth: 580, margin: "0 auto", lineHeight: 1.65, fontWeight: 500 }}
           >
-           We don&apos;t just drive traffic—we build complete acquisition systems that convert visitors into customers and maximize your ROI.
+            Integrated marketing systems designed to attract, convert, and retain customers at scale.
           </motion.p>
         </div>
 

@@ -29,11 +29,11 @@ export default function ServicesListPage() {
               OUR EXPERTISE
             </span>
             <h1 style={{ fontSize: "clamp(2.5rem, 5vw, 4rem)", fontWeight: 900, color: "#111827", letterSpacing: "-0.04em", lineHeight: 1.1, marginBottom: 24 }}>
-              Impact-Driven Services to <br />
-              <span style={{ color: "#2563EB", backgroundImage: "linear-gradient(90deg, #2563EB, #1D4ED8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Scale Your Business</span>
+              Growth Engines <br />
+              <span style={{ color: "#2563EB", backgroundImage: "linear-gradient(90deg, #2563EB, #1D4ED8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>We Build</span>
             </h1>
             <p style={{ fontSize: "clamp(1rem, 1.2vw, 1.125rem)", color: "#6B7280", lineHeight: 1.6 }}>
-              Tailored growth performance marketing and digital acquisition systems designed for high-end service, SaaS, and B2B brands globally.
+              Integrated marketing systems designed to attract, convert, and retain customers at scale.
             </p>
           </div>
 

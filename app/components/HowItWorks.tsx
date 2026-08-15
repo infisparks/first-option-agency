@@ -15,44 +15,43 @@ interface Benefit {
 const benefits = [
   {
     icon: <Zap size={20} />,
-    title: "1. We Find Your Buyer",
-    
-    description: "We identify who actually pays you, not just who clicks. Precision targeting that finds the highest intent buyers for your business.",
-    color: "#1E3A8A",
-    stat: "High",
-    statLabel: "Intent",
+    title: "1. Discovery & Audit",
+    description: "We dive deep into your business, audience, competitors, and current marketing performance before touching a single campaign.",
+    color: "#2563EB",
+    stat: "Audit",
+    statLabel: "First",
   },
   {
     icon: <Shield size={20} />,
-    title: "2. We Create High-Converting Ads",
-    description: "Ads designed to attract buyers, not browsers. We craft messages that resonate and drive immediate action.",
-    color: "#10B981",
-    stat: "ROI",
-    statLabel: "Driven",
+    title: "2. Custom Strategy Blueprint",
+    description: "We build a tailored growth roadmap aligned with your revenue goals, budget, and target market realities.",
+    color: "#3B82F6",
+    stat: "Custom",
+    statLabel: "Plan",
   },
   {
     icon: <Heart size={20} />,
-    title: "3. We Build Trust With Content",
-    description: "Reels, posts, and videos that make people feel \"I trust this brand\". Building authority through consistent value.",
+    title: "3. Campaign Launch",
+    description: "Our team executes across the right channels — ads, SEO, content — with precision targeting and creative testing.",
     color: "#FACC15",
-    stat: "Brand",
-    statLabel: "Authority",
+    stat: "Multi",
+    statLabel: "Channel",
   },
   {
     icon: <Clock size={20} />,
-    title: "4. We Send Them to a Funnel",
-    description: "Landing pages that convert traffic into booked calls. Seamless transitions from click to conversion.",
-    color: "#1D4ED8",
-    stat: "Conv.",
-    statLabel: "Rate",
+    title: "4. Optimize & Scale",
+    description: "We continuously test, refine, and double down on what's working to maximize your return on every rupee spent.",
+    color: "#10B981",
+    stat: "Max",
+    statLabel: "ROAS",
   },
   {
     icon: <Briefcase size={20} />,
-    title: "5. You Get Appointments",
-    description: "You only talk to people who are ready. Predictable, qualified appointment flow for your sales team.",
-    color: "#0F172A",
+    title: "5. Report & Review",
+    description: "Transparent monthly reporting with clear insights, so you always know your growth is measurable and real.",
+    color: "#1D4ED8",
     stat: "100%",
-    statLabel: "Qualified",
+    statLabel: "Transparent",
   },
 ];
 
@@ -64,9 +63,9 @@ export default function HowItWorks() {
         position: "relative",
         padding: "clamp(56px, 9vw, 100px) 0",
         overflow: "hidden",
-        background: "linear-gradient(165deg, #F8FAFC 0%, #F0F4FF 50%, #E0E7FF 100%)",
-        borderTop: "1px solid rgba(30, 58, 138, 0.12)",
-        borderBottom: "1px solid rgba(30, 58, 138, 0.12)",
+        background: "linear-gradient(165deg, #F8FAFC 0%, #EFF6FF 50%, #DBEAFE 100%)",
+        borderTop: "1px solid rgba(37, 99, 235, 0.1)",
+        borderBottom: "1px solid rgba(37, 99, 235, 0.1)",
       }}
     >
       {/* Dot grid */}
@@ -76,8 +75,8 @@ export default function HowItWorks() {
       />
 
       {/* Glow accents */}
-      <div style={{ position: "absolute", top: "-10%", right: "-5%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(30,58,138,0.06) 0%, transparent 70%)", filter: "blur(60px)", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", bottom: "-10%", left: "-5%", width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle, rgba(30,58,138,0.05) 0%, transparent 70%)", filter: "blur(60px)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: "-10%", right: "-5%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(37,99,235,0.05) 0%, transparent 70%)", filter: "blur(60px)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: "-10%", left: "-5%", width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle, rgba(37,99,235,0.04) 0%, transparent 70%)", filter: "blur(60px)", pointerEvents: "none" }} />
 
       <div className="container-main" style={{ position: "relative", zIndex: 1 }}>
         {/* Header — compact 2-col layout on desktop */}
@@ -90,7 +89,7 @@ export default function HowItWorks() {
               transition={{ duration: 0.4 }}
               className="section-badge"
             >
-              HOW IT WORKS
+              OUR PROCESS
             </motion.div>
 
             <motion.h2
@@ -107,15 +106,15 @@ export default function HowItWorks() {
                 lineHeight: 1.1,
               }}
             >
-              Build Your{" "}
+              From Strategy to{" "}
               <span
                 style={{
-                  background: "linear-gradient(135deg, #0F172A 0%, #1E3A8A 60%, #1D4ED8 100%)",
+                  background: "linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                 }}
               >
-                Growth Roadmap
+                Scale
               </span>
             </motion.h2>
 
@@ -128,11 +127,11 @@ export default function HowItWorks() {
                 color: "var(--text-dim)",
                 fontSize: "clamp(0.78rem, 1.6vw, 0.92rem)",
                 lineHeight: 1.65,
-                maxWidth: 480,
+                maxWidth: 520,
                 fontWeight: 500,
               }}
             >
-              No sales pitch. Just a real roadmap for your business. We follow a proven system to turn your inquiries into paying, loyal clients.
+              A proven, transparent process built to deliver results fast — no guesswork, no wasted spend.
             </motion.p>
           </div>
 

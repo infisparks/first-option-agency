@@ -805,7 +805,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
         <div className="container-main" style={{ maxWidth: 1100, position: "relative", zIndex: 1 }}>
           <div style={{ textAlign: "center", marginBottom: "clamp(32px, 4vw, 44px)" }}>
             <span className="section-badge">
-              WHY CHOOSE US
+              THE DIFFERENCE
             </span>
             <h2
               style={{
@@ -816,7 +816,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                 letterSpacing: "-0.035em",
               }}
             >
-              The Future of{" "}
+              Results That{" "}
               <span
                 style={{
                   background: "var(--color-primary)",
@@ -826,7 +826,7 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                   display: "inline-block",
                 }}
               >
-                Direct Response Marketing
+                Speak Louder
               </span>
             </h2>
             <p
@@ -834,12 +834,12 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
                 color: "var(--text-dim)",
                 fontSize: "clamp(0.76rem, 1.4vw, 0.88rem)",
                 fontWeight: 500,
-                maxWidth: 540,
+                maxWidth: 580,
                 marginInline: "auto",
                 lineHeight: 1.6,
               }}
             >
-              A complete acquisition infrastructure designed to scale your revenue — where precision data science and high-intent creative converge.
+              We don't sell services — we sell growth, backed by data, strategy, and relentless execution.
             </p>
           </div>
 
@@ -852,26 +852,26 @@ export default function HeroSection({ onBookDemo }: HeroSectionProps) {
           >
             <MetricCard
               icon={<Target size={18} strokeWidth={2} />}
-              title="Unified Acquisition Funnels"
-              desc="Full visibility into your customer journey, from first impression to closed deal, in a single real-time dashboard."
+              title="ROI-Obsessed Strategy"
+              desc="Every campaign is built around revenue targets, not impressions — we track what actually moves your business."
               color="#2563EB"
             />
             <MetricCard
-              icon={<Sparkles size={18} strokeWidth={2} />}
-              title="High-Intent Creative Engine"
-              desc="High-converting video ads, dynamic landing pages, and copy engineered to convert high-ticket buyers."
+              icon={<Users size={18} strokeWidth={2} />}
+              title="Dedicated Growth Team"
+              desc="No junior handoffs. You get senior strategists who understand your industry and your customers."
               color="#F59E0B"
             />
             <MetricCard
               icon={<Clock size={18} strokeWidth={2} />}
-              title="Real-Time Performance Data"
-              desc="Live ad performance, lead quality score, and conversion tracking synced second-by-second."
+              title="Full-Funnel Execution"
+              desc="From first click to closed sale, we own the entire customer journey — not just the ad spend."
               color="#10B981"
             />
             <MetricCard
               icon={<BarChart3 size={18} strokeWidth={2} />}
-              title="Predictable ROAS & Profit"
-              desc="Track true profitability, customer lifetime value, and cost-per-acquisition with zero guesswork."
+              title="Radical Transparency"
+              desc="Live dashboards, weekly reports, and honest numbers — you'll always know exactly where your budget goes."
               color="#1D4ED8"
             />
           </div>

@@ -99,8 +99,7 @@ export default function ContactFooter() {
                 letterSpacing: "-0.035em",
               }}
             >
-              Ready to Scale Your{" "}
-              <br className="hide-sm" />
+              Ready to Scale Your <br className="hide-sm" />
               <span
                 style={{
                   background: "linear-gradient(135deg, var(--color-primary), var(--color-accent))",
@@ -108,7 +107,7 @@ export default function ContactFooter() {
                   WebkitTextFillColor: "transparent",
                 }}
               >
-                Business Revenue?
+                Business Faster?
               </span>
             </motion.h2>
 
@@ -126,7 +125,7 @@ export default function ContactFooter() {
                 lineHeight: 1.65,
               }}
             >
-              Join 100+ growing businesses. Schedule your growth strategy session and discover how we can build your acquisition system.
+              Join growing brands that trust us to turn their marketing budget into predictable revenue.
             </motion.p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "clamp(14px, 2.2vw, 22px)" }}>
@@ -254,7 +253,7 @@ export default function ContactFooter() {
                 letterSpacing: "-0.025em",
               }}
             >
-              Schedule Your Session
+              Get My Free Audit
             </h3>
             <p style={{ color: "var(--text-dim)", marginBottom: "clamp(20px, 3vw, 32px)", fontWeight: 500, fontSize: "clamp(0.75rem, 1.3vw, 0.85rem)" }}>
               Our strategy team responds within 24 hours.
@@ -325,7 +324,7 @@ export default function ContactFooter() {
                   letterSpacing: "0.01em",
                 }}
               >
-                Start Growth Session
+                Get My Free Audit
                 <ArrowRight size={15} strokeWidth={2.5} />
               </motion.button>
             </form>
