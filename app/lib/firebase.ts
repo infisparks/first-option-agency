@@ -1,9 +1,8 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getDatabase, ref, set, serverTimestamp as rtdbTimestamp } from "firebase/database";
-import { getFirestore, doc, setDoc, serverTimestamp as firestoreTimestamp } from "firebase/firestore";
+import { getDatabase, ref, set, serverTimestamp } from "firebase/database";
 import { getAuth } from "firebase/auth";
 
-// Exact Firebase project configuration for firstoptioncom-a0713
+// Exact Firebase project configuration for firstoptioncom-a0713 (Realtime Database & Auth Only)
 export const firebaseConfig = {
   apiKey: "AIzaSyCp1PU9Pl5HuznN37TjswOcSl6sOr7tKIQ",
   authDomain: "firstoptioncom-a0713.firebaseapp.com",
@@ -21,7 +20,6 @@ export const ADMIN_UID = "5ekfOeEqIgZXqpPW7kH2v6Top5y1";
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
 export const rtdb = getDatabase(app);
-export const db = getFirestore(app);
 export const auth = getAuth(app);
 
 export interface InternshipApplicationPayload {
@@ -43,35 +41,21 @@ export interface InternshipApplicationPayload {
 
 /**
  * Saves internship application directly to Firebase Realtime Database.
- * Also synchronizes to Firestore for complete redundancy.
  */
 export async function saveApplicationToRealtimeDb(
   data: InternshipApplicationPayload
 ): Promise<{ success: boolean; id: string; error?: string }> {
   try {
-    // 1. Write to Firebase Realtime Database (RTDB)
     const appRef = ref(rtdb, `internship_applications/${data.applicationId}`);
     await set(appRef, {
       ...data,
       status: "new",
-      createdAt: rtdbTimestamp(),
+      createdAt: serverTimestamp(),
     });
-
-    // 2. Write to Firestore as additional backup
-    try {
-      const docRef = doc(db, "internship_applications", data.applicationId);
-      await setDoc(docRef, {
-        ...data,
-        status: "new",
-        createdAt: firestoreTimestamp(),
-      });
-    } catch (fsErr) {
-      // Non-blocking
-    }
 
     return { success: true, id: data.applicationId };
   } catch (err: any) {
-    console.warn("Realtime DB save warning:", err?.message || err);
+    console.warn("Realtime DB save error:", err?.message || err);
     return { success: false, id: data.applicationId, error: err?.message };
   }
 }

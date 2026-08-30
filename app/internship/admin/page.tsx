@@ -12,13 +12,7 @@ import {
   ref,
   get,
 } from "firebase/database";
-import {
-  collection,
-  query,
-  orderBy,
-  getDocs,
-} from "firebase/firestore";
-import { auth, rtdb, db, ADMIN_UID } from "@/app/lib/firebase";
+import { auth, rtdb, ADMIN_UID } from "@/app/lib/firebase";
 import {
   Lock,
   Mail,
@@ -92,7 +86,7 @@ export default function InternshipAdminPage() {
   const fetchApplications = async () => {
     setDataLoading(true);
     try {
-      // 1. Fetch from Firebase Realtime Database
+      // 1. Fetch directly from Firebase Realtime Database
       const rtdbRef = ref(rtdb, "internship_applications");
       const rtdbSnapshot = await get(rtdbRef);
 
@@ -105,30 +99,13 @@ export default function InternshipAdminPage() {
         return;
       }
 
-      // 2. Fallback to Firestore
-      const q = query(
-        collection(db, "internship_applications"),
-        orderBy("submittedAt", "desc")
-      );
-      const snapshot = await getDocs(q);
-      const docsData: ApplicationRecord[] = [];
-      snapshot.forEach((doc) => {
-        docsData.push(doc.data() as ApplicationRecord);
-      });
-
-      if (docsData.length > 0) {
-        setApplications(docsData);
-        setDataLoading(false);
-        return;
-      }
-
-      // 3. Fallback to localStorage backup
+      // 2. Fallback to localStorage backup if database is empty
       const localSaved = JSON.parse(
         localStorage.getItem("foa_internship_applications") || "[]"
       );
       setApplications(localSaved);
     } catch (err: any) {
-      console.warn("Database fetch note:", err?.message);
+      console.warn("Realtime Database fetch note:", err?.message);
       const localSaved = JSON.parse(
         localStorage.getItem("foa_internship_applications") || "[]"
       );

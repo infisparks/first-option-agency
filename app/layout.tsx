@@ -56,7 +56,6 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="preload" href="/hero-bg-image.webp" as="image" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
