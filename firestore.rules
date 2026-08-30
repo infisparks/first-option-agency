@@ -1,0 +1,21 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Only Admin UID 5ekfOeEqIgZXqpPW7kH2v6Top5y1 has read/manage permissions
+    function isAdmin() {
+      return request.auth != null && request.auth.uid == '5ekfOeEqIgZXqpPW7kH2v6Top5y1';
+    }
+
+    // Public create-only, Admin read/update/delete
+    match /internship_applications/{applicationId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

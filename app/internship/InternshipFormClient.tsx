@@ -15,7 +15,6 @@ import {
   Copy,
   Check,
   Sparkles,
-  Lock,
   Heart,
   ShieldCheck,
 } from "lucide-react";
@@ -25,6 +24,8 @@ import {
   PASSING_YEARS,
   COUNTRY_CODES,
 } from "./skills-data";
+import { saveApplicationToRealtimeDb } from "@/app/lib/firebase";
+import { triggerInternshipWhatsAppNotifications } from "@/app/lib/whatsapp";
 
 interface FormData {
   fullName: string;
@@ -269,8 +270,8 @@ export default function InternshipFormClient() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Form Submit Handler (100% Client-Side)
-  const handleSubmit = (e: React.FormEvent) => {
+  // Form Submit Handler (Firestore + Local Backup)
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -283,34 +284,50 @@ export default function InternshipFormClient() {
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-      const generatedId = `FOA-WOMEN-${new Date().getFullYear()}-${randomSuffix}`;
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const generatedId = `FOA-WOMEN-${new Date().getFullYear()}-${randomSuffix}`;
+    const submissionTimestamp = new Date().toISOString();
 
-      try {
-        const existingApplications = JSON.parse(
-          localStorage.getItem("foa_internship_applications") || "[]"
-        );
-        const applicationData = {
-          applicationId: generatedId,
-          drive: "Women in Tech & Creative Internship",
-          submittedAt: new Date().toISOString(),
-          ...formData,
-        };
-        existingApplications.unshift(applicationData);
-        localStorage.setItem(
-          "foa_internship_applications",
-          JSON.stringify(existingApplications)
-        );
-      } catch (storageError) {
-        console.warn("Could not save to localStorage:", storageError);
-      }
+    const applicationRecord = {
+      applicationId: generatedId,
+      submittedAt: submissionTimestamp,
+      ...formData,
+    };
 
-      setApplicationId(generatedId);
-      setIsSubmitting(false);
-      setSubmitSuccess(true);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }, 500);
+    // Save to Firebase Realtime Database
+    try {
+      await saveApplicationToRealtimeDb(applicationRecord);
+    } catch (rtdbErr) {
+      console.warn("Realtime DB save warning:", rtdbErr);
+    }
+
+    // Trigger WhatsApp notifications (Candidate Confirmation + Admin Lead Alert)
+    triggerInternshipWhatsAppNotifications({
+      candidatePhone: `${formData.countryCode}${formData.phone}`,
+      candidateName: formData.fullName,
+      applicationId: generatedId,
+      candidateEmail: formData.email,
+      city: formData.city,
+    });
+
+    // Also preserve locally in localStorage
+    try {
+      const existingApplications = JSON.parse(
+        localStorage.getItem("foa_internship_applications") || "[]"
+      );
+      existingApplications.unshift(applicationRecord);
+      localStorage.setItem(
+        "foa_internship_applications",
+        JSON.stringify(existingApplications)
+      );
+    } catch (storageError) {
+      console.warn("Could not save to localStorage:", storageError);
+    }
+
+    setApplicationId(generatedId);
+    setIsSubmitting(false);
+    setSubmitSuccess(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Copy Application ID to clipboard
@@ -386,7 +403,7 @@ export default function InternshipFormClient() {
               Thank You, {formData.fullName}!
             </div>
             <div style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.5, marginBottom: "20px" }}>
-              Your application for the exclusive Women’s Internship Drive has been submitted. Our team will get in touch with you.
+              Your application has been securely recorded. Our hiring team will review your profile.
             </div>
 
             {/* Receipt Summary Card */}
