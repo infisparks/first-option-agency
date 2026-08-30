@@ -16,6 +16,8 @@ import {
   Check,
   Sparkles,
   Lock,
+  Heart,
+  ShieldCheck,
 } from "lucide-react";
 import {
   SKILL_CATEGORIES,
@@ -30,6 +32,8 @@ interface FormData {
   countryCode: string;
   phone: string;
   city: string;
+  gender: string;
+  isFemaleConfirmed: boolean;
   qualification: string;
   passingYear: string;
   skills: string[];
@@ -48,6 +52,8 @@ export default function InternshipFormClient() {
     countryCode: "+91",
     phone: "",
     city: "",
+    gender: "Female",
+    isFemaleConfirmed: true,
     qualification: "",
     passingYear: "",
     skills: [],
@@ -86,10 +92,22 @@ export default function InternshipFormClient() {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >
   ) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+
+    if (type === "checkbox") {
+      const checked = (e.target as HTMLInputElement).checked;
+      setFormData((prev) => ({ ...prev, [name]: checked }));
+      if (errors[name]) {
+        setErrors((prev) => {
+          const updated = { ...prev };
+          delete updated[name];
+          return updated;
+        });
+      }
+      return;
+    }
 
     if (name === "phone") {
-      // Allow only numbers
       const cleaned = value.replace(/\D/g, "");
       const selectedCountry = COUNTRY_CODES.find(
         (c) => c.code === formData.countryCode
@@ -110,7 +128,6 @@ export default function InternshipFormClient() {
 
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Clear field error upon typing
     if (errors[name]) {
       setErrors((prev) => {
         const updated = { ...prev };
@@ -222,6 +239,14 @@ export default function InternshipFormClient() {
       newErrors.city = "City / Location is required";
     }
 
+    if (formData.gender !== "Female") {
+      newErrors.gender = "This internship drive is exclusively for female candidates";
+    }
+
+    if (!formData.isFemaleConfirmed) {
+      newErrors.isFemaleConfirmed = "Please confirm that you are a female candidate applying for this drive";
+    }
+
     if (!formData.qualification) {
       newErrors.qualification = "Please select your qualification";
     }
@@ -260,7 +285,7 @@ export default function InternshipFormClient() {
 
     setTimeout(() => {
       const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-      const generatedId = `FOA-INT-${new Date().getFullYear()}-${randomSuffix}`;
+      const generatedId = `FOA-WOMEN-${new Date().getFullYear()}-${randomSuffix}`;
 
       try {
         const existingApplications = JSON.parse(
@@ -268,6 +293,7 @@ export default function InternshipFormClient() {
         );
         const applicationData = {
           applicationId: generatedId,
+          drive: "Women in Tech & Creative Internship",
           submittedAt: new Date().toISOString(),
           ...formData,
         };
@@ -304,6 +330,8 @@ export default function InternshipFormClient() {
       countryCode: "+91",
       phone: "",
       city: "",
+      gender: "Female",
+      isFemaleConfirmed: true,
       qualification: "",
       passingYear: "",
       skills: [],
@@ -322,18 +350,18 @@ export default function InternshipFormClient() {
       <header style={{ position: "sticky", top: 0, zIndex: 40, backgroundColor: "rgba(255, 255, 255, 0.96)", backdropFilter: "blur(8px)", borderBottom: "1px solid #E5E7EB" }}>
         <div style={{ maxWidth: "760px", margin: "0 auto", padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none", color: "inherit" }}>
-            <div style={{ width: "32px", height: "32px", borderRadius: "8px", backgroundColor: "#4F46E5", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "13px" }}>
+            <div style={{ width: "32px", height: "32px", borderRadius: "8px", backgroundColor: "#7C3AED", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "13px" }}>
               FO
             </div>
             <div>
               <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827", lineHeight: 1.2 }}>First Option Agency</div>
-              <div style={{ fontSize: "11px", color: "#6B7280", fontWeight: 500 }}>Internship Portal</div>
+              <div style={{ fontSize: "11px", color: "#7C3AED", fontWeight: 600 }}>Women’s Internship Portal</div>
             </div>
           </Link>
 
           <Link
             href="/"
-            style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "13px", fontWeight: 600, color: "#4F46E5", textDecoration: "none", padding: "6px 12px", borderRadius: "6px", backgroundColor: "#EEF2FF" }}
+            style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "13px", fontWeight: 600, color: "#7C3AED", textDecoration: "none", padding: "6px 12px", borderRadius: "6px", backgroundColor: "#F5F3FF" }}
           >
             <ArrowLeft size={14} />
             <span>Home</span>
@@ -346,19 +374,19 @@ export default function InternshipFormClient() {
         {submitSuccess ? (
           /* ─── SUBMISSION CONFIRMATION RECEIPT ─── */
           <div style={{ backgroundColor: "#FFFFFF", borderRadius: "16px", border: "1px solid #E5E7EB", padding: "32px 18px", boxShadow: "0 4px 16px rgba(0,0,0,0.04)", textAlign: "center", maxWidth: "520px", margin: "20px auto" }}>
-            <div style={{ width: "56px", height: "56px", borderRadius: "50%", backgroundColor: "#ECFDF5", border: "1px solid #A7F3D0", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px auto", color: "#10B981" }}>
-              <CheckCircle2 size={32} strokeWidth={2.2} />
+            <div style={{ width: "56px", height: "56px", borderRadius: "50%", backgroundColor: "#FDF2F8", border: "1px solid #FBCFE8", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px auto", color: "#DB2777" }}>
+              <Heart size={30} strokeWidth={2.2} />
             </div>
 
-            <div style={{ display: "inline-block", padding: "3px 10px", backgroundColor: "#EEF2FF", color: "#4F46E5", borderRadius: "999px", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "10px" }}>
-              Application Submitted
+            <div style={{ display: "inline-block", padding: "3px 10px", backgroundColor: "#FDF2F8", color: "#BE185D", borderRadius: "999px", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "10px" }}>
+              Women’s Drive • Application Received
             </div>
 
             <div style={{ fontSize: "20px", fontWeight: 700, color: "#111827", marginBottom: "8px" }}>
               Thank You, {formData.fullName}!
             </div>
             <div style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.5, marginBottom: "20px" }}>
-              Your internship application has been successfully submitted. Our team will review your profile.
+              Your application for the exclusive Women’s Internship Drive has been submitted. Our team will get in touch with you.
             </div>
 
             {/* Receipt Summary Card */}
@@ -366,7 +394,7 @@ export default function InternshipFormClient() {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #E5E7EB", paddingBottom: "10px", marginBottom: "10px" }}>
                 <span style={{ color: "#6B7280", fontWeight: 500 }}>Reference ID</span>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <span style={{ fontFamily: "monospace", fontWeight: 700, color: "#4F46E5", backgroundColor: "#EEF2FF", padding: "2px 6px", borderRadius: "4px" }}>
+                  <span style={{ fontFamily: "monospace", fontWeight: 700, color: "#7C3AED", backgroundColor: "#F5F3FF", padding: "2px 6px", borderRadius: "4px" }}>
                     {applicationId}
                   </span>
                   <button
@@ -378,6 +406,11 @@ export default function InternshipFormClient() {
                     {copiedId ? <Check size={14} color="#10B981" /> : <Copy size={14} />}
                   </button>
                 </div>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                <span style={{ color: "#6B7280" }}>Candidate</span>
+                <span style={{ fontWeight: 600, color: "#111827" }}>{formData.fullName} (Female)</span>
               </div>
 
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
@@ -412,7 +445,7 @@ export default function InternshipFormClient() {
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               <Link
                 href="/"
-                style={{ display: "block", width: "100%", padding: "11px", borderRadius: "8px", backgroundColor: "#4F46E5", color: "#FFFFFF", fontSize: "14px", fontWeight: 700, textDecoration: "none", textAlign: "center" }}
+                style={{ display: "block", width: "100%", padding: "11px", borderRadius: "8px", backgroundColor: "#7C3AED", color: "#FFFFFF", fontSize: "14px", fontWeight: 700, textDecoration: "none", textAlign: "center" }}
               >
                 Back to Homepage
               </Link>
@@ -428,17 +461,17 @@ export default function InternshipFormClient() {
         ) : (
           /* ─── CLEAN APPLICATION FORM ─── */
           <div style={{ backgroundColor: "#FFFFFF", borderRadius: "14px", border: "1px solid #E5E7EB", boxShadow: "0 2px 8px rgba(0,0,0,0.03)", overflow: "hidden" }}>
-            {/* Form Title Banner */}
-            <div style={{ padding: "18px 16px", borderBottom: "1px solid #E5E7EB", backgroundColor: "#FAF5FF" }}>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "3px 8px", borderRadius: "999px", fontSize: "11px", fontWeight: 700, backgroundColor: "#EEF2FF", color: "#4F46E5", border: "1px solid #C7D2FE", marginBottom: "6px" }}>
+            {/* Form Title Banner with Exclusive Female Cohort Notice */}
+            <div style={{ padding: "18px 16px", borderBottom: "1px solid #E5E7EB", backgroundColor: "#FDF2F8" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "3px 9px", borderRadius: "999px", fontSize: "11px", fontWeight: 700, backgroundColor: "#FCE7F3", color: "#BE185D", border: "1px solid #FBCFE8", marginBottom: "6px" }}>
                 <Sparkles size={12} />
-                <span>INTERNSHIP APPLICATION</span>
+                <span>EXCLUSIVELY FOR FEMALE CANDIDATES / GIRLS</span>
               </div>
               <div style={{ fontSize: "19px", fontWeight: 700, color: "#111827", lineHeight: 1.25, letterSpacing: "-0.02em" }}>
-                Apply for Internship
+                Women’s Internship Application Form
               </div>
               <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "3px", lineHeight: 1.4 }}>
-                Please fill in your details below. Fields marked with <span style={{ color: "#EF4444", fontWeight: 700 }}>*</span> are required.
+                This hiring drive is dedicated exclusively for female students & graduates to excel in creative design, web development, and marketing.
               </div>
             </div>
 
@@ -448,7 +481,7 @@ export default function InternshipFormClient() {
               {/* ════════ SECTION 1: PERSONAL DETAILS ════════ */}
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", paddingBottom: "6px", borderBottom: "1px solid #F3F4F6", marginBottom: "12px" }}>
-                  <div style={{ width: "20px", height: "20px", borderRadius: "5px", backgroundColor: "#EEF2FF", color: "#4F46E5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700 }}>
+                  <div style={{ width: "20px", height: "20px", borderRadius: "5px", backgroundColor: "#FDF2F8", color: "#BE185D", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700 }}>
                     1
                   </div>
                   <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
@@ -468,7 +501,7 @@ export default function InternshipFormClient() {
                       name="fullName"
                       value={formData.fullName}
                       onChange={handleInputChange}
-                      placeholder="e.g. Rahul Sharma"
+                      placeholder="e.g. Priya Sharma"
                       style={{ width: "100%", height: "40px", padding: "0 12px", fontSize: "14px", backgroundColor: "#FFFFFF", borderRadius: "8px", border: `1px solid ${errors.fullName ? "#EF4444" : "#E5E7EB"}`, color: "#111827", outline: "none" }}
                     />
                     {errors.fullName && (
@@ -489,7 +522,7 @@ export default function InternshipFormClient() {
                       name="email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      placeholder="e.g. rahul.sharma@example.com"
+                      placeholder="e.g. priya.sharma@example.com"
                       style={{ width: "100%", height: "40px", padding: "0 12px", fontSize: "14px", backgroundColor: "#FFFFFF", borderRadius: "8px", border: `1px solid ${errors.email ? "#EF4444" : "#E5E7EB"}`, color: "#111827", outline: "none" }}
                     />
                     {errors.email && (
@@ -571,12 +604,32 @@ export default function InternshipFormClient() {
                     )}
                   </div>
                 </div>
+
+                {/* Female Confirmation Pill */}
+                <div style={{ marginTop: "12px", padding: "10px 12px", backgroundColor: "#FDF2F8", borderRadius: "8px", border: "1px solid #FCE7F3", display: "flex", alignItems: "center", gap: "10px" }} className={errors.isFemaleConfirmed ? "has-field-error" : ""}>
+                  <input
+                    type="checkbox"
+                    id="isFemaleConfirmed"
+                    name="isFemaleConfirmed"
+                    checked={formData.isFemaleConfirmed}
+                    onChange={handleInputChange}
+                    style={{ width: "16px", height: "16px", accentColor: "#BE185D", cursor: "pointer" }}
+                  />
+                  <label htmlFor="isFemaleConfirmed" style={{ fontSize: "12px", color: "#831843", fontWeight: 600, cursor: "pointer", lineHeight: 1.4 }}>
+                    I confirm that I am a female candidate / girl applying for this exclusive women’s internship opportunity. <span style={{ color: "#EF4444" }}>*</span>
+                  </label>
+                </div>
+                {errors.isFemaleConfirmed && (
+                  <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "3px", fontWeight: 500 }}>
+                    {errors.isFemaleConfirmed}
+                  </div>
+                )}
               </div>
 
               {/* ════════ SECTION 2: QUALIFICATION & EDUCATION ════════ */}
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", paddingBottom: "6px", borderBottom: "1px solid #F3F4F6", marginBottom: "12px" }}>
-                  <div style={{ width: "20px", height: "20px", borderRadius: "5px", backgroundColor: "#EEF2FF", color: "#4F46E5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700 }}>
+                  <div style={{ width: "20px", height: "20px", borderRadius: "5px", backgroundColor: "#FDF2F8", color: "#BE185D", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700 }}>
                     2
                   </div>
                   <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
@@ -648,7 +701,7 @@ export default function InternshipFormClient() {
               {/* ════════ SECTION 3: SKILLS (SEARCH & SELECT) ════════ */}
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", paddingBottom: "6px", borderBottom: "1px solid #F3F4F6", marginBottom: "12px" }}>
-                  <div style={{ width: "20px", height: "20px", borderRadius: "5px", backgroundColor: "#EEF2FF", color: "#4F46E5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700 }}>
+                  <div style={{ width: "20px", height: "20px", borderRadius: "5px", backgroundColor: "#FDF2F8", color: "#BE185D", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700 }}>
                     3
                   </div>
                   <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
@@ -671,7 +724,7 @@ export default function InternshipFormClient() {
                       formData.skills.map((skill) => (
                         <span
                           key={skill}
-                          style={{ display: "inline-flex", alignItems: "center", gap: "4px", backgroundColor: "#FFFFFF", border: "1px solid #C7D2FE", color: "#4F46E5", fontSize: "12px", fontWeight: 600, padding: "2px 8px", borderRadius: "6px" }}
+                          style={{ display: "inline-flex", alignItems: "center", gap: "4px", backgroundColor: "#FFFFFF", border: "1px solid #FBCFE8", color: "#BE185D", fontSize: "12px", fontWeight: 600, padding: "2px 8px", borderRadius: "6px" }}
                         >
                           <span>{skill}</span>
                           <button
@@ -709,7 +762,7 @@ export default function InternshipFormClient() {
                         <button
                           type="button"
                           onClick={() => addSkill(skillSearch)}
-                          style={{ padding: "0 12px", height: "40px", backgroundColor: "#4F46E5", color: "#FFFFFF", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px", cursor: "pointer", flexShrink: 0 }}
+                          style={{ padding: "0 12px", height: "40px", backgroundColor: "#7C3AED", color: "#FFFFFF", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px", cursor: "pointer", flexShrink: 0 }}
                         >
                           <Plus size={14} />
                           <span>Add</span>
@@ -727,10 +780,10 @@ export default function InternshipFormClient() {
                             <button
                               type="button"
                               onClick={() => addSkill(skillSearch)}
-                              style={{ width: "100%", padding: "7px 10px", textAlign: "left", fontSize: "12px", fontWeight: 600, color: "#4F46E5", backgroundColor: "#EEF2FF", borderRadius: "6px", border: "none", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", marginBottom: "4px" }}
+                              style={{ width: "100%", padding: "7px 10px", textAlign: "left", fontSize: "12px", fontWeight: 600, color: "#7C3AED", backgroundColor: "#F5F3FF", borderRadius: "6px", border: "none", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", marginBottom: "4px" }}
                             >
                               <span>+ Add &ldquo;{skillSearch.trim()}&rdquo; as custom skill</span>
-                              <span style={{ fontSize: "10px", textTransform: "uppercase", backgroundColor: "#C7D2FE", padding: "1px 4px", borderRadius: "3px" }}>Custom</span>
+                              <span style={{ fontSize: "10px", textTransform: "uppercase", backgroundColor: "#DDD6FE", padding: "1px 4px", borderRadius: "3px" }}>Custom</span>
                             </button>
                           )}
 
@@ -762,7 +815,7 @@ export default function InternshipFormClient() {
               {/* ════════ SECTION 4: ABOUT YOURSELF ════════ */}
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", paddingBottom: "6px", borderBottom: "1px solid #F3F4F6", marginBottom: "12px" }}>
-                  <div style={{ width: "20px", height: "20px", borderRadius: "5px", backgroundColor: "#EEF2FF", color: "#4F46E5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700 }}>
+                  <div style={{ width: "20px", height: "20px", borderRadius: "5px", backgroundColor: "#FDF2F8", color: "#BE185D", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700 }}>
                     4
                   </div>
                   <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
@@ -781,7 +834,7 @@ export default function InternshipFormClient() {
                     rows={4}
                     value={formData.aboutYourself}
                     onChange={handleInputChange}
-                    placeholder="Briefly introduce yourself: your background, skills, practical projects you've worked on, and what you are passionate about..."
+                    placeholder="Briefly introduce yourself: your background, strengths, practical projects you've worked on, and what you are passionate about..."
                     style={{ width: "100%", padding: "10px 12px", fontSize: "14px", backgroundColor: "#FFFFFF", borderRadius: "8px", border: `1px solid ${errors.aboutYourself ? "#EF4444" : "#E5E7EB"}`, color: "#111827", outline: "none", resize: "vertical", lineHeight: 1.5 }}
                   />
                   {errors.aboutYourself ? (
@@ -817,7 +870,7 @@ export default function InternshipFormClient() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  style={{ width: "100%", height: "44px", borderRadius: "8px", backgroundColor: isSubmitting ? "#818CF8" : "#4F46E5", color: "#FFFFFF", fontSize: "14px", fontWeight: 700, border: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", cursor: isSubmitting ? "not-allowed" : "pointer", boxShadow: "0 1px 3px rgba(79, 70, 229, 0.2)" }}
+                  style={{ width: "100%", height: "44px", borderRadius: "8px", backgroundColor: isSubmitting ? "#A78BFA" : "#7C3AED", color: "#FFFFFF", fontSize: "14px", fontWeight: 700, border: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", cursor: isSubmitting ? "not-allowed" : "pointer", boxShadow: "0 1px 3px rgba(124, 58, 237, 0.2)" }}
                 >
                   {isSubmitting ? (
                     <>
@@ -833,8 +886,8 @@ export default function InternshipFormClient() {
                 </button>
 
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", fontSize: "11px", color: "#6B7280", textAlign: "center" }}>
-                  <Lock size={12} color="#9CA3AF" />
-                  <span>Your details are kept confidential and used solely for screening.</span>
+                  <ShieldCheck size={13} color="#BE185D" />
+                  <span>Exclusive Women’s Hiring Cohort • Safe & Equal Opportunity Recruitment.</span>
                 </div>
               </div>
             </form>
@@ -846,7 +899,7 @@ export default function InternshipFormClient() {
       <footer style={{ padding: "14px 12px", borderTop: "1px solid #E5E7EB", backgroundColor: "#FFFFFF", textAlign: "center", fontSize: "12px", color: "#6B7280" }}>
         <div style={{ maxWidth: "760px", margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "6px" }}>
           <div>© {new Date().getFullYear()} First Option Agency. All rights reserved.</div>
-          <div style={{ color: "#9CA3AF" }}>Internship Recruitment Portal</div>
+          <div style={{ color: "#BE185D", fontWeight: 600 }}>Women’s Empowerment & Internship Cell</div>
         </div>
       </footer>
     </div>

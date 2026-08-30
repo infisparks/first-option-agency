@@ -2,16 +2,16 @@ import { Metadata } from "next";
 import InternshipFormClient from "./InternshipFormClient";
 
 export const metadata: Metadata = {
-  title: "Internship Application Form | First Option Agency",
+  title: "Women's Internship Application | First Option Agency",
   description:
-    "Apply for internship roles in Full Stack Development, React/Next.js, UI/UX Design, Graphic Design, Video Editing, Market Research, and Performance Marketing at First Option Agency.",
+    "Exclusive Internship Drive for female candidates and girls across Graphic Design, Web Development (HTML, JS, Next.js), Video Editing (Premiere Pro), Market Research, and Performance Marketing.",
   alternates: {
     canonical: "/internship",
   },
   openGraph: {
-    title: "Internship Application | First Option Agency",
+    title: "Women's Internship Drive | First Option Agency",
     description:
-      "Apply for high-impact internship opportunities across Web Development, Graphic Design, Video Editing, UI/UX, and Performance Marketing.",
+      "Exclusive internship opportunities for female students and graduates in Web Development, Graphic Design, Video Editing, and Performance Marketing.",
     url: "https://firstoptionagency.com/internship",
     type: "website",
   },
