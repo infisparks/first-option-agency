@@ -1,13 +1,10 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import {
   CheckCircle2,
   AlertCircle,
-  X,
-  Plus,
-  Search,
   ArrowRight,
   ChevronDown,
   Loader2,
@@ -17,9 +14,12 @@ import {
   Sparkles,
   Heart,
   ShieldCheck,
+  TrendingUp,
+  Video,
+  Target,
 } from "lucide-react";
 import {
-  SKILL_CATEGORIES,
+  TARGET_SKILLS,
   QUALIFICATION_OPTIONS,
   PASSING_YEARS,
   COUNTRY_CODES,
@@ -68,24 +68,24 @@ export default function InternshipFormClient() {
   const [applicationId, setApplicationId] = useState("");
   const [copiedId, setCopiedId] = useState(false);
 
-  // Searchable Skills Combobox State
-  const [skillSearch, setSkillSearch] = useState("");
-  const [isSkillDropdownOpen, setIsSkillDropdownOpen] = useState(false);
-  const skillDropdownRef = useRef<HTMLDivElement>(null);
+  // Toggle skill selection
+  const toggleSkill = (skillTitle: string) => {
+    setFormData((prev) => {
+      const exists = prev.skills.includes(skillTitle);
+      const updated = exists
+        ? prev.skills.filter((s) => s !== skillTitle)
+        : [...prev.skills, skillTitle];
+      return { ...prev, skills: updated };
+    });
 
-  // Close skill dropdown when clicked outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        skillDropdownRef.current &&
-        !skillDropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsSkillDropdownOpen(false);
-      }
+    if (errors.skills) {
+      setErrors((prev) => {
+        const updated = { ...prev };
+        delete updated.skills;
+        return updated;
+      });
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  };
 
   // Handle Input Changes
   const handleInputChange = (
@@ -155,55 +155,6 @@ export default function InternshipFormClient() {
     }
   };
 
-  // Skill Management
-  const addSkill = (skill: string) => {
-    const trimmed = skill.trim();
-    if (!trimmed) return;
-
-    if (!formData.skills.some((s) => s.toLowerCase() === trimmed.toLowerCase())) {
-      setFormData((prev) => ({
-        ...prev,
-        skills: [...prev.skills, trimmed],
-      }));
-    }
-    setSkillSearch("");
-    setIsSkillDropdownOpen(false);
-    if (errors.skills) {
-      setErrors((prev) => {
-        const updated = { ...prev };
-        delete updated.skills;
-        return updated;
-      });
-    }
-  };
-
-  const removeSkill = (skillToRemove: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      skills: prev.skills.filter((s) => s !== skillToRemove),
-    }));
-  };
-
-  const handleSkillKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      if (skillSearch.trim()) {
-        addSkill(skillSearch);
-      }
-    }
-  };
-
-  // Filter skills for combobox
-  const allFlattenedSkills = Array.from(
-    new Set(SKILL_CATEGORIES.flatMap((c) => c.skills))
-  );
-
-  const filteredSkills = allFlattenedSkills.filter(
-    (skill) =>
-      skill.toLowerCase().includes(skillSearch.toLowerCase()) &&
-      !formData.skills.some((s) => s.toLowerCase() === skill.toLowerCase())
-  );
-
   // Form Validation (100% Client-Side)
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -257,7 +208,7 @@ export default function InternshipFormClient() {
     }
 
     if (formData.skills.length === 0) {
-      newErrors.skills = "Please search and add at least 1 skill";
+      newErrors.skills = "Please tick at least 1 role/skill below";
     }
 
     if (!formData.aboutYourself.trim()) {
@@ -270,7 +221,7 @@ export default function InternshipFormClient() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Form Submit Handler (Firestore + Local Backup)
+  // Form Submit Handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -294,14 +245,14 @@ export default function InternshipFormClient() {
       ...formData,
     };
 
-    // Save to Firebase Realtime Database
+    // 1. Save to Firebase Realtime Database
     try {
       await saveApplicationToRealtimeDb(applicationRecord);
     } catch (rtdbErr) {
       console.warn("Realtime DB save warning:", rtdbErr);
     }
 
-    // Trigger WhatsApp notifications (Candidate Confirmation + Admin Lead Alert)
+    // 2. Trigger WhatsApp notifications to Candidate & all 3 Admin numbers
     triggerInternshipWhatsAppNotifications({
       candidatePhone: `${formData.countryCode}${formData.phone}`,
       candidateName: formData.fullName,
@@ -310,7 +261,7 @@ export default function InternshipFormClient() {
       city: formData.city,
     });
 
-    // Also preserve locally in localStorage
+    // 3. Save to localStorage backup
     try {
       const existingApplications = JSON.parse(
         localStorage.getItem("foa_internship_applications") || "[]"
@@ -361,6 +312,20 @@ export default function InternshipFormClient() {
     setCopiedId(false);
   };
 
+  // Skill Icon helper
+  const getSkillIcon = (id: string) => {
+    switch (id) {
+      case "sales_consultant":
+        return <TrendingUp size={18} color="#7C3AED" />;
+      case "meta_ads_manager":
+        return <Target size={18} color="#7C3AED" />;
+      case "video_editing":
+        return <Video size={18} color="#7C3AED" />;
+      default:
+        return <Check size={18} color="#7C3AED" />;
+    }
+  };
+
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#F5F6F8", color: "#111827", display: "flex", flexDirection: "column", fontFamily: "var(--font-outfit), 'Inter', -apple-system, sans-serif" }}>
       {/* ─── Header Bar ─── */}
@@ -403,7 +368,7 @@ export default function InternshipFormClient() {
               Thank You, {formData.fullName}!
             </div>
             <div style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.5, marginBottom: "20px" }}>
-              Your application has been securely recorded. Our hiring team will review your profile.
+              Your application has been successfully received. Our recruitment team will review your profile.
             </div>
 
             {/* Receipt Summary Card */}
@@ -448,11 +413,11 @@ export default function InternshipFormClient() {
               </div>
 
               <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: "8px", marginTop: "8px" }}>
-                <span style={{ color: "#6B7280", display: "block", marginBottom: "6px" }}>Skills Added:</span>
+                <span style={{ color: "#6B7280", display: "block", marginBottom: "6px" }}>Selected Role Tracks:</span>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
                   {formData.skills.map((skill) => (
-                    <span key={skill} style={{ fontSize: "11px", fontWeight: 600, backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", color: "#374151", padding: "2px 6px", borderRadius: "4px" }}>
-                      {skill}
+                    <span key={skill} style={{ fontSize: "11px", fontWeight: 600, backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", color: "#7C3AED", padding: "2px 8px", borderRadius: "4px" }}>
+                      ✓ {skill}
                     </span>
                   ))}
                 </div>
@@ -478,7 +443,7 @@ export default function InternshipFormClient() {
         ) : (
           /* ─── CLEAN APPLICATION FORM ─── */
           <div style={{ backgroundColor: "#FFFFFF", borderRadius: "14px", border: "1px solid #E5E7EB", boxShadow: "0 2px 8px rgba(0,0,0,0.03)", overflow: "hidden" }}>
-            {/* Form Title Banner with Exclusive Female Cohort Notice */}
+            {/* Form Title Banner */}
             <div style={{ padding: "18px 16px", borderBottom: "1px solid #E5E7EB", backgroundColor: "#FDF2F8" }}>
               <div style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "3px 9px", borderRadius: "999px", fontSize: "11px", fontWeight: 700, backgroundColor: "#FCE7F3", color: "#BE185D", border: "1px solid #FBCFE8", marginBottom: "6px" }}>
                 <Sparkles size={12} />
@@ -488,7 +453,7 @@ export default function InternshipFormClient() {
                 Women’s Internship Application Form
               </div>
               <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "3px", lineHeight: 1.4 }}>
-                This hiring drive is dedicated exclusively for female students & graduates to excel in creative design, web development, and marketing.
+                Please fill in your details and tick your interested role tracks below. Fields marked with <span style={{ color: "#EF4444", fontWeight: 700 }}>*</span> are required.
               </div>
             </div>
 
@@ -622,7 +587,7 @@ export default function InternshipFormClient() {
                   </div>
                 </div>
 
-                {/* Female Confirmation Pill */}
+                {/* Female Confirmation */}
                 <div style={{ marginTop: "12px", padding: "10px 12px", backgroundColor: "#FDF2F8", borderRadius: "8px", border: "1px solid #FCE7F3", display: "flex", alignItems: "center", gap: "10px" }} className={errors.isFemaleConfirmed ? "has-field-error" : ""}>
                   <input
                     type="checkbox"
@@ -715,115 +680,82 @@ export default function InternshipFormClient() {
                 </div>
               </div>
 
-              {/* ════════ SECTION 3: SKILLS (SEARCH & SELECT) ════════ */}
+              {/* ════════ SECTION 3: SKILLS / ROLE SELECTION (3 TICK OPTIONS) ════════ */}
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", paddingBottom: "6px", borderBottom: "1px solid #F3F4F6", marginBottom: "12px" }}>
                   <div style={{ width: "20px", height: "20px", borderRadius: "5px", backgroundColor: "#FDF2F8", color: "#BE185D", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700 }}>
                     3
                   </div>
                   <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
-                    Skills <span style={{ color: "#EF4444" }}>*</span>
+                    Select Internship Track(s) <span style={{ color: "#EF4444" }}>*</span>
                   </div>
                 </div>
 
                 <div className={errors.skills ? "has-field-error" : ""}>
-                  <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#374151", marginBottom: "4px" }}>
-                    Search & Add Skills (e.g. Graphic Design, HTML, JS, Next.js, Premiere Pro, Research)
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#374151", marginBottom: "8px" }}>
+                    Tick the role(s) you are interested in applying for:
                   </label>
 
-                  {/* Selected Skill Badges */}
-                  <div style={{ minHeight: "40px", padding: "6px", backgroundColor: "#F9FAFB", borderRadius: "8px", border: `1px solid ${errors.skills ? "#EF4444" : "#E5E7EB"}`, display: "flex", flexWrap: "wrap", alignItems: "center", gap: "5px", marginBottom: "8px" }}>
-                    {formData.skills.length === 0 ? (
-                      <span style={{ fontSize: "12px", color: "#9CA3AF", padding: "2px 4px" }}>
-                        Type in the search box below to search and select skills...
-                      </span>
-                    ) : (
-                      formData.skills.map((skill) => (
-                        <span
-                          key={skill}
-                          style={{ display: "inline-flex", alignItems: "center", gap: "4px", backgroundColor: "#FFFFFF", border: "1px solid #FBCFE8", color: "#BE185D", fontSize: "12px", fontWeight: 600, padding: "2px 8px", borderRadius: "6px" }}
-                        >
-                          <span>{skill}</span>
-                          <button
-                            type="button"
-                            onClick={() => removeSkill(skill)}
-                            style={{ background: "none", border: "none", color: "#9CA3AF", cursor: "pointer", display: "flex", alignItems: "center", padding: "0" }}
-                          >
-                            <X size={12} />
-                          </button>
-                        </span>
-                      ))
-                    )}
-                  </div>
-
-                  {/* Combobox Search Input */}
-                  <div style={{ position: "relative" }} ref={skillDropdownRef}>
-                    <div style={{ display: "flex", gap: "6px" }}>
-                      <div style={{ position: "relative", flex: 1 }}>
-                        <Search size={14} style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF", pointerEvents: "none" }} />
-                        <input
-                          type="text"
-                          value={skillSearch}
-                          onChange={(e) => {
-                            setSkillSearch(e.target.value);
-                            setIsSkillDropdownOpen(true);
+                  {/* 3 Interactive Tick Cards */}
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "10px" }}>
+                    {TARGET_SKILLS.map((skill) => {
+                      const isChecked = formData.skills.includes(skill.title);
+                      return (
+                        <div
+                          key={skill.id}
+                          onClick={() => toggleSkill(skill.title)}
+                          style={{
+                            padding: "14px 12px",
+                            borderRadius: "10px",
+                            border: `1.5px solid ${isChecked ? "#7C3AED" : "#E5E7EB"}`,
+                            backgroundColor: isChecked ? "#F5F3FF" : "#FFFFFF",
+                            cursor: "pointer",
+                            transition: "all 0.2s ease",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "6px",
+                            boxShadow: isChecked ? "0 2px 8px rgba(124, 58, 237, 0.08)" : "none",
                           }}
-                          onFocus={() => setIsSkillDropdownOpen(true)}
-                          onKeyDown={handleSkillKeyDown}
-                          placeholder="Type skill name to search (e.g. Next.js, Premiere Pro, Research) or custom skill..."
-                          style={{ width: "100%", height: "40px", padding: "0 10px 0 32px", fontSize: "13px", backgroundColor: "#FFFFFF", borderRadius: "8px", border: "1px solid #E5E7EB", color: "#111827", outline: "none" }}
-                        />
-                      </div>
-
-                      {skillSearch.trim() && (
-                        <button
-                          type="button"
-                          onClick={() => addSkill(skillSearch)}
-                          style={{ padding: "0 12px", height: "40px", backgroundColor: "#7C3AED", color: "#FFFFFF", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px", cursor: "pointer", flexShrink: 0 }}
                         >
-                          <Plus size={14} />
-                          <span>Add</span>
-                        </button>
-                      )}
-                    </div>
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              {getSkillIcon(skill.id)}
+                              <span style={{ fontSize: "14px", fontWeight: 700, color: isChecked ? "#7C3AED" : "#111827" }}>
+                                {skill.title}
+                              </span>
+                            </div>
 
-                    {/* Popover Dropdown Results */}
-                    {isSkillDropdownOpen && (
-                      <div style={{ position: "absolute", left: 0, right: 0, top: "calc(100% + 4px)", maxHeight: "200px", overflowY: "auto", backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: "8px", boxShadow: "0 8px 24px rgba(0,0,0,0.1)", zIndex: 50, padding: "4px" }}>
-                        {skillSearch.trim() &&
-                          !allFlattenedSkills.some(
-                            (s) => s.toLowerCase() === skillSearch.trim().toLowerCase()
-                          ) && (
-                            <button
-                              type="button"
-                              onClick={() => addSkill(skillSearch)}
-                              style={{ width: "100%", padding: "7px 10px", textAlign: "left", fontSize: "12px", fontWeight: 600, color: "#7C3AED", backgroundColor: "#F5F3FF", borderRadius: "6px", border: "none", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", marginBottom: "4px" }}
+                            {/* Checkbox Tick Visual */}
+                            <div
+                              style={{
+                                width: "20px",
+                                height: "20px",
+                                borderRadius: "6px",
+                                border: `1.5px solid ${isChecked ? "#7C3AED" : "#D1D5DB"}`,
+                                backgroundColor: isChecked ? "#7C3AED" : "#FFFFFF",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: "#FFFFFF",
+                                transition: "all 0.2s ease",
+                              }}
                             >
-                              <span>+ Add &ldquo;{skillSearch.trim()}&rdquo; as custom skill</span>
-                              <span style={{ fontSize: "10px", textTransform: "uppercase", backgroundColor: "#DDD6FE", padding: "1px 4px", borderRadius: "3px" }}>Custom</span>
-                            </button>
-                          )}
+                              {isChecked && <Check size={14} strokeWidth={3} />}
+                            </div>
+                          </div>
 
-                        {filteredSkills.slice(0, 15).map((skill) => (
-                          <button
-                            key={skill}
-                            type="button"
-                            onClick={() => addSkill(skill)}
-                            style={{ width: "100%", padding: "7px 10px", textAlign: "left", fontSize: "13px", color: "#374151", backgroundColor: "transparent", border: "none", borderRadius: "6px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#F3F4F6")}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                          >
-                            <span>{skill}</span>
-                            <Plus size={12} color="#9CA3AF" />
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                          <div style={{ fontSize: "11px", color: "#6B7280", lineHeight: 1.35 }}>
+                            {skill.desc}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
 
                   {errors.skills && (
-                    <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "3px", fontWeight: 500 }}>
-                      {errors.skills}
+                    <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "6px", fontWeight: 500, display: "flex", alignItems: "center", gap: "4px" }}>
+                      <AlertCircle size={12} />
+                      <span>{errors.skills}</span>
                     </div>
                   )}
                 </div>
@@ -851,7 +783,7 @@ export default function InternshipFormClient() {
                     rows={4}
                     value={formData.aboutYourself}
                     onChange={handleInputChange}
-                    placeholder="Briefly introduce yourself: your background, strengths, practical projects you've worked on, and what you are passionate about..."
+                    placeholder="Briefly introduce yourself: your background, strengths, practical projects or reels you've created, and why you are excited to join us..."
                     style={{ width: "100%", padding: "10px 12px", fontSize: "14px", backgroundColor: "#FFFFFF", borderRadius: "8px", border: `1px solid ${errors.aboutYourself ? "#EF4444" : "#E5E7EB"}`, color: "#111827", outline: "none", resize: "vertical", lineHeight: 1.5 }}
                   />
                   {errors.aboutYourself ? (
@@ -865,10 +797,10 @@ export default function InternshipFormClient() {
                   )}
                 </div>
 
-                {/* Resume Link */}
+                {/* Resume / Portfolio Link */}
                 <div>
                   <label htmlFor="resumeUrl" style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#374151", marginBottom: "4px" }}>
-                    Resume / Drive / Portfolio Link <span style={{ fontSize: "11px", fontWeight: 400, color: "#6B7280" }}>(Optional)</span>
+                    Resume / Drive / Video Portfolio Link <span style={{ fontSize: "11px", fontWeight: 400, color: "#6B7280" }}>(Optional)</span>
                   </label>
                   <input
                     type="url"
@@ -876,7 +808,7 @@ export default function InternshipFormClient() {
                     name="resumeUrl"
                     value={formData.resumeUrl}
                     onChange={handleInputChange}
-                    placeholder="https://drive.google.com/file/... or link"
+                    placeholder="https://drive.google.com/file/... or portfolio link"
                     style={{ width: "100%", height: "40px", padding: "0 12px", fontSize: "14px", backgroundColor: "#FFFFFF", borderRadius: "8px", border: "1px solid #E5E7EB", color: "#111827", outline: "none" }}
                   />
                 </div>
