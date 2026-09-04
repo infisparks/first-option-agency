@@ -22,6 +22,7 @@ import {
   Receipt,
   FileCheck,
   Heart,
+  Bot,
 } from "lucide-react";
 import {
   TARGET_SKILLS,
@@ -543,13 +544,15 @@ export default function InternshipFormClient() {
   const getSkillIcon = (id: string) => {
     switch (id) {
       case "sales_consultant":
-        return <TrendingUp size={18} color="#7C3AED" />;
+        return <TrendingUp size={18} color={isWomenMode ? "#BE185D" : "#7C3AED"} />;
       case "meta_ads_manager":
-        return <Target size={18} color="#7C3AED" />;
+        return <Target size={18} color={isWomenMode ? "#BE185D" : "#7C3AED"} />;
       case "video_editing":
-        return <Video size={18} color="#7C3AED" />;
+        return <Video size={18} color={isWomenMode ? "#BE185D" : "#7C3AED"} />;
+      case "agentic_ai":
+        return <Bot size={18} color={isWomenMode ? "#BE185D" : "#7C3AED"} />;
       default:
-        return <Check size={18} color="#7C3AED" />;
+        return <Check size={18} color={isWomenMode ? "#BE185D" : "#7C3AED"} />;
     }
   };
 

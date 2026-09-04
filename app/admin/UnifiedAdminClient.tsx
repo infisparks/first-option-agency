@@ -9,7 +9,7 @@ import {
   onAuthStateChanged,
   User,
 } from "firebase/auth";
-import { ref, get } from "firebase/database";
+import { ref, get, remove } from "firebase/database";
 import { auth, rtdb, ADMIN_UID } from "@/app/lib/firebase";
 import {
   Lock,
@@ -34,6 +34,8 @@ import {
   TrendingUp,
   Heart,
   Globe,
+  Trash2,
+  X,
 } from "lucide-react";
 
 // Types
@@ -122,6 +124,94 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
 
   const [salesSearch, setSalesSearch] = useState("");
   const [salesFilter, setSalesFilter] = useState<"ALL" | "EXPERIENCED" | "AGENCY">("ALL");
+
+  // Delete Modal State
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{
+    type: "internship" | "sales";
+    applicationId: string;
+    fullName: string;
+  } | null>(null);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const openDeleteModal = (
+    type: "internship" | "sales",
+    applicationId: string,
+    fullName: string
+  ) => {
+    setItemToDelete({ type, applicationId, fullName });
+    setDeletePassword("");
+    setDeleteError("");
+    setDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    if (isDeleting) return;
+    setDeleteModalOpen(false);
+    setItemToDelete(null);
+    setDeletePassword("");
+    setDeleteError("");
+  };
+
+  const handleConfirmDelete = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setDeleteError("");
+
+    if (deletePassword !== "mudassir") {
+      setDeleteError("Incorrect password. Please enter the correct authorization password.");
+      return;
+    }
+
+    if (!itemToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      const nodeName =
+        itemToDelete.type === "internship"
+          ? "internship_applications"
+          : "sales_consultant_applications";
+
+      const targetRef = ref(rtdb, `${nodeName}/${itemToDelete.applicationId}`);
+      await remove(targetRef);
+
+      if (itemToDelete.type === "internship") {
+        setInternships((prev) =>
+          prev.filter((a) => a.applicationId !== itemToDelete.applicationId)
+        );
+        try {
+          const localSaved = JSON.parse(
+            localStorage.getItem("foa_internship_applications") || "[]"
+          );
+          const updated = localSaved.filter(
+            (a: any) => a.applicationId !== itemToDelete.applicationId
+          );
+          localStorage.setItem("foa_internship_applications", JSON.stringify(updated));
+        } catch (storageErr) {}
+      } else {
+        setSalesApps((prev) =>
+          prev.filter((a) => a.applicationId !== itemToDelete.applicationId)
+        );
+        try {
+          const localSaved = JSON.parse(
+            localStorage.getItem("foa_sales_applications") || "[]"
+          );
+          const updated = localSaved.filter(
+            (a: any) => a.applicationId !== itemToDelete.applicationId
+          );
+          localStorage.setItem("foa_sales_applications", JSON.stringify(updated));
+        } catch (storageErr) {}
+      }
+
+      closeDeleteModal();
+    } catch (err: any) {
+      console.error("Delete error:", err);
+      setDeleteError(err?.message || "Failed to delete application from database.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // Sync tab from query param if changed
   useEffect(() => {
@@ -1333,17 +1423,44 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                               )}
                             </div>
 
-                            <div
-                              style={{
-                                fontSize: "11px",
-                                color: "#9CA3AF",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "4px",
-                              }}
-                            >
-                              <Calendar size={12} />
-                              <span>{app.submittedAt ? new Date(app.submittedAt).toLocaleString() : "Recent"}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              <div
+                                style={{
+                                  fontSize: "11px",
+                                  color: "#9CA3AF",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                }}
+                              >
+                                <Calendar size={12} />
+                                <span>{app.submittedAt ? new Date(app.submittedAt).toLocaleString() : "Recent"}</span>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  openDeleteModal("internship", app.applicationId, app.fullName)
+                                }
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                  fontSize: "11px",
+                                  fontWeight: 600,
+                                  color: "#EF4444",
+                                  backgroundColor: "#FEF2F2",
+                                  border: "1px solid #FECACA",
+                                  padding: "3px 8px",
+                                  borderRadius: "6px",
+                                  cursor: "pointer",
+                                  transition: "all 0.15s ease",
+                                }}
+                                title="Delete this application"
+                              >
+                                <Trash2 size={12} />
+                                <span>Delete</span>
+                              </button>
                             </div>
                           </div>
 
@@ -1880,19 +1997,46 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                             </span>
                           </div>
 
-                          <div
-                            style={{
-                              fontSize: "11px",
-                              color: "#9CA3AF",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "4px",
-                            }}
-                          >
-                            <Calendar size={12} />
-                            <span>{app.submittedAt ? new Date(app.submittedAt).toLocaleString() : "Recent"}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              <div
+                                style={{
+                                  fontSize: "11px",
+                                  color: "#9CA3AF",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                }}
+                              >
+                                <Calendar size={12} />
+                                <span>{app.submittedAt ? new Date(app.submittedAt).toLocaleString() : "Recent"}</span>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  openDeleteModal("sales", app.applicationId, app.fullName)
+                                }
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                  fontSize: "11px",
+                                  fontWeight: 600,
+                                  color: "#EF4444",
+                                  backgroundColor: "#FEF2F2",
+                                  border: "1px solid #FECACA",
+                                  padding: "3px 8px",
+                                  borderRadius: "6px",
+                                  cursor: "pointer",
+                                  transition: "all 0.15s ease",
+                                }}
+                                title="Delete this application"
+                              >
+                                <Trash2 size={12} />
+                                <span>Delete</span>
+                              </button>
+                            </div>
                           </div>
-                        </div>
 
                         <div
                           style={{
@@ -2005,6 +2149,215 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                 )}
               </div>
             )}
+          </div>
+        )}
+        {/* ─── DELETE VERIFICATION MODAL POPUP ─── */}
+        {deleteModalOpen && itemToDelete && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 100,
+              backgroundColor: "rgba(17, 24, 39, 0.6)",
+              backdropFilter: "blur(4px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "16px",
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: "#FFFFFF",
+                borderRadius: "16px",
+                border: "1px solid #E5E7EB",
+                boxShadow: "0 20px 30px rgba(0,0,0,0.15)",
+                width: "100%",
+                maxWidth: "430px",
+                padding: "24px",
+                position: "relative",
+              }}
+            >
+              <button
+                type="button"
+                onClick={closeDeleteModal}
+                disabled={isDeleting}
+                style={{
+                  position: "absolute",
+                  top: "16px",
+                  right: "16px",
+                  background: "none",
+                  border: "none",
+                  color: "#9CA3AF",
+                  cursor: isDeleting ? "not-allowed" : "pointer",
+                  padding: "4px",
+                }}
+              >
+                <X size={18} />
+              </button>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+                <div
+                  style={{
+                    width: "44px",
+                    height: "44px",
+                    borderRadius: "12px",
+                    backgroundColor: "#FEF2F2",
+                    color: "#DC2626",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Trash2 size={22} />
+                </div>
+                <div>
+                  <div style={{ fontSize: "16px", fontWeight: 700, color: "#111827" }}>
+                    Confirm Deletion
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#6B7280" }}>
+                    {itemToDelete.type === "internship"
+                      ? "Internship Application"
+                      : "Sales Consultant Application"}
+                  </div>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  fontSize: "13px",
+                  color: "#4B5563",
+                  lineHeight: 1.5,
+                  backgroundColor: "#F9FAFB",
+                  padding: "12px",
+                  borderRadius: "8px",
+                  border: "1px solid #E5E7EB",
+                  marginBottom: "16px",
+                }}
+              >
+                <div>
+                  Candidate: <strong>{itemToDelete.fullName}</strong>
+                </div>
+                <div style={{ fontSize: "12px", color: "#7C3AED", fontFamily: "monospace", marginTop: "2px" }}>
+                  ID: {itemToDelete.applicationId}
+                </div>
+                <div style={{ fontSize: "11px", color: "#DC2626", marginTop: "6px", fontWeight: 500 }}>
+                  ⚠️ This will permanently remove this record from the database.
+                </div>
+              </div>
+
+              {deleteError && (
+                <div
+                  style={{
+                    padding: "8px 12px",
+                    backgroundColor: "#FEF2F2",
+                    border: "1px solid #FCA5A5",
+                    borderRadius: "6px",
+                    color: "#B91C1C",
+                    fontSize: "12px",
+                    marginBottom: "14px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                  }}
+                >
+                  <AlertTriangle size={14} color="#DC2626" />
+                  <span>{deleteError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleConfirmDelete}>
+                <div style={{ marginBottom: "18px" }}>
+                  <label
+                    htmlFor="deletePassword"
+                    style={{
+                      display: "block",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      color: "#374151",
+                      marginBottom: "6px",
+                    }}
+                  >
+                    Enter Authorization Password <span style={{ color: "#EF4444" }}>*</span>
+                  </label>
+                  <input
+                    type="password"
+                    id="deletePassword"
+                    value={deletePassword}
+                    onChange={(e) => setDeletePassword(e.target.value)}
+                    placeholder="Enter password to delete..."
+                    required
+                    autoFocus
+                    style={{
+                      width: "100%",
+                      height: "40px",
+                      padding: "0 12px",
+                      fontSize: "13px",
+                      backgroundColor: "#FFFFFF",
+                      borderRadius: "8px",
+                      border: "1px solid #D1D5DB",
+                      color: "#111827",
+                      outline: "none",
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                  <button
+                    type="button"
+                    onClick={closeDeleteModal}
+                    disabled={isDeleting}
+                    style={{
+                      padding: "8px 16px",
+                      borderRadius: "8px",
+                      backgroundColor: "#FFFFFF",
+                      border: "1px solid #D1D5DB",
+                      color: "#374151",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      cursor: isDeleting ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={isDeleting}
+                    style={{
+                      padding: "8px 18px",
+                      borderRadius: "8px",
+                      backgroundColor: isDeleting ? "#F87171" : "#DC2626",
+                      color: "#FFFFFF",
+                      fontSize: "13px",
+                      fontWeight: 700,
+                      border: "none",
+                      cursor: isDeleting ? "not-allowed" : "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      boxShadow: "0 2px 6px rgba(220, 38, 38, 0.25)",
+                    }}
+                  >
+                    {isDeleting ? (
+                      <>
+                        <Loader2 size={14} className="animate-spin" />
+                        <span>Deleting...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 size={14} />
+                        <span>Delete Record</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
       </main>

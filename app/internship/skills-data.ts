@@ -20,6 +20,11 @@ export const TARGET_SKILLS: SkillOption[] = [
     title: "Video Editing",
     desc: "Commercial video editing, reels, shorts & creative post-production",
   },
+  {
+    id: "agentic_ai",
+    title: "Agentic AI",
+    desc: "Autonomous AI agents, prompt engineering, LLMs & workflow automations",
+  },
 ];
 
 export const QUALIFICATION_OPTIONS = [
