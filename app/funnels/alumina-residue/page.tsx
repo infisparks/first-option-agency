@@ -64,7 +64,24 @@ function SampleFormModal({ open, onClose }: { open: boolean; onClose: () => void
     e.preventDefault();
     if (!name.trim() || !phone.trim()) return;
     setLoading(true);
-    setTimeout(() => { setLoading(false); setSent(true); }, 1200);
+    setTimeout(() => {
+      setLoading(false);
+      setSent(true);
+
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set("type", "sample-request");
+        url.searchParams.set("status", "submit");
+        window.history.pushState({}, "", url.toString());
+
+        if (typeof window !== "undefined" && (window as any).fbq) {
+          (window as any).fbq("track", "Lead", {
+            content_name: "alumina-sample-request",
+            status: "submit",
+          });
+        }
+      } catch (err) {}
+    }, 1200);
   };
 
   return (

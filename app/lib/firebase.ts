@@ -38,6 +38,8 @@ export interface InternshipApplicationPayload {
   resumeUrl: string;
   submittedAt: string;
   // Lead type & Payment fields
+  type?: string;
+  status?: string;
   leadType?: "women" | "common" | "amount" | string;
   programTitle?: string;
   paymentStatus?: "Paid" | "Free" | "Unpaid" | "Pending" | string;
@@ -57,7 +59,8 @@ export async function saveApplicationToRealtimeDb(
     const appRef = ref(rtdb, `internship_applications/${data.applicationId}`);
     await set(appRef, {
       ...data,
-      status: "new",
+      type: data.type || data.leadType || "internship",
+      status: data.status || "submit",
       createdAt: serverTimestamp(),
     });
 
@@ -77,6 +80,8 @@ export interface SalesConsultantApplicationPayload {
   email: string;
   age: string;
   programTitle?: string;
+  type?: string;
+  status?: string;
   // Sales Experience
   hasSalesExperience: boolean;
   salesExperienceDetails?: string;
@@ -98,7 +103,8 @@ export async function saveSalesConsultantApplicationToRealtimeDb(
     const appRef = ref(rtdb, `sales_consultant_applications/${data.applicationId}`);
     await set(appRef, {
       ...data,
-      status: "new",
+      type: data.type || "sales-consultant",
+      status: data.status || "submit",
       createdAt: serverTimestamp(),
     });
 

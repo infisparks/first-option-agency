@@ -85,6 +85,7 @@ export default function InternshipFormClient() {
   // 3. "women": default (no params) OR ?type=women -> locked to female + women content + NO payment (free)
   const hasPaymentParam = searchParams.has("payment");
   const typeParam = (searchParams.get("type") || "").toLowerCase().trim();
+  const statusParam = (searchParams.get("status") || "").toLowerCase().trim();
 
   const mode: "women" | "common" | "amount" =
     hasPaymentParam || typeParam === "amount"
@@ -130,6 +131,16 @@ export default function InternshipFormClient() {
   const [copiedId, setCopiedId] = useState(false);
   const [paymentError, setPaymentError] = useState<string>("");
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo | null>(null);
+
+  // Show submission confirmation if URL has status=submit (e.g. Meta Event Setup Tool / Direct URL tracking)
+  useEffect(() => {
+    if (statusParam === "submit") {
+      setSubmitSuccess(true);
+      if (!applicationId) {
+        setApplicationId("FOA-INTERN-SUBMITTED");
+      }
+    }
+  }, [statusParam]);
 
   // Preload Razorpay script if in amount mode
   useEffect(() => {
@@ -374,6 +385,8 @@ export default function InternshipFormClient() {
             aboutYourself: formData.aboutYourself,
             resumeUrl: formData.resumeUrl,
             leadType: "amount",
+            type: "amount",
+            status: "submit",
             programTitle: PROGRAM_TITLES.PAID,
             paymentStatus: "Paid",
             amountPaid: amountInRupees,
@@ -426,6 +439,25 @@ export default function InternshipFormClient() {
           setApplicationId(generatedId);
           setIsSubmitting(false);
           setSubmitSuccess(true);
+
+          // Update URL with status=submit and type=amount for Meta Pixel & Event Setup Tool tracking
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.set("type", "amount");
+            url.searchParams.set("status", "submit");
+            window.history.pushState({}, "", url.toString());
+
+            // Fire Meta Pixel standard Lead event if pixel is initialized
+            if (typeof window !== "undefined" && (window as any).fbq) {
+              (window as any).fbq("track", "Lead", {
+                content_name: "internship-amount",
+                status: "submit",
+              });
+            }
+          } catch (err) {
+            console.warn("URL update error:", err);
+          }
+
           window.scrollTo({ top: 0, behavior: "smooth" });
         },
         modal: {
@@ -475,6 +507,8 @@ export default function InternshipFormClient() {
       aboutYourself: formData.aboutYourself,
       resumeUrl: formData.resumeUrl,
       leadType: assignedLeadType,
+      type: assignedLeadType,
+      status: "submit",
       programTitle: assignedProgramTitle,
       paymentStatus: "Free",
       amountPaid: 0,
@@ -515,6 +549,25 @@ export default function InternshipFormClient() {
     setApplicationId(generatedId);
     setIsSubmitting(false);
     setSubmitSuccess(true);
+
+    // Update URL with status=submit and type for Meta Pixel & Event Setup Tool tracking
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("type", assignedLeadType);
+      url.searchParams.set("status", "submit");
+      window.history.pushState({}, "", url.toString());
+
+      // Fire Meta Pixel standard Lead event if pixel is initialized
+      if (typeof window !== "undefined" && (window as any).fbq) {
+        (window as any).fbq("track", "Lead", {
+          content_name: `internship-${assignedLeadType}`,
+          status: "submit",
+        });
+      }
+    } catch (err) {
+      console.warn("URL update error:", err);
+    }
+
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -549,6 +602,15 @@ export default function InternshipFormClient() {
     setCopiedId(false);
     setPaymentError("");
     setPaymentInfo(null);
+
+    // Clean up status query param from URL
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("status");
+      window.history.pushState({}, "", url.toString());
+    } catch (e) {}
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Skill Icon helper

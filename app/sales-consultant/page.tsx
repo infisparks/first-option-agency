@@ -43,6 +43,49 @@ export const metadata: Metadata = {
   },
 };
 
+import { Suspense } from "react";
+import { Loader2 } from "lucide-react";
+
 export default function SalesConsultantPage() {
-  return <SalesConsultantFormClient />;
+  return (
+    <Suspense
+      fallback={
+        <div
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "#F5F6F8",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "12px",
+            }}
+          >
+            <Loader2
+              size={36}
+              className="animate-spin"
+              style={{ color: "#7C3AED" }}
+            />
+            <span
+              style={{
+                fontSize: "14px",
+                color: "#6B7280",
+                fontWeight: 500,
+              }}
+            >
+              Loading Application Form...
+            </span>
+          </div>
+        </div>
+      }
+    >
+      <SalesConsultantFormClient />
+    </Suspense>
+  );
 }

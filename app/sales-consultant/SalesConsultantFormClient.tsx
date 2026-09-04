@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   CheckCircle2,
@@ -49,6 +50,10 @@ interface FormErrors {
 }
 
 export default function SalesConsultantFormClient() {
+  const searchParams = useSearchParams();
+  const statusParam = (searchParams.get("status") || "").toLowerCase().trim();
+  const typeParam = (searchParams.get("type") || "").toLowerCase().trim();
+
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
     countryCode: "+91",
@@ -69,6 +74,16 @@ export default function SalesConsultantFormClient() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [applicationId, setApplicationId] = useState("");
   const [copiedId, setCopiedId] = useState(false);
+
+  // Show submission confirmation if URL has status=submit (e.g. Meta Event Setup Tool / Direct URL tracking)
+  useEffect(() => {
+    if (statusParam === "submit") {
+      setSubmitSuccess(true);
+      if (!applicationId) {
+        setApplicationId("FOA-SALES-SUBMITTED");
+      }
+    }
+  }, [statusParam]);
 
   // Handle standard input changes
   const handleInputChange = (
@@ -254,6 +269,8 @@ export default function SalesConsultantFormClient() {
       email: formData.email,
       age: formData.age,
       programTitle: PROGRAM_TITLES.SALES,
+      type: "sales-consultant",
+      status: "submit",
       hasSalesExperience: formData.hasSalesExperience === "Yes",
       salesExperienceDetails: formData.salesExperienceDetails,
       hasAgencyOrCommissionSales: formData.hasAgencyOrCommissionSales === "Yes",
@@ -296,6 +313,25 @@ export default function SalesConsultantFormClient() {
     setApplicationId(generatedId);
     setIsSubmitting(false);
     setSubmitSuccess(true);
+
+    // Update URL with status=submit and type=sales-consultant for Meta Pixel & Event Setup Tool tracking
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("type", "sales-consultant");
+      url.searchParams.set("status", "submit");
+      window.history.pushState({}, "", url.toString());
+
+      // Fire Meta Pixel standard Lead event if pixel is initialized
+      if (typeof window !== "undefined" && (window as any).fbq) {
+        (window as any).fbq("track", "Lead", {
+          content_name: "sales-consultant",
+          status: "submit",
+        });
+      }
+    } catch (err) {
+      console.warn("URL update error:", err);
+    }
+
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -328,6 +364,16 @@ export default function SalesConsultantFormClient() {
     setSubmitSuccess(false);
     setApplicationId("");
     setCopiedId(false);
+
+    // Clean up status and type query params from URL
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("status");
+      url.searchParams.delete("type");
+      window.history.pushState({}, "", url.toString());
+    } catch (e) {}
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
