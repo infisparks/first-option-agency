@@ -22,7 +22,10 @@ import {
   saveSalesConsultantApplicationToRealtimeDb,
   SalesConsultantApplicationPayload,
 } from "@/app/lib/firebase";
-import { triggerSalesConsultantWhatsAppNotifications } from "@/app/lib/whatsapp";
+import {
+  triggerSalesConsultantWhatsAppNotifications,
+  PROGRAM_TITLES,
+} from "@/app/lib/whatsapp";
 
 interface FormData {
   fullName: string;
@@ -250,6 +253,7 @@ export default function SalesConsultantFormClient() {
       city: formData.city,
       email: formData.email,
       age: formData.age,
+      programTitle: PROGRAM_TITLES.SALES,
       hasSalesExperience: formData.hasSalesExperience === "Yes",
       salesExperienceDetails: formData.salesExperienceDetails,
       hasAgencyOrCommissionSales: formData.hasAgencyOrCommissionSales === "Yes",
@@ -272,6 +276,7 @@ export default function SalesConsultantFormClient() {
       applicationId: generatedId,
       candidateEmail: formData.email,
       city: formData.city,
+      programTitle: PROGRAM_TITLES.SALES,
     });
 
     // 3. Save to localStorage backup

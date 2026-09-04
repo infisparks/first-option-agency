@@ -31,7 +31,10 @@ import {
   COUNTRY_CODES,
 } from "./skills-data";
 import { saveApplicationToRealtimeDb, InternshipApplicationPayload } from "@/app/lib/firebase";
-import { triggerInternshipWhatsAppNotifications } from "@/app/lib/whatsapp";
+import {
+  triggerInternshipWhatsAppNotifications,
+  PROGRAM_TITLES,
+} from "@/app/lib/whatsapp";
 
 interface FormData {
   fullName: string;
@@ -343,6 +346,7 @@ export default function InternshipFormClient() {
         notes: {
           applicationId: generatedId,
           leadType: "amount",
+          programTitle: PROGRAM_TITLES.PAID,
           candidateName: formData.fullName,
           city: formData.city,
           skills: formData.skills.join(", "),
@@ -370,6 +374,7 @@ export default function InternshipFormClient() {
             aboutYourself: formData.aboutYourself,
             resumeUrl: formData.resumeUrl,
             leadType: "amount",
+            programTitle: PROGRAM_TITLES.PAID,
             paymentStatus: "Paid",
             amountPaid: amountInRupees,
             paymentId: paymentId,
@@ -384,13 +389,15 @@ export default function InternshipFormClient() {
             console.warn("Realtime DB save warning:", rtdbErr);
           }
 
-          // 2. WhatsApp Notification
+          // 2. WhatsApp Notification with Custom Title for Paid Track
           triggerInternshipWhatsAppNotifications({
             candidatePhone: `${formData.countryCode}${formData.phone}`,
             candidateName: formData.fullName,
             applicationId: generatedId,
             candidateEmail: formData.email,
             city: formData.city,
+            programTitle: PROGRAM_TITLES.PAID,
+            mode: "amount",
           });
 
           // 3. Save to localStorage backup
@@ -450,6 +457,7 @@ export default function InternshipFormClient() {
     // BRANCH B: FREE SUBMISSION (WOMEN MODE OR COMMON MODE)
     // ─────────────────────────────────────────────────────────────
     const assignedLeadType = isWomenMode ? "women" : "common";
+    const assignedProgramTitle = isWomenMode ? PROGRAM_TITLES.WOMEN : PROGRAM_TITLES.COMMON;
 
     const applicationRecord: InternshipApplicationPayload = {
       applicationId: generatedId,
@@ -467,6 +475,7 @@ export default function InternshipFormClient() {
       aboutYourself: formData.aboutYourself,
       resumeUrl: formData.resumeUrl,
       leadType: assignedLeadType,
+      programTitle: assignedProgramTitle,
       paymentStatus: "Free",
       amountPaid: 0,
     };
@@ -478,13 +487,15 @@ export default function InternshipFormClient() {
       console.warn("Realtime DB save warning:", rtdbErr);
     }
 
-    // 2. WhatsApp Notification
+    // 2. WhatsApp Notification with Dynamic Program Title
     triggerInternshipWhatsAppNotifications({
       candidatePhone: `${formData.countryCode}${formData.phone}`,
       candidateName: formData.fullName,
       applicationId: generatedId,
       candidateEmail: formData.email,
       city: formData.city,
+      programTitle: assignedProgramTitle,
+      mode: isWomenMode ? "women" : "common",
     });
 
     // 3. Save to localStorage backup

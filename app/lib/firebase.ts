@@ -39,6 +39,7 @@ export interface InternshipApplicationPayload {
   submittedAt: string;
   // Lead type & Payment fields
   leadType?: "women" | "common" | "amount" | string;
+  programTitle?: string;
   paymentStatus?: "Paid" | "Free" | "Unpaid" | "Pending" | string;
   amountPaid?: number;
   paymentId?: string;
@@ -75,6 +76,7 @@ export interface SalesConsultantApplicationPayload {
   city: string;
   email: string;
   age: string;
+  programTitle?: string;
   // Sales Experience
   hasSalesExperience: boolean;
   salesExperienceDetails?: string;

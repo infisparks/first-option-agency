@@ -119,6 +119,8 @@ export default {
               fullName: body.fullName || "",
               email: body.email || "",
               phone: body.phone || "",
+              programTitle: body.programTitle || "Paid Internship Program",
+              leadType: body.leadType || "amount",
             },
           }),
         });
@@ -193,6 +195,7 @@ export default {
           const orderId = paymentEntity?.order_id || orderEntity?.id || "";
           const notes = paymentEntity?.notes || orderEntity?.notes || {};
           const applicationId = notes.applicationId;
+          const programTitle = notes.programTitle || "Paid Internship Program";
 
           if (applicationId) {
             // Update Firebase Realtime Database record directly via REST API
@@ -208,6 +211,7 @@ export default {
                 paymentId: paymentId,
                 orderId: orderId,
                 amountPaid: 5000,
+                programTitle: programTitle,
                 paidAt: new Date().toISOString(),
                 webhookVerified: true,
               }),

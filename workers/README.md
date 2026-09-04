@@ -1,41 +1,59 @@
-# Cloudflare Worker for Razorpay & Firebase Webhook
+# Cloudflare Workers for First Option Agency
 
-This Cloudflare Worker handles Razorpay payments and webhooks without requiring any server-side backend in Next.js, keeping your Next.js application 100% static.
-
-## Features
-1. **Order Creation (`POST /create-order`)**: Generates an official Razorpay order for ₹5,000 using your live API keys.
-2. **Webhook Receiver (`POST /webhook`)**: Verifies HMAC SHA-256 signatures from Razorpay and updates the candidate's application in Firebase Realtime Database (`https://firstoptioncom-a0713-default-rtdb.firebaseio.com/internship_applications/{applicationId}.json`) directly via REST API.
-3. **CORS Enabled**: Accepts requests from `firstoptionagency.com` and `localhost`.
+This directory contains production-ready Cloudflare Workers for **Razorpay Payment / Webhooks** and **Meta WhatsApp Cloud API Proxy**.
 
 ---
 
-## Deployment Options
+## 1. WhatsApp Cloud API Worker (`whatsapp-proxy-worker.js`)
+**Worker Endpoint**: `https://whatappapi.infisparks.workers.dev/`
 
-### Option A: Via Cloudflare Dashboard (Quickest - 2 Minutes)
-1. Go to **Cloudflare Dashboard** -> **Workers & Pages** -> **Create Application** -> **Create Worker**.
-2. Name it (e.g. `first-option-razorpay-worker`) and click **Deploy**.
-3. Click **Edit Code** (Quick Edit) and paste the complete content of `razorpay-payment-worker.js`.
-4. Click **Deploy**.
-5. Copy your worker URL (e.g. `https://first-option-razorpay-worker.<subdomain>.workers.dev`).
+Proxies Meta WhatsApp Cloud API requests with CORS headers, formatting dynamic template parameters for both candidate confirmation and admin alerts.
 
-### Option B: Via Wrangler CLI
-Run from the `workers` directory:
+### Supported Templates & Variable Mappings:
+
+#### A. Candidate Confirmation (`internship_application_received`) - 3 Variables:
+- `{{1}}` : **Candidate Name** (e.g. `Rahul Sharma`)
+- `{{2}}` : **Custom Program Title** (e.g. `Women's Internship Drive` / `Sales Consultant Program` / `Internship Program` / `Paid Internship Program`)
+- `{{3}}` : **Application ID** (e.g. `FOA-WOMEN-2026-1234`)
+
+#### B. Admin Lead Alert (`internship_admin_lead_alert`) - 7 Variables:
+- `{{1}}` : **Candidate Name**
+- `{{2}}` : **Candidate Email**
+- `{{3}}` : **Candidate Phone**
+- `{{4}}` : **City**
+- `{{5}}` : **Application ID**
+- `{{6}}` : **Portal Link** (`https://firstoptionagency.com/admin`)
+- `{{7}}` : **Applied For / Program Title** (e.g. `Sales Consultant Program`, `Women's Internship Drive`, `Internship Program`, `Paid Internship Program`)
+
+### 4 Form Titles Configured:
+1. **Sales Consultant**: `"Sales Consultant Program"` (`app/sales-consultant`)
+2. **Women's Internship**: `"Women's Internship Drive"` (`app/internship` - default / `?type=women`)
+3. **Common Internship**: `"Internship Program"` (`app/internship?type=common`)
+4. **Paid Internship**: `"Paid Internship Program"` (`app/internship?payment` / `?type=amount`)
+
+---
+
+## 2. Razorpay & Firebase Webhook Worker (`razorpay-payment-worker.js`)
+
+Handles Razorpay orders and webhooks, writing verified payment records directly to Firebase Realtime Database.
+
+### Endpoints:
+- `POST /create-order`: Generates Razorpay Order for ₹5,000 (includes `programTitle` in order `notes`).
+- `POST /webhook`: Verifies HMAC SHA-256 signature from Razorpay and automatically flags `paymentStatus: "Paid"` in Firebase RTDB.
+- `GET /health`: Health check endpoint.
+
+---
+
+## Deployment Instructions
+
+### Option A: Quick Edit via Cloudflare Dashboard
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com) -> **Workers & Pages**.
+2. Select your worker (`whatappapi` or `first-option-razorpay-worker`).
+3. Click **Edit Code** (Quick Edit) -> Paste the respective worker script (`whatsapp-proxy-worker.js` or `razorpay-payment-worker.js`) -> Click **Deploy**.
+
+### Option B: Deploy via Wrangler CLI
 ```bash
-npx wrangler login
-npx wrangler deploy
+cd workers
+npx wrangler deploy --name whatappapi whatsapp-proxy-worker.js
+npx wrangler deploy --name first-option-razorpay-worker razorpay-payment-worker.js
 ```
-
----
-
-## Setting Up Razorpay Webhook
-1. Log in to [Razorpay Dashboard](https://dashboard.razorpay.com).
-2. Go to **Settings** -> **Webhooks** -> **Add New Webhook**.
-3. Set **Webhook URL** to: `https://<YOUR_WORKER_URL>/webhook`
-4. Set **Secret** to: `XtzQBL84oexfAFHDPOHSrXc4`
-5. Select Active Events:
-   - `payment.captured`
-   - `order.paid`
-   - `payment.failed`
-6. Click **Save**.
-
-Now, whenever a candidate pays ₹5,000 via Razorpay, the webhook will automatically verify the payment and flag the record as `Paid` in Firebase Realtime Database!
