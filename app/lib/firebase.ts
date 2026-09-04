@@ -37,9 +37,10 @@ export interface InternshipApplicationPayload {
   aboutYourself: string;
   resumeUrl: string;
   submittedAt: string;
-  // Razorpay payment verification fields
-  paymentStatus: "Paid" | "Unpaid" | "Pending";
-  amountPaid: number;
+  // Lead type & Payment fields
+  leadType?: "women" | "common" | "amount" | string;
+  paymentStatus?: "Paid" | "Free" | "Unpaid" | "Pending" | string;
+  amountPaid?: number;
   paymentId?: string;
   orderId?: string;
   paidAt?: string;

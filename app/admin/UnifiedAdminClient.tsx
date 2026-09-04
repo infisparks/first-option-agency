@@ -25,7 +25,6 @@ import {
   ShieldAlert,
   ArrowLeft,
   RefreshCw,
-  ShieldCheck,
   CheckCircle2,
   AlertTriangle,
   CreditCard,
@@ -33,6 +32,8 @@ import {
   Briefcase,
   GraduationCap,
   TrendingUp,
+  Heart,
+  Globe,
 } from "lucide-react";
 
 // Types
@@ -50,7 +51,8 @@ interface InternshipRecord {
   aboutYourself: string;
   resumeUrl?: string;
   submittedAt: string;
-  paymentStatus?: "Paid" | "Unpaid" | "Pending" | string;
+  leadType?: "women" | "common" | "amount" | string;
+  paymentStatus?: "Paid" | "Free" | "Unpaid" | "Pending" | string;
   paymentId?: string;
   amountPaid?: number | string;
   orderId?: string;
@@ -78,6 +80,19 @@ interface UnifiedAdminProps {
   initialTab?: "internship" | "sales";
 }
 
+// Helper: Determine Lead Type
+// If leadType is missing (all existing/old data), treat as "women"
+export const getInternshipLeadType = (app: InternshipRecord): "women" | "common" | "amount" => {
+  if (app.leadType === "amount" || app.paymentStatus === "Paid" || Boolean(app.paymentId)) {
+    return "amount";
+  }
+  if (app.leadType === "common") {
+    return "common";
+  }
+  // Default assumption: If leadType is "women" OR undefined/empty, it's a Women form lead
+  return "women";
+};
+
 export default function UnifiedAdminClient({ initialTab = "internship" }: UnifiedAdminProps) {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
@@ -103,7 +118,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
 
   // Search & Filter states
   const [internshipSearch, setInternshipSearch] = useState("");
-  const [internshipFilter, setInternshipFilter] = useState<"ALL" | "PAID" | "UNPAID">("ALL");
+  const [internshipTypeFilter, setInternshipTypeFilter] = useState<"ALL" | "WOMEN" | "COMMON" | "AMOUNT">("ALL");
 
   const [salesSearch, setSalesSearch] = useState("");
   const [salesFilter, setSalesFilter] = useState<"ALL" | "EXPERIENCED" | "AGENCY">("ALL");
@@ -141,7 +156,6 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
   const fetchAllData = async () => {
     setDataLoading(true);
     try {
-      // 1. Fetch Internships
       const internshipRef = ref(rtdb, "internship_applications");
       const salesRef = ref(rtdb, "sales_consultant_applications");
 
@@ -208,16 +222,12 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
     setSalesApps([]);
   };
 
-  // Helper for Internship Payment verification
-  const isInternshipPaid = (app: InternshipRecord): boolean => {
-    return app.paymentStatus === "Paid" || Boolean(app.paymentId);
-  };
-
   // Export Internship CSV
   const handleExportInternshipCSV = () => {
     if (internships.length === 0) return;
     const headers = [
       "Application ID",
+      "Lead Source Type",
       "Full Name",
       "Gender",
       "Email",
@@ -230,26 +240,35 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
       "Amount Paid (INR)",
       "Payment ID",
       "Order ID",
-      "Paid At / Submitted At",
+      "Submitted At",
       "Introduction",
       "Resume Link",
     ];
 
     const rows = internships.map((app) => {
-      const paid = isInternshipPaid(app);
+      const lType = getInternshipLeadType(app);
+      const isPaid = lType === "amount";
+      const leadLabel =
+        lType === "women"
+          ? "Women Drive (Free)"
+          : lType === "common"
+          ? "Common Free"
+          : "Common + Amount (₹5,000)";
+
       return [
         `"${app.applicationId || ""}"`,
+        `"${leadLabel}"`,
         `"${app.fullName || ""}"`,
-        `"${app.gender || "Not specified"}"`,
+        `"${app.gender || (lType === "women" ? "Female" : "Not specified")}"`,
         `"${app.email || ""}"`,
         `"${app.countryCode || "+91"} ${app.phone || ""}"`,
         `"${app.city || ""}"`,
         `"${app.qualification || ""}"`,
         `"${app.passingYear || ""}"`,
         `"${(app.skills || []).join(", ")}"`,
-        `"${paid ? "Paid" : "Payment Not Received"}"`,
-        `"${paid ? String(app.amountPaid || "5000") : "0"}"`,
-        `"${paid ? (app.paymentId || "Verified") : "N/A"}"`,
+        `"${isPaid ? "Paid" : "Free (No Payment)"}"`,
+        `"${isPaid ? String(app.amountPaid || "5000") : "0"}"`,
+        `"${isPaid ? (app.paymentId || "Verified") : "N/A"}"`,
         `"${app.orderId || "N/A"}"`,
         `"${app.paidAt || app.submittedAt || ""}"`,
         `"${(app.aboutYourself || "").replace(/"/g, '""')}"`,
@@ -324,11 +343,19 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
     document.body.removeChild(link);
   };
 
+  // Internship Metrics
+  const totalInternships = internships.length;
+  const womenCount = internships.filter((a) => getInternshipLeadType(a) === "women").length;
+  const commonCount = internships.filter((a) => getInternshipLeadType(a) === "common").length;
+  const amountCount = internships.filter((a) => getInternshipLeadType(a) === "amount").length;
+  const totalRevenue = amountCount * 5000;
+
   // Filtered Internships
   const filteredInternships = internships.filter((app) => {
-    const paid = isInternshipPaid(app);
-    if (internshipFilter === "PAID" && !paid) return false;
-    if (internshipFilter === "UNPAID" && paid) return false;
+    const lType = getInternshipLeadType(app);
+    if (internshipTypeFilter === "WOMEN" && lType !== "women") return false;
+    if (internshipTypeFilter === "COMMON" && lType !== "common") return false;
+    if (internshipTypeFilter === "AMOUNT" && lType !== "amount") return false;
 
     const q = internshipSearch.toLowerCase();
     return (
@@ -341,6 +368,11 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
       app.paymentId?.toLowerCase().includes(q)
     );
   });
+
+  // Sales Metrics
+  const totalSales = salesApps.length;
+  const experiencedSales = salesApps.filter((a) => a.hasSalesExperience).length;
+  const agencySales = salesApps.filter((a) => a.hasAgencyOrCommissionSales).length;
 
   // Filtered Sales
   const filteredSales = salesApps.filter((app) => {
@@ -357,17 +389,6 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
       app.productsSoldBefore?.toLowerCase().includes(q)
     );
   });
-
-  // Internships metrics
-  const totalInternships = internships.length;
-  const paidInternships = internships.filter(isInternshipPaid).length;
-  const unpaidInternships = totalInternships - paidInternships;
-  const totalRevenue = paidInternships * 5000;
-
-  // Sales metrics
-  const totalSales = salesApps.length;
-  const experiencedSales = salesApps.filter((a) => a.hasSalesExperience).length;
-  const agencySales = salesApps.filter((a) => a.hasAgencyOrCommissionSales).length;
 
   if (authLoading) {
     return (
@@ -432,13 +453,12 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
               First Option Agency
             </div>
             <div style={{ fontSize: "11px", color: "#7C3AED", fontWeight: 600 }}>
-              Unified Master Admin Portal
+              Master Admin Portal
             </div>
           </div>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          {/* Quick links to public forms */}
           <Link
             href={activeTab === "internship" ? "/internship" : "/sales-consultant"}
             style={{
@@ -455,7 +475,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
             }}
           >
             <ArrowLeft size={14} />
-            <span>View Public Form</span>
+            <span>Public Form</span>
           </Link>
 
           {currentUser && (
@@ -526,7 +546,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                 Master Admin Sign In
               </div>
               <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "4px" }}>
-                Log in once to access both Internship &amp; Sales Consultant applications.
+                Sign in to manage Internship Leads (Women / Common / Paid) &amp; Sales Applications.
               </div>
             </div>
 
@@ -662,7 +682,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                   marginTop: "6px",
                 }}
               >
-                {loginLoading ? <Loader2 size={16} className="animate-spin" /> : "Sign In to Admin Dashboard"}
+                {loginLoading ? <Loader2 size={16} className="animate-spin" /> : "Sign In to Master Admin"}
               </button>
             </form>
           </div>
@@ -684,7 +704,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
               Access Restricted
             </div>
             <div style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.5, marginBottom: "18px" }}>
-              You are logged in as <strong>{currentUser.email}</strong>, but this account is not authorized as Admin.
+              You are logged in as <strong>{currentUser.email}</strong>, but do not have admin permissions.
             </div>
             <button
               onClick={handleLogout}
@@ -800,7 +820,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                ═══════════════════════════════════════════════ */}
             {activeTab === "internship" && (
               <div>
-                {/* Stats Overview */}
+                {/* 4 Multi-Lead Stat Overview Cards */}
                 <div
                   style={{
                     display: "grid",
@@ -809,6 +829,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                     marginBottom: "16px",
                   }}
                 >
+                  {/* Total Applicants */}
                   <div
                     style={{
                       backgroundColor: "#FFFFFF",
@@ -844,10 +865,83 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                     </div>
                   </div>
 
+                  {/* Women Drive Leads */}
                   <div
                     style={{
                       backgroundColor: "#FFFFFF",
-                      border: "1px solid #E5E7EB",
+                      border: "1px solid #FBCFE8",
+                      borderRadius: "12px",
+                      padding: "16px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: "12px", color: "#BE185D", fontWeight: 600 }}>
+                        🌸 Women Drive Leads
+                      </div>
+                      <div style={{ fontSize: "22px", fontWeight: 800, color: "#BE185D", marginTop: "2px" }}>
+                        {womenCount}
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "10px",
+                        backgroundColor: "#FDF2F8",
+                        color: "#BE185D",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Heart size={20} />
+                    </div>
+                  </div>
+
+                  {/* Common Free Leads */}
+                  <div
+                    style={{
+                      backgroundColor: "#FFFFFF",
+                      border: "1px solid #BFDBFE",
+                      borderRadius: "12px",
+                      padding: "16px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: "12px", color: "#1D4ED8", fontWeight: 600 }}>
+                        🌐 Common Free Leads
+                      </div>
+                      <div style={{ fontSize: "22px", fontWeight: 800, color: "#1D4ED8", marginTop: "2px" }}>
+                        {commonCount}
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "10px",
+                        backgroundColor: "#EFF6FF",
+                        color: "#1D4ED8",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Globe size={20} />
+                    </div>
+                  </div>
+
+                  {/* Common + Amount (₹5k Paid) */}
+                  <div
+                    style={{
+                      backgroundColor: "#FFFFFF",
+                      border: "1px solid #A7F3D0",
                       borderRadius: "12px",
                       padding: "16px",
                       display: "flex",
@@ -857,10 +951,10 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                   >
                     <div>
                       <div style={{ fontSize: "12px", color: "#065F46", fontWeight: 600 }}>
-                        Paid Applications (₹5k)
+                        💳 Paid Leads (₹5k)
                       </div>
                       <div style={{ fontSize: "22px", fontWeight: 800, color: "#059669", marginTop: "2px" }}>
-                        {paidInternships}
+                        {amountCount}
                       </div>
                     </div>
                     <div
@@ -875,77 +969,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                         justifyContent: "center",
                       }}
                     >
-                      <CheckCircle2 size={20} />
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      backgroundColor: "#FFFFFF",
-                      border: "1px solid #E5E7EB",
-                      borderRadius: "12px",
-                      padding: "16px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: "12px", color: "#6B7280", fontWeight: 500 }}>
-                        Total Revenue
-                      </div>
-                      <div style={{ fontSize: "22px", fontWeight: 800, color: "#7C3AED", marginTop: "2px" }}>
-                        ₹{totalRevenue.toLocaleString("en-IN")}
-                      </div>
-                    </div>
-                    <div
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        borderRadius: "10px",
-                        backgroundColor: "#EDE9FE",
-                        color: "#7C3AED",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
                       <BadgeIndianRupee size={20} />
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      backgroundColor: "#FFFFFF",
-                      border: "1px solid #E5E7EB",
-                      borderRadius: "12px",
-                      padding: "16px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: "12px", color: "#9A3412", fontWeight: 600 }}>
-                        Payment Not Received
-                      </div>
-                      <div style={{ fontSize: "22px", fontWeight: 800, color: "#EA580C", marginTop: "2px" }}>
-                        {unpaidInternships}
-                      </div>
-                    </div>
-                    <div
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        borderRadius: "10px",
-                        backgroundColor: "#FFF7ED",
-                        color: "#EA580C",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <AlertTriangle size={20} />
                     </div>
                   </div>
                 </div>
@@ -968,61 +992,82 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                   <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
                     <button
                       type="button"
-                      onClick={() => setInternshipFilter("ALL")}
+                      onClick={() => setInternshipTypeFilter("ALL")}
                       style={{
                         padding: "6px 12px",
                         borderRadius: "6px",
                         fontSize: "12px",
                         fontWeight: 600,
                         cursor: "pointer",
-                        border: internshipFilter === "ALL" ? "1px solid #7C3AED" : "1px solid #E5E7EB",
-                        backgroundColor: internshipFilter === "ALL" ? "#F5F3FF" : "#FFFFFF",
-                        color: internshipFilter === "ALL" ? "#7C3AED" : "#4B5563",
+                        border: internshipTypeFilter === "ALL" ? "1px solid #7C3AED" : "1px solid #E5E7EB",
+                        backgroundColor: internshipTypeFilter === "ALL" ? "#F5F3FF" : "#FFFFFF",
+                        color: internshipTypeFilter === "ALL" ? "#7C3AED" : "#4B5563",
                       }}
                     >
-                      All ({totalInternships})
+                      All Leads ({totalInternships})
                     </button>
 
                     <button
                       type="button"
-                      onClick={() => setInternshipFilter("PAID")}
+                      onClick={() => setInternshipTypeFilter("WOMEN")}
                       style={{
                         padding: "6px 12px",
                         borderRadius: "6px",
                         fontSize: "12px",
                         fontWeight: 600,
                         cursor: "pointer",
-                        border: internshipFilter === "PAID" ? "1px solid #059669" : "1px solid #E5E7EB",
-                        backgroundColor: internshipFilter === "PAID" ? "#ECFDF5" : "#FFFFFF",
-                        color: internshipFilter === "PAID" ? "#047857" : "#4B5563",
+                        border: internshipTypeFilter === "WOMEN" ? "1px solid #BE185D" : "1px solid #E5E7EB",
+                        backgroundColor: internshipTypeFilter === "WOMEN" ? "#FDF2F8" : "#FFFFFF",
+                        color: internshipTypeFilter === "WOMEN" ? "#BE185D" : "#4B5563",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
+                    >
+                      <Heart size={13} color="#BE185D" />
+                      <span>Women Leads ({womenCount})</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setInternshipTypeFilter("COMMON")}
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: "6px",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        border: internshipTypeFilter === "COMMON" ? "1px solid #1D4ED8" : "1px solid #E5E7EB",
+                        backgroundColor: internshipTypeFilter === "COMMON" ? "#EFF6FF" : "#FFFFFF",
+                        color: internshipTypeFilter === "COMMON" ? "#1D4ED8" : "#4B5563",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
+                    >
+                      <Globe size={13} color="#1D4ED8" />
+                      <span>Common Free ({commonCount})</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setInternshipTypeFilter("AMOUNT")}
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: "6px",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        border: internshipTypeFilter === "AMOUNT" ? "1px solid #059669" : "1px solid #E5E7EB",
+                        backgroundColor: internshipTypeFilter === "AMOUNT" ? "#ECFDF5" : "#FFFFFF",
+                        color: internshipTypeFilter === "AMOUNT" ? "#047857" : "#4B5563",
                         display: "inline-flex",
                         alignItems: "center",
                         gap: "4px",
                       }}
                     >
                       <CheckCircle2 size={13} color="#059669" />
-                      <span>Paid ({paidInternships})</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setInternshipFilter("UNPAID")}
-                      style={{
-                        padding: "6px 12px",
-                        borderRadius: "6px",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        border: internshipFilter === "UNPAID" ? "1px solid #EA580C" : "1px solid #E5E7EB",
-                        backgroundColor: internshipFilter === "UNPAID" ? "#FFF7ED" : "#FFFFFF",
-                        color: internshipFilter === "UNPAID" ? "#C2410C" : "#4B5563",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "4px",
-                      }}
-                    >
-                      <AlertTriangle size={13} color="#EA580C" />
-                      <span>Payment Not Received ({unpaidInternships})</span>
+                      <span>Paid Leads ({amountCount})</span>
                     </button>
                   </div>
 
@@ -1042,7 +1087,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                         type="text"
                         value={internshipSearch}
                         onChange={(e) => setInternshipSearch(e.target.value)}
-                        placeholder="Search name, phone, Razorpay ID..."
+                        placeholder="Search name, phone, email..."
                         style={{
                           height: "36px",
                           padding: "0 10px 0 30px",
@@ -1051,7 +1096,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                           border: "1px solid #E5E7EB",
                           backgroundColor: "#FFFFFF",
                           outline: "none",
-                          width: "230px",
+                          width: "220px",
                         }}
                       />
                     </div>
@@ -1123,15 +1168,16 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                       No Internship Applications Found
                     </div>
                     <div style={{ fontSize: "12px", marginTop: "4px" }}>
-                      {internshipSearch || internshipFilter !== "ALL"
+                      {internshipSearch || internshipTypeFilter !== "ALL"
                         ? "No records match your filter."
-                        : "Submissions from the internship form will appear here."}
+                        : "Submissions will appear here in real time."}
                     </div>
                   </div>
                 ) : (
                   <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "12px" }}>
                     {filteredInternships.map((app) => {
-                      const paid = isInternshipPaid(app);
+                      const lType = getInternshipLeadType(app);
+                      const isPaid = lType === "amount";
 
                       return (
                         <div
@@ -1139,7 +1185,12 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                           style={{
                             backgroundColor: "#FFFFFF",
                             borderRadius: "12px",
-                            border: paid ? "1px solid #E5E7EB" : "1px solid #FED7AA",
+                            border:
+                              lType === "women"
+                                ? "1px solid #FBCFE8"
+                                : lType === "common"
+                                ? "1px solid #BFDBFE"
+                                : "1px solid #A7F3D0",
                             padding: "16px",
                             boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
                           }}
@@ -1175,22 +1226,79 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                                 {app.fullName}
                               </span>
 
-                              {app.gender && (
+                              {/* Lead Source Badge */}
+                              {lType === "women" ? (
                                 <span
                                   style={{
                                     fontSize: "11px",
-                                    color: "#4B5563",
-                                    backgroundColor: "#F3F4F6",
-                                    padding: "2px 7px",
-                                    borderRadius: "4px",
-                                    fontWeight: 600,
+                                    fontWeight: 700,
+                                    backgroundColor: "#FDF2F8",
+                                    color: "#BE185D",
+                                    border: "1px solid #FBCFE8",
+                                    padding: "2px 8px",
+                                    borderRadius: "999px",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "3px",
                                   }}
                                 >
-                                  {app.gender}
+                                  <Heart size={11} />
+                                  <span>Women Drive</span>
+                                </span>
+                              ) : lType === "common" ? (
+                                <span
+                                  style={{
+                                    fontSize: "11px",
+                                    fontWeight: 700,
+                                    backgroundColor: "#EFF6FF",
+                                    color: "#1D4ED8",
+                                    border: "1px solid #BFDBFE",
+                                    padding: "2px 8px",
+                                    borderRadius: "999px",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "3px",
+                                  }}
+                                >
+                                  <Globe size={11} />
+                                  <span>Common Free</span>
+                                </span>
+                              ) : (
+                                <span
+                                  style={{
+                                    fontSize: "11px",
+                                    fontWeight: 700,
+                                    backgroundColor: "#ECFDF5",
+                                    color: "#047857",
+                                    border: "1px solid #A7F3D0",
+                                    padding: "2px 8px",
+                                    borderRadius: "999px",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "3px",
+                                  }}
+                                >
+                                  <CheckCircle2 size={11} />
+                                  <span>Common + Paid (₹5k)</span>
                                 </span>
                               )}
 
-                              {paid ? (
+                              {/* Gender Display */}
+                              <span
+                                style={{
+                                  fontSize: "11px",
+                                  color: "#4B5563",
+                                  backgroundColor: "#F3F4F6",
+                                  padding: "2px 7px",
+                                  borderRadius: "4px",
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {app.gender || (lType === "women" ? "Female" : "Applicant")}
+                              </span>
+
+                              {/* Payment Status Display */}
+                              {isPaid ? (
                                 <span
                                   style={{
                                     fontSize: "11px",
@@ -1212,19 +1320,15 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                                 <span
                                   style={{
                                     fontSize: "11px",
-                                    fontWeight: 700,
-                                    backgroundColor: "#FFF7ED",
-                                    color: "#C2410C",
-                                    border: "1px solid #FED7AA",
-                                    padding: "2px 8px",
+                                    fontWeight: 600,
+                                    backgroundColor: "#F9FAFB",
+                                    color: "#6B7280",
+                                    border: "1px solid #E5E7EB",
+                                    padding: "2px 7px",
                                     borderRadius: "999px",
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    gap: "4px",
                                   }}
                                 >
-                                  <AlertTriangle size={12} color="#EA580C" />
-                                  <span>Payment Not Received (Old Data / Unpaid)</span>
+                                  Free Form
                                 </span>
                               )}
                             </div>
@@ -1243,7 +1347,8 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                             </div>
                           </div>
 
-                          {paid && app.paymentId && (
+                          {/* Payment details if paid */}
+                          {isPaid && app.paymentId && (
                             <div
                               style={{
                                 backgroundColor: "#F0FDF4",

@@ -2,15 +2,17 @@
   "rules": {
     "internship_applications": {
       ".read": "auth != null && auth.uid === '5ekfOeEqIgZXqpPW7kH2v6Top5y1'",
+      ".indexOn": ["submittedAt", "paymentStatus"],
       "$applicationId": {
-        ".write": "!data.exists()",
+        ".write": "!data.exists() || (auth != null && auth.uid === '5ekfOeEqIgZXqpPW7kH2v6Top5y1')",
         ".validate": "newData.hasChildren(['fullName', 'email', 'phone', 'qualification', 'skills', 'aboutYourself'])"
       }
     },
     "sales_consultant_applications": {
       ".read": "auth != null && auth.uid === '5ekfOeEqIgZXqpPW7kH2v6Top5y1'",
+      ".indexOn": ["submittedAt"],
       "$applicationId": {
-        ".write": "!data.exists()",
+        ".write": "!data.exists() || (auth != null && auth.uid === '5ekfOeEqIgZXqpPW7kH2v6Top5y1')",
         ".validate": "newData.hasChildren(['fullName', 'email', 'phone', 'city'])"
       }
     }
