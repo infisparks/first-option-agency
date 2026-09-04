@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   CheckCircle2,
@@ -12,11 +12,14 @@ import {
   Copy,
   Check,
   Sparkles,
-  Heart,
   ShieldCheck,
   TrendingUp,
   Video,
   Target,
+  CreditCard,
+  Lock,
+  Receipt,
+  FileCheck,
 } from "lucide-react";
 import {
   TARGET_SKILLS,
@@ -24,7 +27,7 @@ import {
   PASSING_YEARS,
   COUNTRY_CODES,
 } from "./skills-data";
-import { saveApplicationToRealtimeDb } from "@/app/lib/firebase";
+import { saveApplicationToRealtimeDb, InternshipApplicationPayload } from "@/app/lib/firebase";
 import { triggerInternshipWhatsAppNotifications } from "@/app/lib/whatsapp";
 
 interface FormData {
@@ -34,7 +37,6 @@ interface FormData {
   phone: string;
   city: string;
   gender: string;
-  isFemaleConfirmed: boolean;
   qualification: string;
   passingYear: string;
   skills: string[];
@@ -46,6 +48,27 @@ interface FormErrors {
   [key: string]: string;
 }
 
+interface PaymentInfo {
+  paymentId: string;
+  orderId?: string;
+  amount: number;
+  date: string;
+}
+
+// Helper to dynamically load Razorpay Checkout script
+const loadRazorpayScript = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (typeof window !== "undefined" && (window as any).Razorpay) {
+      return resolve(true);
+    }
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 export default function InternshipFormClient() {
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
@@ -53,8 +76,7 @@ export default function InternshipFormClient() {
     countryCode: "+91",
     phone: "",
     city: "",
-    gender: "Female",
-    isFemaleConfirmed: true,
+    gender: "",
     qualification: "",
     passingYear: "",
     skills: [],
@@ -67,6 +89,13 @@ export default function InternshipFormClient() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [applicationId, setApplicationId] = useState("");
   const [copiedId, setCopiedId] = useState(false);
+  const [paymentError, setPaymentError] = useState<string>("");
+  const [paymentInfo, setPaymentInfo] = useState<PaymentInfo | null>(null);
+
+  // Preload Razorpay checkout script on mount
+  useEffect(() => {
+    loadRazorpayScript();
+  }, []);
 
   // Toggle skill selection
   const toggleSkill = (skillTitle: string) => {
@@ -93,20 +122,7 @@ export default function InternshipFormClient() {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >
   ) => {
-    const { name, value, type } = e.target;
-
-    if (type === "checkbox") {
-      const checked = (e.target as HTMLInputElement).checked;
-      setFormData((prev) => ({ ...prev, [name]: checked }));
-      if (errors[name]) {
-        setErrors((prev) => {
-          const updated = { ...prev };
-          delete updated[name];
-          return updated;
-        });
-      }
-      return;
-    }
+    const { name, value } = e.target;
 
     if (name === "phone") {
       const cleaned = value.replace(/\D/g, "");
@@ -191,12 +207,8 @@ export default function InternshipFormClient() {
       newErrors.city = "City / Location is required";
     }
 
-    if (formData.gender !== "Female") {
-      newErrors.gender = "This internship drive is exclusively for female candidates";
-    }
-
-    if (!formData.isFemaleConfirmed) {
-      newErrors.isFemaleConfirmed = "Please confirm that you are a female candidate applying for this drive";
+    if (!formData.gender) {
+      newErrors.gender = "Please select your gender";
     }
 
     if (!formData.qualification) {
@@ -208,7 +220,7 @@ export default function InternshipFormClient() {
     }
 
     if (formData.skills.length === 0) {
-      newErrors.skills = "Please tick at least 1 role/skill below";
+      newErrors.skills = "Please select at least 1 internship role track";
     }
 
     if (!formData.aboutYourself.trim()) {
@@ -221,9 +233,10 @@ export default function InternshipFormClient() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Form Submit Handler
+  // Form Submit Handler with Razorpay ₹5000 Payment Requirement
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setPaymentError("");
 
     if (!validateForm()) {
       const firstErrorElement = document.querySelector(".has-field-error");
@@ -235,50 +248,136 @@ export default function InternshipFormClient() {
 
     setIsSubmitting(true);
 
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const generatedId = `FOA-WOMEN-${new Date().getFullYear()}-${randomSuffix}`;
-    const submissionTimestamp = new Date().toISOString();
+    const scriptLoaded = await loadRazorpayScript();
+    if (!scriptLoaded || !(window as any).Razorpay) {
+      setIsSubmitting(false);
+      setPaymentError("Could not initialize Razorpay gateway. Please check your internet connection and try again.");
+      return;
+    }
 
-    const applicationRecord = {
-      applicationId: generatedId,
-      submittedAt: submissionTimestamp,
-      ...formData,
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const generatedId = `FOA-INT-${new Date().getFullYear()}-${randomSuffix}`;
+    const amountInRupees = 5000;
+    const amountInPaise = amountInRupees * 100; // 500000 paise
+
+    // Configure Razorpay Checkout Options
+    const options = {
+      key: "rzp_live_TXvv4nCnkVjFWm",
+      amount: amountInPaise,
+      currency: "INR",
+      name: "First Option Agency",
+      description: "Internship Registration & Application Fee (₹5,000)",
+      image: "/meta-logo.webp",
+      prefill: {
+        name: formData.fullName,
+        email: formData.email,
+        contact: `${formData.countryCode}${formData.phone}`,
+      },
+      notes: {
+        applicationId: generatedId,
+        candidateName: formData.fullName,
+        candidateEmail: formData.email,
+        candidatePhone: `${formData.countryCode}${formData.phone}`,
+        city: formData.city,
+        skills: formData.skills.join(", "),
+      },
+      theme: {
+        color: "#7C3AED",
+        backdrop_color: "#111827",
+      },
+      handler: async function (response: any) {
+        // Payment Succeeded! Proceed to finalize and submit application
+        const paymentId = response.razorpay_payment_id || `pay_${Date.now()}`;
+        const orderId = response.razorpay_order_id || "";
+        const submissionTimestamp = new Date().toISOString();
+
+        const applicationRecord: InternshipApplicationPayload = {
+          applicationId: generatedId,
+          submittedAt: submissionTimestamp,
+          fullName: formData.fullName,
+          email: formData.email,
+          countryCode: formData.countryCode,
+          phone: formData.phone,
+          city: formData.city,
+          gender: formData.gender,
+          qualification: formData.qualification,
+          passingYear: formData.passingYear,
+          skills: formData.skills,
+          aboutYourself: formData.aboutYourself,
+          resumeUrl: formData.resumeUrl,
+          paymentStatus: "Paid",
+          amountPaid: amountInRupees,
+          paymentId: paymentId,
+          orderId: orderId,
+          paidAt: submissionTimestamp,
+        };
+
+        // 1. Save directly to Firebase Realtime Database
+        try {
+          await saveApplicationToRealtimeDb(applicationRecord);
+        } catch (rtdbErr) {
+          console.warn("Realtime DB save warning:", rtdbErr);
+        }
+
+        // 2. Trigger WhatsApp notifications to Candidate & Admins
+        triggerInternshipWhatsAppNotifications({
+          candidatePhone: `${formData.countryCode}${formData.phone}`,
+          candidateName: formData.fullName,
+          applicationId: generatedId,
+          candidateEmail: formData.email,
+          city: formData.city,
+        });
+
+        // 3. Save to localStorage backup
+        try {
+          const existingApplications = JSON.parse(
+            localStorage.getItem("foa_internship_applications") || "[]"
+          );
+          existingApplications.unshift(applicationRecord);
+          localStorage.setItem(
+            "foa_internship_applications",
+            JSON.stringify(existingApplications)
+          );
+        } catch (storageError) {
+          console.warn("Could not save to localStorage:", storageError);
+        }
+
+        setPaymentInfo({
+          paymentId,
+          orderId,
+          amount: amountInRupees,
+          date: new Date().toLocaleString("en-IN", {
+            dateStyle: "medium",
+            timeStyle: "short",
+          }),
+        });
+        setApplicationId(generatedId);
+        setIsSubmitting(false);
+        setSubmitSuccess(true);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      },
+      modal: {
+        ondismiss: function () {
+          setIsSubmitting(false);
+          setPaymentError("Payment window was closed. Your application has NOT been submitted yet. Please complete the ₹5,000 fee payment to submit.");
+        },
+      },
     };
 
-    // 1. Save to Firebase Realtime Database
     try {
-      await saveApplicationToRealtimeDb(applicationRecord);
-    } catch (rtdbErr) {
-      console.warn("Realtime DB save warning:", rtdbErr);
+      const rzpInstance = new (window as any).Razorpay(options);
+      rzpInstance.on("payment.failed", function (response: any) {
+        setIsSubmitting(false);
+        setPaymentError(
+          response?.error?.description ||
+            "Payment failed or declined by your bank. Please try again with another payment method."
+        );
+      });
+      rzpInstance.open();
+    } catch (err: any) {
+      setIsSubmitting(false);
+      setPaymentError(err?.message || "Failed to open Razorpay payment window.");
     }
-
-    // 2. Trigger WhatsApp notifications to Candidate & all 3 Admin numbers
-    triggerInternshipWhatsAppNotifications({
-      candidatePhone: `${formData.countryCode}${formData.phone}`,
-      candidateName: formData.fullName,
-      applicationId: generatedId,
-      candidateEmail: formData.email,
-      city: formData.city,
-    });
-
-    // 3. Save to localStorage backup
-    try {
-      const existingApplications = JSON.parse(
-        localStorage.getItem("foa_internship_applications") || "[]"
-      );
-      existingApplications.unshift(applicationRecord);
-      localStorage.setItem(
-        "foa_internship_applications",
-        JSON.stringify(existingApplications)
-      );
-    } catch (storageError) {
-      console.warn("Could not save to localStorage:", storageError);
-    }
-
-    setApplicationId(generatedId);
-    setIsSubmitting(false);
-    setSubmitSuccess(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Copy Application ID to clipboard
@@ -298,8 +397,7 @@ export default function InternshipFormClient() {
       countryCode: "+91",
       phone: "",
       city: "",
-      gender: "Female",
-      isFemaleConfirmed: true,
+      gender: "",
       qualification: "",
       passingYear: "",
       skills: [],
@@ -310,6 +408,8 @@ export default function InternshipFormClient() {
     setSubmitSuccess(false);
     setApplicationId("");
     setCopiedId(false);
+    setPaymentError("");
+    setPaymentInfo(null);
   };
 
   // Skill Icon helper
@@ -327,23 +427,101 @@ export default function InternshipFormClient() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#F5F6F8", color: "#111827", display: "flex", flexDirection: "column", fontFamily: "var(--font-outfit), 'Inter', -apple-system, sans-serif" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        backgroundColor: "#F5F6F8",
+        color: "#111827",
+        display: "flex",
+        flexDirection: "column",
+        fontFamily: "var(--font-outfit), 'Inter', -apple-system, sans-serif",
+      }}
+    >
       {/* ─── Header Bar ─── */}
-      <header style={{ position: "sticky", top: 0, zIndex: 40, backgroundColor: "rgba(255, 255, 255, 0.96)", backdropFilter: "blur(8px)", borderBottom: "1px solid #E5E7EB" }}>
-        <div style={{ maxWidth: "760px", margin: "0 auto", padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none", color: "inherit" }}>
-            <div style={{ width: "32px", height: "32px", borderRadius: "8px", backgroundColor: "#7C3AED", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "13px" }}>
+      <header
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 40,
+          backgroundColor: "rgba(255, 255, 255, 0.96)",
+          backdropFilter: "blur(8px)",
+          borderBottom: "1px solid #E5E7EB",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "780px",
+            margin: "0 auto",
+            padding: "12px 16px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Link
+            href="/"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              textDecoration: "none",
+              color: "inherit",
+            }}
+          >
+            <div
+              style={{
+                width: "34px",
+                height: "34px",
+                borderRadius: "8px",
+                backgroundColor: "#7C3AED",
+                color: "#FFFFFF",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: 700,
+                fontSize: "14px",
+              }}
+            >
               FO
             </div>
             <div>
-              <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827", lineHeight: 1.2 }}>First Option Agency</div>
-              <div style={{ fontSize: "11px", color: "#7C3AED", fontWeight: 600 }}>Women’s Internship Portal</div>
+              <div
+                style={{
+                  fontSize: "15px",
+                  fontWeight: 700,
+                  color: "#111827",
+                  lineHeight: 1.2,
+                }}
+              >
+                First Option Agency
+              </div>
+              <div
+                style={{
+                  fontSize: "11px",
+                  color: "#7C3AED",
+                  fontWeight: 600,
+                }}
+              >
+                Internship Program 2026
+              </div>
             </div>
           </Link>
 
           <Link
             href="/"
-            style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "13px", fontWeight: 600, color: "#7C3AED", textDecoration: "none", padding: "6px 12px", borderRadius: "6px", backgroundColor: "#F5F3FF" }}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              fontSize: "13px",
+              fontWeight: 600,
+              color: "#7C3AED",
+              textDecoration: "none",
+              padding: "6px 12px",
+              borderRadius: "6px",
+              backgroundColor: "#F5F3FF",
+              border: "1px solid #EDE9FE",
+            }}
           >
             <ArrowLeft size={14} />
             <span>Home</span>
@@ -351,48 +529,230 @@ export default function InternshipFormClient() {
         </div>
       </header>
 
-      {/* ─── Main Form Card ─── */}
-      <main style={{ flex: 1, padding: "16px 12px 36px 12px", maxWidth: "760px", width: "100%", margin: "0 auto" }}>
+      {/* ─── Main Content ─── */}
+      <main
+        style={{
+          flex: 1,
+          padding: "20px 14px 40px 14px",
+          maxWidth: "780px",
+          width: "100%",
+          margin: "0 auto",
+        }}
+      >
         {submitSuccess ? (
-          /* ─── SUBMISSION CONFIRMATION RECEIPT ─── */
-          <div style={{ backgroundColor: "#FFFFFF", borderRadius: "16px", border: "1px solid #E5E7EB", padding: "32px 18px", boxShadow: "0 4px 16px rgba(0,0,0,0.04)", textAlign: "center", maxWidth: "520px", margin: "20px auto" }}>
-            <div style={{ width: "56px", height: "56px", borderRadius: "50%", backgroundColor: "#FDF2F8", border: "1px solid #FBCFE8", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px auto", color: "#DB2777" }}>
-              <Heart size={30} strokeWidth={2.2} />
+          /* ─── SUBMISSION & PAYMENT CONFIRMATION RECEIPT ─── */
+          <div
+            style={{
+              backgroundColor: "#FFFFFF",
+              borderRadius: "16px",
+              border: "1px solid #E5E7EB",
+              padding: "32px 20px",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
+              textAlign: "center",
+              maxWidth: "560px",
+              margin: "16px auto",
+            }}
+          >
+            <div
+              style={{
+                width: "60px",
+                height: "60px",
+                borderRadius: "50%",
+                backgroundColor: "#ECFDF5",
+                border: "1px solid #A7F3D0",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 16px auto",
+                color: "#059669",
+              }}
+            >
+              <CheckCircle2 size={34} strokeWidth={2.5} />
             </div>
 
-            <div style={{ display: "inline-block", padding: "3px 10px", backgroundColor: "#FDF2F8", color: "#BE185D", borderRadius: "999px", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "10px" }}>
-              Women’s Drive • Application Received
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "4px 12px",
+                backgroundColor: "#ECFDF5",
+                color: "#047857",
+                borderRadius: "999px",
+                fontSize: "11px",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                marginBottom: "12px",
+                border: "1px solid #A7F3D0",
+              }}
+            >
+              <FileCheck size={13} />
+              <span>Application Submitted & Payment Confirmed</span>
             </div>
 
-            <div style={{ fontSize: "20px", fontWeight: 700, color: "#111827", marginBottom: "8px" }}>
+            <div
+              style={{
+                fontSize: "22px",
+                fontWeight: 700,
+                color: "#111827",
+                marginBottom: "6px",
+              }}
+            >
               Thank You, {formData.fullName}!
             </div>
-            <div style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.5, marginBottom: "20px" }}>
-              Your application has been successfully received. Our recruitment team will review your profile.
+            <div
+              style={{
+                fontSize: "13px",
+                color: "#6B7280",
+                lineHeight: 1.5,
+                marginBottom: "22px",
+              }}
+            >
+              Your ₹5,000 payment was successfully verified and your internship
+              application has been registered. Our talent onboarding team will
+              reach out to you shortly.
             </div>
 
-            {/* Receipt Summary Card */}
-            <div style={{ backgroundColor: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: "12px", padding: "16px", textAlign: "left", marginBottom: "20px", fontSize: "13px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #E5E7EB", paddingBottom: "10px", marginBottom: "10px" }}>
-                <span style={{ color: "#6B7280", fontWeight: 500 }}>Reference ID</span>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <span style={{ fontFamily: "monospace", fontWeight: 700, color: "#7C3AED", backgroundColor: "#F5F3FF", padding: "2px 6px", borderRadius: "4px" }}>
+            {/* Payment & Application Receipt Card */}
+            <div
+              style={{
+                backgroundColor: "#F9FAFB",
+                border: "1px solid #E5E7EB",
+                borderRadius: "12px",
+                padding: "18px",
+                textAlign: "left",
+                marginBottom: "20px",
+                fontSize: "13px",
+              }}
+            >
+              {/* Reference ID Row */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  borderBottom: "1px solid #E5E7EB",
+                  paddingBottom: "12px",
+                  marginBottom: "12px",
+                }}
+              >
+                <div>
+                  <span style={{ color: "#6B7280", fontSize: "12px", display: "block" }}>
+                    Application Reference ID
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: "monospace",
+                      fontWeight: 700,
+                      color: "#7C3AED",
+                      fontSize: "14px",
+                    }}
+                  >
                     {applicationId}
                   </span>
-                  <button
-                    type="button"
-                    onClick={handleCopyId}
-                    style={{ background: "none", border: "none", color: "#6B7280", cursor: "pointer", padding: "2px" }}
-                    title="Copy ID"
-                  >
-                    {copiedId ? <Check size={14} color="#10B981" /> : <Copy size={14} />}
-                  </button>
                 </div>
+                <button
+                  type="button"
+                  onClick={handleCopyId}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    backgroundColor: "#FFFFFF",
+                    border: "1px solid #E5E7EB",
+                    borderRadius: "6px",
+                    color: "#374151",
+                    padding: "4px 8px",
+                    fontSize: "12px",
+                    cursor: "pointer",
+                  }}
+                  title="Copy Reference ID"
+                >
+                  {copiedId ? (
+                    <>
+                      <Check size={13} color="#10B981" />
+                      <span style={{ color: "#10B981", fontWeight: 600 }}>Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy size={13} />
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
               </div>
 
+              {/* Payment Box */}
+              <div
+                style={{
+                  backgroundColor: "#ECFDF5",
+                  border: "1px solid #A7F3D0",
+                  borderRadius: "8px",
+                  padding: "10px 12px",
+                  marginBottom: "14px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "4px",
+                  }}
+                >
+                  <span style={{ fontSize: "12px", color: "#065F46", fontWeight: 600 }}>
+                    Payment Status:
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      backgroundColor: "#059669",
+                      color: "#FFFFFF",
+                      padding: "2px 8px",
+                      borderRadius: "999px",
+                    }}
+                  >
+                    PAID (₹5,000 INR)
+                  </span>
+                </div>
+                {paymentInfo?.paymentId && (
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      fontSize: "11px",
+                      color: "#047857",
+                      fontFamily: "monospace",
+                    }}
+                  >
+                    <span>Razorpay ID:</span>
+                    <span>{paymentInfo.paymentId}</span>
+                  </div>
+                )}
+                {paymentInfo?.date && (
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      fontSize: "11px",
+                      color: "#047857",
+                      marginTop: "2px",
+                    }}
+                  >
+                    <span>Timestamp:</span>
+                    <span>{paymentInfo.date}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Candidate Details */}
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
                 <span style={{ color: "#6B7280" }}>Candidate</span>
-                <span style={{ fontWeight: 600, color: "#111827" }}>{formData.fullName} (Female)</span>
+                <span style={{ fontWeight: 600, color: "#111827" }}>
+                  {formData.fullName} ({formData.gender || "Applicant"})
+                </span>
               </div>
 
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
@@ -402,21 +762,64 @@ export default function InternshipFormClient() {
 
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
                 <span style={{ color: "#6B7280" }}>Phone</span>
-                <span style={{ fontWeight: 600, color: "#111827" }}>{formData.countryCode} {formData.phone}</span>
+                <span style={{ fontWeight: 600, color: "#111827" }}>
+                  {formData.countryCode} {formData.phone}
+                </span>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                <span style={{ color: "#6B7280" }}>Location</span>
+                <span style={{ fontWeight: 600, color: "#111827" }}>{formData.city}</span>
               </div>
 
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
                 <span style={{ color: "#6B7280" }}>Qualification</span>
-                <span style={{ fontWeight: 600, color: "#111827", maxWidth: "200px", textAlign: "right", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {formData.qualification.split("(")[0]}
+                <span
+                  style={{
+                    fontWeight: 600,
+                    color: "#111827",
+                    maxWidth: "200px",
+                    textAlign: "right",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {formData.qualification.split("(")[0]} ({formData.passingYear})
                 </span>
               </div>
 
-              <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: "8px", marginTop: "8px" }}>
-                <span style={{ color: "#6B7280", display: "block", marginBottom: "6px" }}>Selected Role Tracks:</span>
+              <div
+                style={{
+                  borderTop: "1px solid #E5E7EB",
+                  paddingTop: "10px",
+                  marginTop: "10px",
+                }}
+              >
+                <span
+                  style={{
+                    color: "#6B7280",
+                    display: "block",
+                    fontSize: "12px",
+                    marginBottom: "6px",
+                  }}
+                >
+                  Enrolled Tracks:
+                </span>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
                   {formData.skills.map((skill) => (
-                    <span key={skill} style={{ fontSize: "11px", fontWeight: 600, backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", color: "#7C3AED", padding: "2px 8px", borderRadius: "4px" }}>
+                    <span
+                      key={skill}
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        backgroundColor: "#FFFFFF",
+                        border: "1px solid #E5E7EB",
+                        color: "#7C3AED",
+                        padding: "2px 8px",
+                        borderRadius: "4px",
+                      }}
+                    >
                       ✓ {skill}
                     </span>
                   ))}
@@ -424,46 +827,161 @@ export default function InternshipFormClient() {
               </div>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               <Link
                 href="/"
-                style={{ display: "block", width: "100%", padding: "11px", borderRadius: "8px", backgroundColor: "#7C3AED", color: "#FFFFFF", fontSize: "14px", fontWeight: 700, textDecoration: "none", textAlign: "center" }}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  padding: "12px",
+                  borderRadius: "8px",
+                  backgroundColor: "#7C3AED",
+                  color: "#FFFFFF",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  textDecoration: "none",
+                  textAlign: "center",
+                }}
               >
                 Back to Homepage
               </Link>
               <button
                 type="button"
                 onClick={handleReset}
-                style={{ width: "100%", padding: "11px", borderRadius: "8px", backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", color: "#374151", fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
+                style={{
+                  width: "100%",
+                  padding: "11px",
+                  borderRadius: "8px",
+                  backgroundColor: "#FFFFFF",
+                  border: "1px solid #E5E7EB",
+                  color: "#374151",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
               >
                 Submit Another Application
               </button>
             </div>
           </div>
         ) : (
-          /* ─── CLEAN APPLICATION FORM ─── */
-          <div style={{ backgroundColor: "#FFFFFF", borderRadius: "14px", border: "1px solid #E5E7EB", boxShadow: "0 2px 8px rgba(0,0,0,0.03)", overflow: "hidden" }}>
+          /* ─── APPLICATION FORM & PAYMENT FLOW ─── */
+          <div
+            style={{
+              backgroundColor: "#FFFFFF",
+              borderRadius: "14px",
+              border: "1px solid #E5E7EB",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+              overflow: "hidden",
+            }}
+          >
             {/* Form Title Banner */}
-            <div style={{ padding: "18px 16px", borderBottom: "1px solid #E5E7EB", backgroundColor: "#FDF2F8" }}>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "3px 9px", borderRadius: "999px", fontSize: "11px", fontWeight: 700, backgroundColor: "#FCE7F3", color: "#BE185D", border: "1px solid #FBCFE8", marginBottom: "6px" }}>
+            <div
+              style={{
+                padding: "20px 18px",
+                borderBottom: "1px solid #E5E7EB",
+                backgroundColor: "#FAF5FF",
+              }}
+            >
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  padding: "3px 10px",
+                  borderRadius: "999px",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  backgroundColor: "#EDE9FE",
+                  color: "#6D28D9",
+                  border: "1px solid #DDD6FE",
+                  marginBottom: "8px",
+                }}
+              >
                 <Sparkles size={12} />
-                <span>EXCLUSIVELY FOR FEMALE CANDIDATES / GIRLS</span>
+                <span>INTERNSHIP DRIVE 2026 • OPEN FOR ALL CANDIDATES</span>
               </div>
-              <div style={{ fontSize: "19px", fontWeight: 700, color: "#111827", lineHeight: 1.25, letterSpacing: "-0.02em" }}>
-                Women’s Internship Application Form
+              <div
+                style={{
+                  fontSize: "20px",
+                  fontWeight: 700,
+                  color: "#111827",
+                  lineHeight: 1.25,
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                Internship Application & Registration Form
               </div>
-              <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "3px", lineHeight: 1.4 }}>
-                Please fill in your details and tick your interested role tracks below. Fields marked with <span style={{ color: "#EF4444", fontWeight: 700 }}>*</span> are required.
+              <div
+                style={{
+                  fontSize: "13px",
+                  color: "#6B7280",
+                  marginTop: "4px",
+                  lineHeight: 1.45,
+                }}
+              >
+                Fill out the application details below. After filling the form, an enrollment &amp; registration fee of <strong>₹5,000</strong> is required via Razorpay to submit your application.
               </div>
             </div>
 
+            {/* Error Banner */}
+            {paymentError && (
+              <div
+                style={{
+                  margin: "16px 16px 0 16px",
+                  padding: "12px 14px",
+                  backgroundColor: "#FEF2F2",
+                  border: "1px solid #FCA5A5",
+                  borderRadius: "8px",
+                  color: "#991B1B",
+                  fontSize: "13px",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "8px",
+                }}
+              >
+                <AlertCircle size={16} color="#EF4444" style={{ flexShrink: 0, marginTop: "2px" }} />
+                <span>{paymentError}</span>
+              </div>
+            )}
+
             {/* Form Elements */}
-            <form onSubmit={handleSubmit} noValidate style={{ padding: "18px 16px", display: "flex", flexDirection: "column", gap: "20px" }}>
-              
+            <form
+              onSubmit={handleSubmit}
+              noValidate
+              style={{
+                padding: "20px 18px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "22px",
+              }}
+            >
               {/* ════════ SECTION 1: PERSONAL DETAILS ════════ */}
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", paddingBottom: "6px", borderBottom: "1px solid #F3F4F6", marginBottom: "12px" }}>
-                  <div style={{ width: "20px", height: "20px", borderRadius: "5px", backgroundColor: "#FDF2F8", color: "#BE185D", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    paddingBottom: "8px",
+                    borderBottom: "1px solid #F3F4F6",
+                    marginBottom: "14px",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "22px",
+                      height: "22px",
+                      borderRadius: "6px",
+                      backgroundColor: "#EDE9FE",
+                      color: "#6D28D9",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                    }}
+                  >
                     1
                   </div>
                   <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
@@ -471,10 +989,25 @@ export default function InternshipFormClient() {
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "12px" }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+                    gap: "12px",
+                  }}
+                >
                   {/* Full Name */}
                   <div className={errors.fullName ? "has-field-error" : ""}>
-                    <label htmlFor="fullName" style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#374151", marginBottom: "4px" }}>
+                    <label
+                      htmlFor="fullName"
+                      style={{
+                        display: "block",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        color: "#374151",
+                        marginBottom: "4px",
+                      }}
+                    >
                       Full Name <span style={{ color: "#EF4444" }}>*</span>
                     </label>
                     <input
@@ -483,8 +1016,18 @@ export default function InternshipFormClient() {
                       name="fullName"
                       value={formData.fullName}
                       onChange={handleInputChange}
-                      placeholder="e.g. Priya Sharma"
-                      style={{ width: "100%", height: "40px", padding: "0 12px", fontSize: "14px", backgroundColor: "#FFFFFF", borderRadius: "8px", border: `1px solid ${errors.fullName ? "#EF4444" : "#E5E7EB"}`, color: "#111827", outline: "none" }}
+                      placeholder="e.g. Rahul Sharma / Priya Verma"
+                      style={{
+                        width: "100%",
+                        height: "40px",
+                        padding: "0 12px",
+                        fontSize: "14px",
+                        backgroundColor: "#FFFFFF",
+                        borderRadius: "8px",
+                        border: `1px solid ${errors.fullName ? "#EF4444" : "#E5E7EB"}`,
+                        color: "#111827",
+                        outline: "none",
+                      }}
                     />
                     {errors.fullName && (
                       <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "3px", fontWeight: 500 }}>
@@ -495,7 +1038,16 @@ export default function InternshipFormClient() {
 
                   {/* Email */}
                   <div className={errors.email ? "has-field-error" : ""}>
-                    <label htmlFor="email" style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#374151", marginBottom: "4px" }}>
+                    <label
+                      htmlFor="email"
+                      style={{
+                        display: "block",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        color: "#374151",
+                        marginBottom: "4px",
+                      }}
+                    >
                       Email Address <span style={{ color: "#EF4444" }}>*</span>
                     </label>
                     <input
@@ -504,8 +1056,18 @@ export default function InternshipFormClient() {
                       name="email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      placeholder="e.g. priya.sharma@example.com"
-                      style={{ width: "100%", height: "40px", padding: "0 12px", fontSize: "14px", backgroundColor: "#FFFFFF", borderRadius: "8px", border: `1px solid ${errors.email ? "#EF4444" : "#E5E7EB"}`, color: "#111827", outline: "none" }}
+                      placeholder="e.g. yourname@gmail.com"
+                      style={{
+                        width: "100%",
+                        height: "40px",
+                        padding: "0 12px",
+                        fontSize: "14px",
+                        backgroundColor: "#FFFFFF",
+                        borderRadius: "8px",
+                        border: `1px solid ${errors.email ? "#EF4444" : "#E5E7EB"}`,
+                        color: "#111827",
+                        outline: "none",
+                      }}
                     />
                     {errors.email && (
                       <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "3px", fontWeight: 500 }}>
@@ -514,10 +1076,19 @@ export default function InternshipFormClient() {
                     )}
                   </div>
 
-                  {/* Phone with Default +91 */}
+                  {/* Phone with Country Code */}
                   <div className={errors.phone ? "has-field-error" : ""}>
-                    <label htmlFor="phone" style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#374151", marginBottom: "4px" }}>
-                      Phone Number <span style={{ color: "#EF4444" }}>*</span>
+                    <label
+                      htmlFor="phone"
+                      style={{
+                        display: "block",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        color: "#374151",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      Phone / WhatsApp Number <span style={{ color: "#EF4444" }}>*</span>
                     </label>
                     <div style={{ display: "flex", gap: "6px" }}>
                       <div style={{ position: "relative", width: "90px", flexShrink: 0 }}>
@@ -527,7 +1098,20 @@ export default function InternshipFormClient() {
                           aria-label="Country Code"
                           value={formData.countryCode}
                           onChange={handleCountryCodeChange}
-                          style={{ width: "100%", height: "40px", padding: "0 20px 0 8px", fontSize: "13px", backgroundColor: "#F9FAFB", borderRadius: "8px", border: "1px solid #E5E7EB", color: "#111827", fontWeight: 600, outline: "none", appearance: "none", cursor: "pointer" }}
+                          style={{
+                            width: "100%",
+                            height: "40px",
+                            padding: "0 20px 0 8px",
+                            fontSize: "13px",
+                            backgroundColor: "#F9FAFB",
+                            borderRadius: "8px",
+                            border: "1px solid #E5E7EB",
+                            color: "#111827",
+                            fontWeight: 600,
+                            outline: "none",
+                            appearance: "none",
+                            cursor: "pointer",
+                          }}
                         >
                           {COUNTRY_CODES.map((c) => (
                             <option key={c.code} value={c.code}>
@@ -535,7 +1119,17 @@ export default function InternshipFormClient() {
                             </option>
                           ))}
                         </select>
-                        <ChevronDown size={14} style={{ position: "absolute", right: "6px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#6B7280" }} />
+                        <ChevronDown
+                          size={14}
+                          style={{
+                            position: "absolute",
+                            right: "6px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            pointerEvents: "none",
+                            color: "#6B7280",
+                          }}
+                        />
                       </div>
 
                       <input
@@ -546,7 +1140,17 @@ export default function InternshipFormClient() {
                         onChange={handleInputChange}
                         maxLength={formData.countryCode === "+91" ? 10 : 15}
                         placeholder={formData.countryCode === "+91" ? "10-digit mobile number" : "Phone number"}
-                        style={{ flex: 1, height: "40px", padding: "0 12px", fontSize: "14px", backgroundColor: "#FFFFFF", borderRadius: "8px", border: `1px solid ${errors.phone ? "#EF4444" : "#E5E7EB"}`, color: "#111827", outline: "none" }}
+                        style={{
+                          flex: 1,
+                          height: "40px",
+                          padding: "0 12px",
+                          fontSize: "14px",
+                          backgroundColor: "#FFFFFF",
+                          borderRadius: "8px",
+                          border: `1px solid ${errors.phone ? "#EF4444" : "#E5E7EB"}`,
+                          color: "#111827",
+                          outline: "none",
+                        }}
                       />
                     </div>
                     {errors.phone ? (
@@ -555,9 +1159,22 @@ export default function InternshipFormClient() {
                       </div>
                     ) : (
                       formData.countryCode === "+91" && (
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#6B7280", marginTop: "3px" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            fontSize: "11px",
+                            color: "#6B7280",
+                            marginTop: "3px",
+                          }}
+                        >
                           <span>Enter 10-digit number</span>
-                          <span style={{ color: formData.phone.length === 10 ? "#10B981" : "#6B7280", fontWeight: 600 }}>
+                          <span
+                            style={{
+                              color: formData.phone.length === 10 ? "#10B981" : "#6B7280",
+                              fontWeight: 600,
+                            }}
+                          >
                             {formData.phone.length}/10
                           </span>
                         </div>
@@ -567,7 +1184,16 @@ export default function InternshipFormClient() {
 
                   {/* City */}
                   <div className={errors.city ? "has-field-error" : ""}>
-                    <label htmlFor="city" style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#374151", marginBottom: "4px" }}>
+                    <label
+                      htmlFor="city"
+                      style={{
+                        display: "block",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        color: "#374151",
+                        marginBottom: "4px",
+                      }}
+                    >
                       Current City / Location <span style={{ color: "#EF4444" }}>*</span>
                     </label>
                     <input
@@ -576,8 +1202,18 @@ export default function InternshipFormClient() {
                       name="city"
                       value={formData.city}
                       onChange={handleInputChange}
-                      placeholder="e.g. Mumbai, Maharashtra"
-                      style={{ width: "100%", height: "40px", padding: "0 12px", fontSize: "14px", backgroundColor: "#FFFFFF", borderRadius: "8px", border: `1px solid ${errors.city ? "#EF4444" : "#E5E7EB"}`, color: "#111827", outline: "none" }}
+                      placeholder="e.g. Mumbai, Bangalore, Pune"
+                      style={{
+                        width: "100%",
+                        height: "40px",
+                        padding: "0 12px",
+                        fontSize: "14px",
+                        backgroundColor: "#FFFFFF",
+                        borderRadius: "8px",
+                        border: `1px solid ${errors.city ? "#EF4444" : "#E5E7EB"}`,
+                        color: "#111827",
+                        outline: "none",
+                      }}
                     />
                     {errors.city && (
                       <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "3px", fontWeight: 500 }}>
@@ -585,44 +1221,120 @@ export default function InternshipFormClient() {
                       </div>
                     )}
                   </div>
-                </div>
 
-                {/* Female Confirmation */}
-                <div style={{ marginTop: "12px", padding: "10px 12px", backgroundColor: "#FDF2F8", borderRadius: "8px", border: "1px solid #FCE7F3", display: "flex", alignItems: "center", gap: "10px" }} className={errors.isFemaleConfirmed ? "has-field-error" : ""}>
-                  <input
-                    type="checkbox"
-                    id="isFemaleConfirmed"
-                    name="isFemaleConfirmed"
-                    checked={formData.isFemaleConfirmed}
-                    onChange={handleInputChange}
-                    style={{ width: "16px", height: "16px", accentColor: "#BE185D", cursor: "pointer" }}
-                  />
-                  <label htmlFor="isFemaleConfirmed" style={{ fontSize: "12px", color: "#831843", fontWeight: 600, cursor: "pointer", lineHeight: 1.4 }}>
-                    I confirm that I am a female candidate / girl applying for this exclusive women’s internship opportunity. <span style={{ color: "#EF4444" }}>*</span>
-                  </label>
-                </div>
-                {errors.isFemaleConfirmed && (
-                  <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "3px", fontWeight: 500 }}>
-                    {errors.isFemaleConfirmed}
+                  {/* Gender Selection */}
+                  <div className={errors.gender ? "has-field-error" : ""}>
+                    <label
+                      htmlFor="gender"
+                      style={{
+                        display: "block",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        color: "#374151",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      Gender <span style={{ color: "#EF4444" }}>*</span>
+                    </label>
+                    <div style={{ position: "relative" }}>
+                      <select
+                        id="gender"
+                        name="gender"
+                        value={formData.gender}
+                        onChange={handleInputChange}
+                        style={{
+                          width: "100%",
+                          height: "40px",
+                          padding: "0 28px 0 10px",
+                          fontSize: "13px",
+                          backgroundColor: "#FFFFFF",
+                          borderRadius: "8px",
+                          border: `1px solid ${errors.gender ? "#EF4444" : "#E5E7EB"}`,
+                          color: formData.gender ? "#111827" : "#9CA3AF",
+                          outline: "none",
+                          appearance: "none",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <option value="" disabled>Select Gender...</option>
+                        <option value="Male" style={{ color: "#111827" }}>Male</option>
+                        <option value="Female" style={{ color: "#111827" }}>Female</option>
+                        <option value="Other" style={{ color: "#111827" }}>Other</option>
+                        <option value="Prefer not to say" style={{ color: "#111827" }}>Prefer not to say</option>
+                      </select>
+                      <ChevronDown
+                        size={14}
+                        style={{
+                          position: "absolute",
+                          right: "8px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          pointerEvents: "none",
+                          color: "#6B7280",
+                        }}
+                      />
+                    </div>
+                    {errors.gender && (
+                      <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "3px", fontWeight: 500 }}>
+                        {errors.gender}
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
 
               {/* ════════ SECTION 2: QUALIFICATION & EDUCATION ════════ */}
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", paddingBottom: "6px", borderBottom: "1px solid #F3F4F6", marginBottom: "12px" }}>
-                  <div style={{ width: "20px", height: "20px", borderRadius: "5px", backgroundColor: "#FDF2F8", color: "#BE185D", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    paddingBottom: "8px",
+                    borderBottom: "1px solid #F3F4F6",
+                    marginBottom: "14px",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "22px",
+                      height: "22px",
+                      borderRadius: "6px",
+                      backgroundColor: "#EDE9FE",
+                      color: "#6D28D9",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                    }}
+                  >
                     2
                   </div>
                   <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
-                    Qualification (Min. 12th Completed)
+                    Qualification & Education
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "12px" }}>
-                  {/* Highest Qualification Dropdown */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+                    gap: "12px",
+                  }}
+                >
+                  {/* Highest Qualification */}
                   <div className={errors.qualification ? "has-field-error" : ""}>
-                    <label htmlFor="qualification" style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#374151", marginBottom: "4px" }}>
+                    <label
+                      htmlFor="qualification"
+                      style={{
+                        display: "block",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        color: "#374151",
+                        marginBottom: "4px",
+                      }}
+                    >
                       Highest Qualification <span style={{ color: "#EF4444" }}>*</span>
                     </label>
                     <div style={{ position: "relative" }}>
@@ -631,16 +1343,38 @@ export default function InternshipFormClient() {
                         name="qualification"
                         value={formData.qualification}
                         onChange={handleInputChange}
-                        style={{ width: "100%", height: "40px", padding: "0 28px 0 10px", fontSize: "13px", backgroundColor: "#FFFFFF", borderRadius: "8px", border: `1px solid ${errors.qualification ? "#EF4444" : "#E5E7EB"}`, color: formData.qualification ? "#111827" : "#9CA3AF", outline: "none", appearance: "none", cursor: "pointer" }}
+                        style={{
+                          width: "100%",
+                          height: "40px",
+                          padding: "0 28px 0 10px",
+                          fontSize: "13px",
+                          backgroundColor: "#FFFFFF",
+                          borderRadius: "8px",
+                          border: `1px solid ${errors.qualification ? "#EF4444" : "#E5E7EB"}`,
+                          color: formData.qualification ? "#111827" : "#9CA3AF",
+                          outline: "none",
+                          appearance: "none",
+                          cursor: "pointer",
+                        }}
                       >
-                        <option value="" disabled>Select qualification (min. 12th completed)...</option>
+                        <option value="" disabled>Select qualification...</option>
                         {QUALIFICATION_OPTIONS.map((q) => (
                           <option key={q} value={q} style={{ color: "#111827" }}>
                             {q}
                           </option>
                         ))}
                       </select>
-                      <ChevronDown size={14} style={{ position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#6B7280" }} />
+                      <ChevronDown
+                        size={14}
+                        style={{
+                          position: "absolute",
+                          right: "8px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          pointerEvents: "none",
+                          color: "#6B7280",
+                        }}
+                      />
                     </div>
                     {errors.qualification && (
                       <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "3px", fontWeight: 500 }}>
@@ -651,7 +1385,16 @@ export default function InternshipFormClient() {
 
                   {/* Passing Year */}
                   <div className={errors.passingYear ? "has-field-error" : ""}>
-                    <label htmlFor="passingYear" style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#374151", marginBottom: "4px" }}>
+                    <label
+                      htmlFor="passingYear"
+                      style={{
+                        display: "block",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        color: "#374151",
+                        marginBottom: "4px",
+                      }}
+                    >
                       Passing / Graduation Year <span style={{ color: "#EF4444" }}>*</span>
                     </label>
                     <div style={{ position: "relative" }}>
@@ -660,7 +1403,19 @@ export default function InternshipFormClient() {
                         name="passingYear"
                         value={formData.passingYear}
                         onChange={handleInputChange}
-                        style={{ width: "100%", height: "40px", padding: "0 28px 0 10px", fontSize: "13px", backgroundColor: "#FFFFFF", borderRadius: "8px", border: `1px solid ${errors.passingYear ? "#EF4444" : "#E5E7EB"}`, color: formData.passingYear ? "#111827" : "#9CA3AF", outline: "none", appearance: "none", cursor: "pointer" }}
+                        style={{
+                          width: "100%",
+                          height: "40px",
+                          padding: "0 28px 0 10px",
+                          fontSize: "13px",
+                          backgroundColor: "#FFFFFF",
+                          borderRadius: "8px",
+                          border: `1px solid ${errors.passingYear ? "#EF4444" : "#E5E7EB"}`,
+                          color: formData.passingYear ? "#111827" : "#9CA3AF",
+                          outline: "none",
+                          appearance: "none",
+                          cursor: "pointer",
+                        }}
                       >
                         <option value="" disabled>Select passing year...</option>
                         {PASSING_YEARS.map((y) => (
@@ -669,7 +1424,17 @@ export default function InternshipFormClient() {
                           </option>
                         ))}
                       </select>
-                      <ChevronDown size={14} style={{ position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#6B7280" }} />
+                      <ChevronDown
+                        size={14}
+                        style={{
+                          position: "absolute",
+                          right: "8px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          pointerEvents: "none",
+                          color: "#6B7280",
+                        }}
+                      />
                     </div>
                     {errors.passingYear && (
                       <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "3px", fontWeight: 500 }}>
@@ -680,10 +1445,32 @@ export default function InternshipFormClient() {
                 </div>
               </div>
 
-              {/* ════════ SECTION 3: SKILLS / ROLE SELECTION (3 TICK OPTIONS) ════════ */}
+              {/* ════════ SECTION 3: SKILLS / ROLE SELECTION ════════ */}
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", paddingBottom: "6px", borderBottom: "1px solid #F3F4F6", marginBottom: "12px" }}>
-                  <div style={{ width: "20px", height: "20px", borderRadius: "5px", backgroundColor: "#FDF2F8", color: "#BE185D", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    paddingBottom: "8px",
+                    borderBottom: "1px solid #F3F4F6",
+                    marginBottom: "14px",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "22px",
+                      height: "22px",
+                      borderRadius: "6px",
+                      backgroundColor: "#EDE9FE",
+                      color: "#6D28D9",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                    }}
+                  >
                     3
                   </div>
                   <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
@@ -692,12 +1479,26 @@ export default function InternshipFormClient() {
                 </div>
 
                 <div className={errors.skills ? "has-field-error" : ""}>
-                  <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#374151", marginBottom: "8px" }}>
-                    Tick the role(s) you are interested in applying for:
+                  <label
+                    style={{
+                      display: "block",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      color: "#374151",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    Select the role(s) you want to be trained and evaluated in:
                   </label>
 
-                  {/* 3 Interactive Tick Cards */}
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "10px" }}>
+                  {/* 3 Interactive Cards */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
+                      gap: "10px",
+                    }}
+                  >
                     {TARGET_SKILLS.map((skill) => {
                       const isChecked = formData.skills.includes(skill.title);
                       return (
@@ -714,13 +1515,27 @@ export default function InternshipFormClient() {
                             display: "flex",
                             flexDirection: "column",
                             gap: "6px",
-                            boxShadow: isChecked ? "0 2px 8px rgba(124, 58, 237, 0.08)" : "none",
+                            boxShadow: isChecked
+                              ? "0 2px 8px rgba(124, 58, 237, 0.08)"
+                              : "none",
                           }}
                         >
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                            }}
+                          >
                             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                               {getSkillIcon(skill.id)}
-                              <span style={{ fontSize: "14px", fontWeight: 700, color: isChecked ? "#7C3AED" : "#111827" }}>
+                              <span
+                                style={{
+                                  fontSize: "14px",
+                                  fontWeight: 700,
+                                  color: isChecked ? "#7C3AED" : "#111827",
+                                }}
+                              >
                                 {skill.title}
                               </span>
                             </div>
@@ -753,7 +1568,17 @@ export default function InternshipFormClient() {
                   </div>
 
                   {errors.skills && (
-                    <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "6px", fontWeight: 500, display: "flex", alignItems: "center", gap: "4px" }}>
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        color: "#EF4444",
+                        marginTop: "6px",
+                        fontWeight: 500,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
+                    >
                       <AlertCircle size={12} />
                       <span>{errors.skills}</span>
                     </div>
@@ -763,8 +1588,30 @@ export default function InternshipFormClient() {
 
               {/* ════════ SECTION 4: ABOUT YOURSELF ════════ */}
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", paddingBottom: "6px", borderBottom: "1px solid #F3F4F6", marginBottom: "12px" }}>
-                  <div style={{ width: "20px", height: "20px", borderRadius: "5px", backgroundColor: "#FDF2F8", color: "#BE185D", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    paddingBottom: "8px",
+                    borderBottom: "1px solid #F3F4F6",
+                    marginBottom: "14px",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "22px",
+                      height: "22px",
+                      borderRadius: "6px",
+                      backgroundColor: "#EDE9FE",
+                      color: "#6D28D9",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                    }}
+                  >
                     4
                   </div>
                   <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
@@ -774,8 +1621,17 @@ export default function InternshipFormClient() {
 
                 {/* About Yourself Textarea */}
                 <div className={errors.aboutYourself ? "has-field-error" : ""} style={{ marginBottom: "12px" }}>
-                  <label htmlFor="aboutYourself" style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#374151", marginBottom: "4px" }}>
-                    Tell us about yourself (Introduction, strengths & background)
+                  <label
+                    htmlFor="aboutYourself"
+                    style={{
+                      display: "block",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      color: "#374151",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    Tell us about yourself (Background, experience, and goals)
                   </label>
                   <textarea
                     id="aboutYourself"
@@ -783,8 +1639,19 @@ export default function InternshipFormClient() {
                     rows={4}
                     value={formData.aboutYourself}
                     onChange={handleInputChange}
-                    placeholder="Briefly introduce yourself: your background, strengths, practical projects or reels you've created, and why you are excited to join us..."
-                    style={{ width: "100%", padding: "10px 12px", fontSize: "14px", backgroundColor: "#FFFFFF", borderRadius: "8px", border: `1px solid ${errors.aboutYourself ? "#EF4444" : "#E5E7EB"}`, color: "#111827", outline: "none", resize: "vertical", lineHeight: 1.5 }}
+                    placeholder="Briefly introduce yourself: your practical skills, tools you know, projects or content you've created, and why you are excited to join this program..."
+                    style={{
+                      width: "100%",
+                      padding: "10px 12px",
+                      fontSize: "14px",
+                      backgroundColor: "#FFFFFF",
+                      borderRadius: "8px",
+                      border: `1px solid ${errors.aboutYourself ? "#EF4444" : "#E5E7EB"}`,
+                      color: "#111827",
+                      outline: "none",
+                      resize: "vertical",
+                      lineHeight: 1.5,
+                    }}
                   />
                   {errors.aboutYourself ? (
                     <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "3px", fontWeight: 500 }}>
@@ -797,10 +1664,19 @@ export default function InternshipFormClient() {
                   )}
                 </div>
 
-                {/* Resume / Portfolio Link */}
+                {/* Resume Link */}
                 <div>
-                  <label htmlFor="resumeUrl" style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#374151", marginBottom: "4px" }}>
-                    Resume / Drive / Video Portfolio Link <span style={{ fontSize: "11px", fontWeight: 400, color: "#6B7280" }}>(Optional)</span>
+                  <label
+                    htmlFor="resumeUrl"
+                    style={{
+                      display: "block",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      color: "#374151",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    Resume / Drive / Portfolio Link <span style={{ fontSize: "11px", fontWeight: 400, color: "#6B7280" }}>(Optional)</span>
                   </label>
                   <input
                     type="url"
@@ -808,35 +1684,188 @@ export default function InternshipFormClient() {
                     name="resumeUrl"
                     value={formData.resumeUrl}
                     onChange={handleInputChange}
-                    placeholder="https://drive.google.com/file/... or portfolio link"
-                    style={{ width: "100%", height: "40px", padding: "0 12px", fontSize: "14px", backgroundColor: "#FFFFFF", borderRadius: "8px", border: "1px solid #E5E7EB", color: "#111827", outline: "none" }}
+                    placeholder="https://drive.google.com/file/... or website/portfolio link"
+                    style={{
+                      width: "100%",
+                      height: "40px",
+                      padding: "0 12px",
+                      fontSize: "14px",
+                      backgroundColor: "#FFFFFF",
+                      borderRadius: "8px",
+                      border: "1px solid #E5E7EB",
+                      color: "#111827",
+                      outline: "none",
+                    }}
                   />
                 </div>
               </div>
 
-              {/* ════════ SUBMIT ACTION ════════ */}
-              <div style={{ paddingTop: "14px", borderTop: "1px solid #E5E7EB", display: "flex", flexDirection: "column", gap: "10px" }}>
+              {/* ════════ SECTION 5: PAYMENT SUMMARY CARD (₹5,000) ════════ */}
+              <div
+                style={{
+                  backgroundColor: "#F9FAFB",
+                  borderRadius: "12px",
+                  border: "1px solid #E5E7EB",
+                  padding: "16px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    flexWrap: "wrap",
+                    gap: "8px",
+                    borderBottom: "1px solid #E5E7EB",
+                    paddingBottom: "12px",
+                    marginBottom: "12px",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <div
+                      style={{
+                        width: "32px",
+                        height: "32px",
+                        borderRadius: "8px",
+                        backgroundColor: "#EDE9FE",
+                        color: "#7C3AED",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Receipt size={16} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
+                        Internship Enrollment &amp; Registration Fee
+                      </div>
+                      <div style={{ fontSize: "11px", color: "#6B7280" }}>
+                        Mandatory one-time registration fee required to submit application
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontSize: "20px", fontWeight: 800, color: "#7C3AED" }}>
+                      ₹5,000
+                    </div>
+                    <div style={{ fontSize: "11px", color: "#059669", fontWeight: 600 }}>
+                      All inclusive • Live Agency Projects
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                    gap: "8px",
+                    fontSize: "12px",
+                    color: "#4B5563",
+                    marginBottom: "12px",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <Check size={14} color="#10B981" />
+                    <span>Hands-on Live Client Projects</span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <Check size={14} color="#10B981" />
+                    <span>Industry Mentorship &amp; Guidance</span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <Check size={14} color="#10B981" />
+                    <span>Performance-based Stipend &amp; PPO</span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <Check size={14} color="#10B981" />
+                    <span>Official Experience Certificate</span>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    backgroundColor: "#FFFFFF",
+                    borderRadius: "8px",
+                    padding: "8px 12px",
+                    border: "1px solid #E5E7EB",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    fontSize: "11px",
+                    color: "#6B7280",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <Lock size={13} color="#059669" />
+                    <span>100% Encrypted &amp; Secured via <strong>Razorpay</strong></span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span>UPI • Credit/Debit Cards • NetBanking</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* ════════ SUBMIT ACTION WITH RAZORPAY ════════ */}
+              <div
+                style={{
+                  paddingTop: "10px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                }}
+              >
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  style={{ width: "100%", height: "44px", borderRadius: "8px", backgroundColor: isSubmitting ? "#A78BFA" : "#7C3AED", color: "#FFFFFF", fontSize: "14px", fontWeight: 700, border: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", cursor: isSubmitting ? "not-allowed" : "pointer", boxShadow: "0 1px 3px rgba(124, 58, 237, 0.2)" }}
+                  style={{
+                    width: "100%",
+                    height: "46px",
+                    borderRadius: "8px",
+                    backgroundColor: isSubmitting ? "#A78BFA" : "#7C3AED",
+                    color: "#FFFFFF",
+                    fontSize: "14px",
+                    fontWeight: 700,
+                    border: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    cursor: isSubmitting ? "not-allowed" : "pointer",
+                    boxShadow: "0 2px 6px rgba(124, 58, 237, 0.25)",
+                    transition: "all 0.15s ease",
+                  }}
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 size={16} className="animate-spin" />
-                      <span>Submitting Application...</span>
+                      <Loader2 size={18} className="animate-spin" />
+                      <span>Processing Payment &amp; Application...</span>
                     </>
                   ) : (
                     <>
-                      <span>Submit Application</span>
+                      <CreditCard size={17} />
+                      <span>Pay ₹5,000 &amp; Submit Application</span>
                       <ArrowRight size={16} />
                     </>
                   )}
                 </button>
 
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", fontSize: "11px", color: "#6B7280", textAlign: "center" }}>
-                  <ShieldCheck size={13} color="#BE185D" />
-                  <span>Exclusive Women’s Hiring Cohort • Safe & Equal Opportunity Recruitment.</span>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px",
+                    fontSize: "11px",
+                    color: "#6B7280",
+                    textAlign: "center",
+                  }}
+                >
+                  <ShieldCheck size={14} color="#7C3AED" />
+                  <span>
+                    Your application is only submitted once payment of ₹5,000 is completed.
+                  </span>
                 </div>
               </div>
             </form>
@@ -845,10 +1874,31 @@ export default function InternshipFormClient() {
       </main>
 
       {/* ─── Footer ─── */}
-      <footer style={{ padding: "14px 12px", borderTop: "1px solid #E5E7EB", backgroundColor: "#FFFFFF", textAlign: "center", fontSize: "12px", color: "#6B7280" }}>
-        <div style={{ maxWidth: "760px", margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "6px" }}>
+      <footer
+        style={{
+          padding: "14px 16px",
+          borderTop: "1px solid #E5E7EB",
+          backgroundColor: "#FFFFFF",
+          textAlign: "center",
+          fontSize: "12px",
+          color: "#6B7280",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "780px",
+            margin: "0 auto",
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "8px",
+          }}
+        >
           <div>© {new Date().getFullYear()} First Option Agency. All rights reserved.</div>
-          <div style={{ color: "#BE185D", fontWeight: 600 }}>Women’s Empowerment & Internship Cell</div>
+          <div style={{ color: "#7C3AED", fontWeight: 600 }}>
+            Talent &amp; Career Development Division
+          </div>
         </div>
       </footer>
     </div>

@@ -1,18 +1,18 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import UnifiedAdminClient from "@/app/admin/UnifiedAdminClient";
+import UnifiedAdminClient from "./UnifiedAdminClient";
 import { Loader2 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Internship Admin | First Option Agency",
-  description: "Internship applications admin management.",
+  title: "Master Admin Dashboard | First Option Agency",
+  description: "Unified admin portal for Internship & Sales Consultant applications.",
   robots: {
     index: false,
     follow: false,
   },
 };
 
-export default function InternshipAdminPage() {
+export default function MasterAdminPage() {
   return (
     <Suspense
       fallback={
@@ -29,7 +29,7 @@ export default function InternshipAdminPage() {
         </div>
       }
     >
-      <UnifiedAdminClient initialTab="internship" />
+      <UnifiedAdminClient />
     </Suspense>
   );
 }

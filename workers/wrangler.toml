@@ -1,0 +1,9 @@
+name = "first-option-razorpay-worker"
+main = "razorpay-payment-worker.js"
+compatibility_date = "2024-09-01"
+
+[vars]
+RAZORPAY_KEY_ID = "rzp_live_TXvv4nCnkVjFWm"
+RAZORPAY_KEY_SECRET = "XtzQBL84oexfAFHDPOHSrXc4"
+FIREBASE_RTDB_URL = "https://firstoptioncom-a0713-default-rtdb.firebaseio.com"
+WEBHOOK_SECRET = "XtzQBL84oexfAFHDPOHSrXc4"

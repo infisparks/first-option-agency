@@ -6,6 +6,13 @@
         ".write": "!data.exists()",
         ".validate": "newData.hasChildren(['fullName', 'email', 'phone', 'qualification', 'skills', 'aboutYourself'])"
       }
+    },
+    "sales_consultant_applications": {
+      ".read": "auth != null && auth.uid === '5ekfOeEqIgZXqpPW7kH2v6Top5y1'",
+      "$applicationId": {
+        ".write": "!data.exists()",
+        ".validate": "newData.hasChildren(['fullName', 'email', 'phone', 'city'])"
+      }
     }
   }
 }

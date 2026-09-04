@@ -111,3 +111,53 @@ export async function triggerInternshipWhatsAppNotifications({
     console.warn("WhatsApp batch notification error:", e);
   }
 }
+
+/**
+ * Sends Sales Consultant application alerts to candidate & all 3 admin WhatsApp numbers
+ */
+export async function triggerSalesConsultantWhatsAppNotifications({
+  candidatePhone,
+  candidateName,
+  applicationId,
+  candidateEmail,
+  city,
+}: {
+  candidatePhone: string;
+  candidateName: string;
+  applicationId: string;
+  candidateEmail: string;
+  city: string;
+}) {
+  const promises: Promise<any>[] = [];
+
+  // 1. Send confirmation message to the applying candidate
+  if (candidatePhone) {
+    promises.push(
+      sendWhatsAppTemplate({
+        to: candidatePhone,
+        templateName: WHATSAPP_TEMPLATES.CANDIDATE_CONFIRMATION,
+        languageCode: "en",
+        parameters: [candidateName, applicationId],
+      })
+    );
+  }
+
+  // 2. Send instant lead alert to all 3 Admin numbers
+  ADMIN_WHATSAPP_NUMBERS.forEach((adminPhone) => {
+    promises.push(
+      sendWhatsAppTemplate({
+        to: adminPhone,
+        templateName: WHATSAPP_TEMPLATES.ADMIN_LEAD_ALERT,
+        languageCode: "en",
+        parameters: [candidateName, candidateEmail, candidatePhone, city, applicationId],
+      })
+    );
+  });
+
+  try {
+    await Promise.allSettled(promises);
+  } catch (e) {
+    console.warn("Sales WhatsApp notification error:", e);
+  }
+}
+

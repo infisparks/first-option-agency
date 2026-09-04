@@ -29,14 +29,20 @@ export interface InternshipApplicationPayload {
   countryCode: string;
   phone: string;
   city: string;
-  gender: string;
-  isFemaleConfirmed: boolean;
+  gender?: string;
+  isFemaleConfirmed?: boolean;
   qualification: string;
   passingYear: string;
   skills: string[];
   aboutYourself: string;
   resumeUrl: string;
   submittedAt: string;
+  // Razorpay payment verification fields
+  paymentStatus: "Paid" | "Unpaid" | "Pending";
+  amountPaid: number;
+  paymentId?: string;
+  orderId?: string;
+  paidAt?: string;
 }
 
 /**
@@ -56,6 +62,46 @@ export async function saveApplicationToRealtimeDb(
     return { success: true, id: data.applicationId };
   } catch (err: any) {
     console.warn("Realtime DB save error:", err?.message || err);
+    return { success: false, id: data.applicationId, error: err?.message };
+  }
+}
+
+export interface SalesConsultantApplicationPayload {
+  applicationId: string;
+  fullName: string;
+  phone: string;
+  countryCode: string;
+  city: string;
+  email: string;
+  age: string;
+  // Sales Experience
+  hasSalesExperience: boolean;
+  salesExperienceDetails?: string;
+  hasAgencyOrCommissionSales: boolean;
+  productsSoldBefore: string;
+  // Quick Sales Test
+  expensiveObjectionHandling: string;
+  whyGoodAtSales: string;
+  submittedAt: string;
+}
+
+/**
+ * Saves Sales Consultant application directly to Firebase Realtime Database.
+ */
+export async function saveSalesConsultantApplicationToRealtimeDb(
+  data: SalesConsultantApplicationPayload
+): Promise<{ success: boolean; id: string; error?: string }> {
+  try {
+    const appRef = ref(rtdb, `sales_consultant_applications/${data.applicationId}`);
+    await set(appRef, {
+      ...data,
+      status: "new",
+      createdAt: serverTimestamp(),
+    });
+
+    return { success: true, id: data.applicationId };
+  } catch (err: any) {
+    console.warn("Realtime DB save error for Sales Consultant:", err?.message || err);
     return { success: false, id: data.applicationId, error: err?.message };
   }
 }

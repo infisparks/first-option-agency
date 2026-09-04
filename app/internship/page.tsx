@@ -3,15 +3,15 @@ import InternshipFormClient from "./InternshipFormClient";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://firstoptionagency.com"),
-  title: "Women's Internship Drive 2026 | First Option Agency",
+  title: "Internship Drive 2026 | First Option Agency",
   description:
-    "Exclusive Internship Drive for female candidates and girls in Graphic Design, Web Development (HTML, JS, Next.js), Video Editing (Premiere Pro), Market Research, and Performance Marketing at First Option Agency.",
+    "Apply for the Official Internship Drive 2026 at First Option Agency in Graphic Design, Web Development (HTML, JS, Next.js), Video Editing, Sales Consultation, and Performance Marketing.",
   keywords: [
-    "internship for girls",
-    "women in tech internship",
-    "graphic design internship",
+    "internship drive 2026",
+    "digital marketing internship",
     "web development internship",
     "video editing internship",
+    "sales consultant internship",
     "performance marketing internship",
     "First Option Agency",
   ],
@@ -19,9 +19,9 @@ export const metadata: Metadata = {
     canonical: "https://firstoptionagency.com/internship",
   },
   openGraph: {
-    title: "Women's Internship Drive 2026 | First Option Agency",
+    title: "Internship Drive 2026 | First Option Agency",
     description:
-      "Exclusive internship opportunities for female students and graduates in Web Development, Graphic Design, Video Editing, and Performance Marketing. Apply now!",
+      "Kickstart your career with high-impact internship opportunities in Web Development, Graphic Design, Video Editing, Sales, and Performance Marketing. Apply now!",
     url: "https://firstoptionagency.com/internship",
     siteName: "First Option Agency",
     images: [
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
         url: "https://firstoptionagency.com/thumbnail_whatsapp.png",
         width: 1200,
         height: 630,
-        alt: "First Option Agency - Women's Internship Drive 2026",
+        alt: "First Option Agency - Internship Drive 2026",
       },
     ],
     locale: "en_US",
@@ -37,9 +37,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Women's Internship Drive 2026 | First Option Agency",
+    title: "Internship Drive 2026 | First Option Agency",
     description:
-      "Exclusive internship opportunities for female students and graduates in Web Development, Graphic Design, Video Editing, and Performance Marketing.",
+      "Apply now for high-impact internship opportunities in Web Development, Video Editing, Performance Marketing, and Sales at First Option Agency.",
     images: ["https://firstoptionagency.com/thumbnail_whatsapp.png"],
   },
 };

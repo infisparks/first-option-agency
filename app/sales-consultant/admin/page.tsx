@@ -4,15 +4,15 @@ import UnifiedAdminClient from "@/app/admin/UnifiedAdminClient";
 import { Loader2 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Internship Admin | First Option Agency",
-  description: "Internship applications admin management.",
+  title: "Sales Consultant Admin | First Option Agency",
+  description: "Sales Consultant applications admin management.",
   robots: {
     index: false,
     follow: false,
   },
 };
 
-export default function InternshipAdminPage() {
+export default function SalesConsultantAdminPage() {
   return (
     <Suspense
       fallback={
@@ -29,7 +29,7 @@ export default function InternshipAdminPage() {
         </div>
       }
     >
-      <UnifiedAdminClient initialTab="internship" />
+      <UnifiedAdminClient initialTab="sales" />
     </Suspense>
   );
 }
