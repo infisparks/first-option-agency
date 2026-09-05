@@ -245,6 +245,57 @@ p  { font-size: clamp(0.8rem, 1.5vw, 0.9rem); line-height: 1.65; }
   100% { transform: scale(2); opacity: 0; }
 }
 
+/* ─── WHATSAPP GROUP SHINE BUTTON ─── */
+@keyframes wa-shine-sweep {
+  0% { transform: translateX(-150%) skewX(-25deg); }
+  25%, 100% { transform: translateX(250%) skewX(-25deg); }
+}
+
+@keyframes wa-glow-pulse {
+  0%, 100% {
+    box-shadow: 0 4px 18px rgba(37, 211, 102, 0.4), 0 0 0 0 rgba(37, 211, 102, 0.2);
+  }
+  50% {
+    box-shadow: 0 6px 28px rgba(37, 211, 102, 0.65), 0 0 0 8px rgba(37, 211, 102, 0.15);
+  }
+}
+
+.wa-shine-button {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: wa-glow-pulse 2.6s infinite ease-in-out;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.wa-shine-button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+
+.wa-shine-button:active {
+  transform: translateY(0);
+}
+
+.wa-shine-button::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: 0;
+  width: 55%;
+  height: 200%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: wa-shine-sweep 3s infinite ease-in-out;
+  pointer-events: none;
+}
+
 /* ─── LIGHTBOX ─── */
 .lightbox-backdrop {
   background: rgba(248, 250, 252, 0.97) !important;

@@ -1000,6 +1000,100 @@ export default function InternshipFormClient() {
               </div>
             </div>
 
+            {/* ─── WHATSAPP GROUP JOIN CARD WITH SHINE EFFECT (WOMEN & COMMON DRIVES ONLY) ─── */}
+            {(isWomenMode || isCommonMode) && (
+              <div
+                style={{
+                  backgroundColor: "#F0FDF4",
+                  border: "1.5px solid #86EFAC",
+                  borderRadius: "14px",
+                  padding: "20px 18px",
+                  marginBottom: "20px",
+                  textAlign: "center",
+                  boxShadow: "0 4px 15px rgba(34, 197, 94, 0.08)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "4px 12px",
+                    backgroundColor: "#DCFCE7",
+                    color: "#15803D",
+                    borderRadius: "999px",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    marginBottom: "10px",
+                    border: "1px solid #BBF7D0",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: "7px",
+                      height: "7px",
+                      borderRadius: "50%",
+                      backgroundColor: "#16A34A",
+                      display: "inline-block",
+                    }}
+                  />
+                  Mandatory Step For All Applicants
+                </div>
+
+                <div
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: 700,
+                    color: "#14532D",
+                    marginBottom: "6px",
+                  }}
+                >
+                  Join Official WhatsApp Group
+                </div>
+
+                <div
+                  style={{
+                    fontSize: "13px",
+                    color: "#166534",
+                    lineHeight: 1.5,
+                    marginBottom: "16px",
+                    maxWidth: "420px",
+                    margin: "0 auto 16px auto",
+                  }}
+                >
+                  Stay connected for batch schedules, project allocations, onboarding guides, and all official announcements.
+                </div>
+
+                <a
+                  href="https://chat.whatsapp.com/FhFGlaZiIet7xK193lGYgX"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="wa-shine-button"
+                  style={{
+                    display: "flex",
+                    width: "100%",
+                    padding: "14px 20px",
+                    borderRadius: "10px",
+                    background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)",
+                    color: "#FFFFFF",
+                    fontSize: "15px",
+                    fontWeight: 700,
+                    textDecoration: "none",
+                    gap: "10px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.301-.15-1.78-.879-2.056-.98-.276-.1-.476-.15-.677.15-.2.301-.776.98-.952 1.181-.176.2-.351.226-.652.075-.3-.15-1.267-.467-2.413-1.489-.893-.796-1.496-1.778-1.671-2.079-.176-.301-.019-.464.132-.614.135-.135.301-.351.451-.527.151-.176.2-.301.301-.502.1-.201.05-.376-.025-.526-.075-.15-.677-1.632-.928-2.235-.245-.588-.495-.508-.677-.517-.176-.009-.376-.01-.577-.01s-.527.075-.802.376c-.276.301-1.053 1.029-1.053 2.509s1.078 2.905 1.229 3.106c.15.2 2.122 3.24 5.14 4.544.718.31 1.278.495 1.716.634.72.229 1.375.197 1.892.12.578-.087 1.78-.727 2.03-1.43.251-.703.251-1.305.176-1.43-.075-.125-.276-.2-.577-.35zM12.04 2C6.54 2 2.079 6.46 2.079 11.96c0 1.93.551 3.731 1.505 5.267L2 22l4.908-1.543c1.482.879 3.208 1.385 5.132 1.385 5.5 0 9.96-4.46 9.96-9.96C22 6.46 17.54 2 12.04 2zm0 18.174c-1.644 0-3.167-.492-4.444-1.339l-.319-.21-2.919.917.935-2.846-.23-.339A8.172 8.172 0 0 1 3.868 11.96c0-4.506 3.666-8.173 8.172-8.173 4.507 0 8.173 3.667 8.173 8.173 0 4.506-3.666 8.174-8.173 8.174z" />
+                  </svg>
+                  <span>Join WhatsApp Group for All Updates</span>
+                  <ArrowRight size={18} />
+                </a>
+              </div>
+            )}
+
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               <Link
                 href="/"
