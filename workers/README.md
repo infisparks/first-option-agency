@@ -11,10 +11,10 @@ Proxies Meta WhatsApp Cloud API requests with CORS headers, formatting dynamic t
 
 ### Supported Templates & Variable Mappings:
 
-#### A. Candidate Confirmation (`internship_application_received`) - 3 Variables:
-- `{{1}}` : **Candidate Name** (e.g. `Rahul Sharma`)
-- `{{2}}` : **Custom Program Title** (e.g. `Women's Internship Drive` / `Sales Consultant Program` / `Internship Program` / `Paid Internship Program`)
-- `{{3}}` : **Application ID** (e.g. `FOA-WOMEN-2026-1234`)
+#### A. Candidate Confirmation (`internship_application_group`) - 3 Variables:
+- `{{1}}`: Candidate Full Name
+- `{{2}}`: Program Title (dynamically passed as *"Sales Consultant Program"*, *"Women's Internship Drive"*, *"Internship Program"*, or *"Paid Internship Program"*)
+- `{{3}}`: Application ID (e.g. `FOA-INT-2026-XXXX`)
 
 #### B. Admin Lead Alert (`internship_admin_lead_alert`) - 7 Variables:
 - `{{1}}` : **Candidate Name**

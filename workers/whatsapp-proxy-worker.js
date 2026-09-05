@@ -3,7 +3,7 @@
  * Handles Dynamic Template Messaging for First Option Agency
  * 
  * Supports:
- * - Template: `internship_application_received` (Candidate Confirmation with 3 params: [Name, ProgramTitle, ApplicationId])
+ * - Template: `internship_application_group` (Candidate Confirmation with 3 params: [Name, ProgramTitle, ApplicationId])
  * - Template: `internship_admin_lead_alert` (Admin Alert with 7 params: [Name, Email, Phone, City, ApplicationId, PortalLink, ProgramTitle])
  * - 4 Program Titles:
  *   1. "Sales Consultant Program"
@@ -44,7 +44,7 @@ export default {
           service: "First Option Agency - WhatsApp Cloud API Worker",
           timestamp: new Date().toISOString(),
           templatesSupported: [
-            "internship_application_received",
+            "internship_application_group",
             "internship_admin_lead_alert",
           ],
         }),

@@ -14,7 +14,7 @@ export const ADMIN_WHATSAPP_NUMBERS = [
 
 // Template Names configured for Meta WhatsApp Cloud API (Utility category)
 export const WHATSAPP_TEMPLATES = {
-  CANDIDATE_CONFIRMATION: "internship_application_received",
+  CANDIDATE_CONFIRMATION: "internship_application_group",
   ADMIN_LEAD_ALERT: "internship_admin_lead_alert",
 };
 
@@ -111,7 +111,7 @@ export async function triggerApplicationWhatsAppNotifications({
   }
 
   // 1. Send confirmation message to candidate
-  // Template: internship_application_received
+  // Template: internship_application_group
   // Variables:
   // {{1}} = Candidate Name
   // {{2}} = Program Title (e.g. "Women's Internship Drive" / "Sales Consultant Program" / "Internship Program" / "Paid Internship Program")
