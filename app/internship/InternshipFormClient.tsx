@@ -736,37 +736,42 @@ export default function InternshipFormClient() {
         }}
       >
         {submitSuccess ? (
-          /* ─── SUBMISSION CONFIRMATION RECEIPT ─── */
+          /* ─── SUBMISSION CONFIRMATION RECEIPT (OPTIMIZED FOR MOBILE VIEWPORT) ─── */
           <div
             style={{
               backgroundColor: "#FFFFFF",
               borderRadius: "16px",
               border: "1px solid #E5E7EB",
-              padding: "32px 20px",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
+              padding: "clamp(16px, 3.5vw, 26px) clamp(12px, 3vw, 20px)",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
               textAlign: "center",
-              maxWidth: "560px",
-              margin: "16px auto",
+              maxWidth: "520px",
+              width: "100%",
+              margin: "0 auto",
+              maxHeight: "calc(100dvh - 36px)",
+              overflowY: "auto",
+              WebkitOverflowScrolling: "touch",
             }}
           >
+            {/* Header: Compact Icon & Title */}
             <div
               style={{
-                width: "60px",
-                height: "60px",
+                width: "48px",
+                height: "48px",
                 borderRadius: "50%",
                 backgroundColor: isWomenMode ? "#FDF2F8" : "#ECFDF5",
-                border: `1px solid ${isWomenMode ? "#FBCFE8" : "#A7F3D0"}`,
+                border: `1.5px solid ${isWomenMode ? "#FBCFE8" : "#A7F3D0"}`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                margin: "0 auto 16px auto",
+                margin: "0 auto 10px auto",
                 color: isWomenMode ? "#DB2777" : "#059669",
               }}
             >
               {isWomenMode ? (
-                <Heart size={30} strokeWidth={2.2} />
+                <Heart size={24} strokeWidth={2.2} />
               ) : (
-                <CheckCircle2 size={34} strokeWidth={2.5} />
+                <CheckCircle2 size={26} strokeWidth={2.5} />
               )}
             </div>
 
@@ -775,7 +780,7 @@ export default function InternshipFormClient() {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "5px",
-                padding: "4px 12px",
+                padding: "3px 10px",
                 backgroundColor: isWomenMode ? "#FDF2F8" : isAmountMode ? "#ECFDF5" : "#EFF6FF",
                 color: isWomenMode ? "#BE185D" : isAmountMode ? "#047857" : "#1D4ED8",
                 borderRadius: "999px",
@@ -783,182 +788,262 @@ export default function InternshipFormClient() {
                 fontWeight: 700,
                 textTransform: "uppercase",
                 letterSpacing: "0.05em",
-                marginBottom: "12px",
+                marginBottom: "8px",
                 border: `1px solid ${isWomenMode ? "#FBCFE8" : isAmountMode ? "#A7F3D0" : "#BFDBFE"}`,
               }}
             >
               {isAmountMode ? (
                 <>
-                  <FileCheck size={13} />
-                  <span>Application Submitted &amp; Payment Confirmed</span>
+                  <FileCheck size={12} />
+                  <span>Submitted &amp; Payment Confirmed</span>
                 </>
               ) : isWomenMode ? (
-                <span>Women’s Drive • Application Received</span>
+                <span>Women’s Drive • Received</span>
               ) : (
-                <span>Internship Drive • Application Received</span>
+                <span>Internship Drive • Received</span>
               )}
             </div>
 
-            <div style={{ fontSize: "22px", fontWeight: 700, color: "#111827", marginBottom: "6px" }}>
+            <div style={{ fontSize: "18px", fontWeight: 800, color: "#111827", marginBottom: "4px" }}>
               Thank You, {formData.fullName}!
             </div>
-            <div style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.5, marginBottom: "22px" }}>
+            <div style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.4, marginBottom: "12px", maxWidth: "400px", margin: "0 auto 12px auto" }}>
               {isAmountMode
-                ? "Your ₹5,000 payment was verified and your application has been officially registered."
-                : "Your application has been successfully received. Our team will review your profile."}
+                ? "Your ₹5,000 fee was verified. Your application is officially registered."
+                : "Your application is received. Our recruitment team is reviewing your profile."}
             </div>
 
-            {/* Receipt Summary Card */}
+            {/* Reference ID Pill */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                backgroundColor: isWomenMode ? "#FDF2F8" : "#F5F3FF",
+                border: `1px solid ${isWomenMode ? "#FCE7F3" : "#DDD6FE"}`,
+                borderRadius: "10px",
+                padding: "8px 12px",
+                marginBottom: "14px",
+              }}
+            >
+              <div style={{ textAlign: "left" }}>
+                <span style={{ color: "#6B7280", fontSize: "10.5px", display: "block", fontWeight: 600 }}>
+                  REFERENCE ID
+                </span>
+                <span
+                  style={{
+                    fontFamily: "monospace",
+                    fontWeight: 800,
+                    color: isWomenMode ? "#BE185D" : "#7C3AED",
+                    fontSize: "14px",
+                  }}
+                >
+                  {applicationId}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleCopyId}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  backgroundColor: "#FFFFFF",
+                  border: "1px solid #E5E7EB",
+                  borderRadius: "6px",
+                  color: "#374151",
+                  padding: "4px 8px",
+                  fontSize: "12px",
+                  cursor: "pointer",
+                }}
+                title="Copy Reference ID"
+              >
+                {copiedId ? (
+                  <>
+                    <Check size={13} color="#10B981" />
+                    <span style={{ color: "#10B981", fontWeight: 600 }}>Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy size={13} />
+                    <span>Copy</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* ─── WHATSAPP GROUP JOIN CARD WITH SHINE EFFECT (WOMEN & COMMON DRIVES ONLY) ─── */}
+            {(isWomenMode || isCommonMode) && (
+              <div
+                style={{
+                  backgroundColor: "#F0FDF4",
+                  border: "1.5px solid #86EFAC",
+                  borderRadius: "12px",
+                  padding: "14px 12px",
+                  marginBottom: "14px",
+                  textAlign: "center",
+                  boxShadow: "0 3px 12px rgba(34, 197, 94, 0.08)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    padding: "2px 8px",
+                    backgroundColor: "#DCFCE7",
+                    color: "#15803D",
+                    borderRadius: "999px",
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    marginBottom: "6px",
+                    border: "1px solid #BBF7D0",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: "6px",
+                      height: "6px",
+                      borderRadius: "50%",
+                      backgroundColor: "#16A34A",
+                      display: "inline-block",
+                    }}
+                  />
+                  Mandatory Next Step
+                </div>
+
+                <div
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: 800,
+                    color: "#14532D",
+                    marginBottom: "3px",
+                  }}
+                >
+                  Join Official WhatsApp Group
+                </div>
+
+                <div
+                  style={{
+                    fontSize: "11.5px",
+                    color: "#166534",
+                    lineHeight: 1.35,
+                    marginBottom: "10px",
+                  }}
+                >
+                  Batch schedules, project links, and direct announcements are posted inside this group.
+                </div>
+
+                <a
+                  href="https://chat.whatsapp.com/FhFGlaZiIet7xK193lGYgX"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="wa-shine-button"
+                  style={{
+                    display: "flex",
+                    width: "100%",
+                    padding: "11px 16px",
+                    borderRadius: "8px",
+                    background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)",
+                    color: "#FFFFFF",
+                    fontSize: "13.5px",
+                    fontWeight: 700,
+                    textDecoration: "none",
+                    gap: "8px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.301-.15-1.78-.879-2.056-.98-.276-.1-.476-.15-.677.15-.2.301-.776.98-.952 1.181-.176.2-.351.226-.652.075-.3-.15-1.267-.467-2.413-1.489-.893-.796-1.496-1.778-1.671-2.079-.176-.301-.019-.464.132-.614.135-.135.301-.351.451-.527.151-.176.2-.301.301-.502.1-.201.05-.376-.025-.526-.075-.15-.677-1.632-.928-2.235-.245-.588-.495-.508-.677-.517-.176-.009-.376-.01-.577-.01s-.527.075-.802.376c-.276.301-1.053 1.029-1.053 2.509s1.078 2.905 1.229 3.106c.15.2 2.122 3.24 5.14 4.544.718.31 1.278.495 1.716.634.72.229 1.375.197 1.892.12.578-.087 1.78-.727 2.03-1.43.251-.703.251-1.305.176-1.43-.075-.125-.276-.2-.577-.35zM12.04 2C6.54 2 2.079 6.46 2.079 11.96c0 1.93.551 3.731 1.505 5.267L2 22l4.908-1.543c1.482.879 3.208 1.385 5.132 1.385 5.5 0 9.96-4.46 9.96-9.96C22 6.46 17.54 2 12.04 2zm0 18.174c-1.644 0-3.167-.492-4.444-1.339l-.319-.21-2.919.917.935-2.846-.23-.339A8.172 8.172 0 0 1 3.868 11.96c0-4.506 3.666-8.173 8.172-8.173 4.507 0 8.173 3.667 8.173 8.173 0 4.506-3.666 8.174-8.173 8.174z" />
+                  </svg>
+                  <span>Join WhatsApp Group for All Updates</span>
+                  <ArrowRight size={16} />
+                </a>
+              </div>
+            )}
+
+            {/* Compact Receipt Summary Card */}
             <div
               style={{
                 backgroundColor: "#F9FAFB",
                 border: "1px solid #E5E7EB",
-                borderRadius: "12px",
-                padding: "18px",
+                borderRadius: "10px",
+                padding: "12px 14px",
                 textAlign: "left",
-                marginBottom: "20px",
-                fontSize: "13px",
+                marginBottom: "14px",
+                fontSize: "12px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "5px",
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  borderBottom: "1px solid #E5E7EB",
-                  paddingBottom: "12px",
-                  marginBottom: "12px",
-                }}
-              >
-                <div>
-                  <span style={{ color: "#6B7280", fontSize: "12px", display: "block" }}>
-                    Reference ID
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: "monospace",
-                      fontWeight: 700,
-                      color: isWomenMode ? "#BE185D" : "#7C3AED",
-                      fontSize: "14px",
-                    }}
-                  >
-                    {applicationId}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleCopyId}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    backgroundColor: "#FFFFFF",
-                    border: "1px solid #E5E7EB",
-                    borderRadius: "6px",
-                    color: "#374151",
-                    padding: "4px 8px",
-                    fontSize: "12px",
-                    cursor: "pointer",
-                  }}
-                  title="Copy Reference ID"
-                >
-                  {copiedId ? (
-                    <>
-                      <Check size={13} color="#10B981" />
-                      <span style={{ color: "#10B981", fontWeight: 600 }}>Copied!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={13} />
-                      <span>Copy</span>
-                    </>
-                  )}
-                </button>
-              </div>
-
               {/* Amount mode payment box */}
               {isAmountMode && (
                 <div
                   style={{
                     backgroundColor: "#ECFDF5",
                     border: "1px solid #A7F3D0",
-                    borderRadius: "8px",
-                    padding: "10px 12px",
-                    marginBottom: "14px",
+                    borderRadius: "6px",
+                    padding: "6px 10px",
+                    marginBottom: "4px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
                   }}
                 >
-                  <div
+                  <span style={{ fontSize: "11px", color: "#065F46", fontWeight: 700 }}>
+                    PAYMENT STATUS:
+                  </span>
+                  <span
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      marginBottom: "4px",
+                      fontSize: "10.5px",
+                      fontWeight: 700,
+                      backgroundColor: "#059669",
+                      color: "#FFFFFF",
+                      padding: "2px 6px",
+                      borderRadius: "999px",
                     }}
                   >
-                    <span style={{ fontSize: "12px", color: "#065F46", fontWeight: 600 }}>
-                      Payment Status:
-                    </span>
-                    <span
-                      style={{
-                        fontSize: "11px",
-                        fontWeight: 700,
-                        backgroundColor: "#059669",
-                        color: "#FFFFFF",
-                        padding: "2px 8px",
-                        borderRadius: "999px",
-                      }}
-                    >
-                      PAID (₹5,000 INR)
-                    </span>
-                  </div>
-                  {paymentInfo?.paymentId && (
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        fontSize: "11px",
-                        color: "#047857",
-                        fontFamily: "monospace",
-                      }}
-                    >
-                      <span>Razorpay ID:</span>
-                      <span>{paymentInfo.paymentId}</span>
-                    </div>
-                  )}
+                    PAID ₹5,000 INR
+                  </span>
                 </div>
               )}
 
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ color: "#6B7280" }}>Candidate</span>
                 <span style={{ fontWeight: 600, color: "#111827" }}>
                   {formData.fullName} ({isWomenMode ? "Female" : formData.gender || "Applicant"})
                 </span>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                <span style={{ color: "#6B7280" }}>Email</span>
-                <span style={{ fontWeight: 600, color: "#111827" }}>{formData.email}</span>
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                <span style={{ color: "#6B7280" }}>Phone</span>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "#6B7280" }}>Contact</span>
                 <span style={{ fontWeight: 600, color: "#111827" }}>
                   {formData.countryCode} {formData.phone}
                 </span>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "#6B7280" }}>Email</span>
+                <span style={{ fontWeight: 600, color: "#111827", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {formData.email}
+                </span>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ color: "#6B7280" }}>Location</span>
                 <span style={{ fontWeight: 600, color: "#111827" }}>{formData.city}</span>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                <span style={{ color: "#6B7280" }}>Qualification</span>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "#6B7280" }}>Degree</span>
                 <span
                   style={{
                     fontWeight: 600,
                     color: "#111827",
-                    maxWidth: "200px",
+                    maxWidth: "180px",
                     textAlign: "right",
                     whiteSpace: "nowrap",
                     overflow: "hidden",
@@ -972,24 +1057,21 @@ export default function InternshipFormClient() {
               <div
                 style={{
                   borderTop: "1px solid #E5E7EB",
-                  paddingTop: "10px",
-                  marginTop: "10px",
+                  paddingTop: "6px",
+                  marginTop: "2px",
                 }}
               >
-                <span style={{ color: "#6B7280", display: "block", fontSize: "12px", marginBottom: "6px" }}>
-                  Enrolled Tracks:
-                </span>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "3px" }}>
                   {formData.skills.map((skill) => (
                     <span
                       key={skill}
                       style={{
-                        fontSize: "11px",
+                        fontSize: "10.5px",
                         fontWeight: 600,
                         backgroundColor: "#FFFFFF",
                         border: "1px solid #E5E7EB",
                         color: isWomenMode ? "#BE185D" : "#7C3AED",
-                        padding: "2px 8px",
+                        padding: "1px 6px",
                         borderRadius: "4px",
                       }}
                     >
@@ -1000,111 +1082,18 @@ export default function InternshipFormClient() {
               </div>
             </div>
 
-            {/* ─── WHATSAPP GROUP JOIN CARD WITH SHINE EFFECT (WOMEN & COMMON DRIVES ONLY) ─── */}
-            {(isWomenMode || isCommonMode) && (
-              <div
-                style={{
-                  backgroundColor: "#F0FDF4",
-                  border: "1.5px solid #86EFAC",
-                  borderRadius: "14px",
-                  padding: "20px 18px",
-                  marginBottom: "20px",
-                  textAlign: "center",
-                  boxShadow: "0 4px 15px rgba(34, 197, 94, 0.08)",
-                }}
-              >
-                <div
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    padding: "4px 12px",
-                    backgroundColor: "#DCFCE7",
-                    color: "#15803D",
-                    borderRadius: "999px",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    marginBottom: "10px",
-                    border: "1px solid #BBF7D0",
-                  }}
-                >
-                  <span
-                    style={{
-                      width: "7px",
-                      height: "7px",
-                      borderRadius: "50%",
-                      backgroundColor: "#16A34A",
-                      display: "inline-block",
-                    }}
-                  />
-                  Mandatory Step For All Applicants
-                </div>
-
-                <div
-                  style={{
-                    fontSize: "16px",
-                    fontWeight: 700,
-                    color: "#14532D",
-                    marginBottom: "6px",
-                  }}
-                >
-                  Join Official WhatsApp Group
-                </div>
-
-                <div
-                  style={{
-                    fontSize: "13px",
-                    color: "#166534",
-                    lineHeight: 1.5,
-                    marginBottom: "16px",
-                    maxWidth: "420px",
-                    margin: "0 auto 16px auto",
-                  }}
-                >
-                  Stay connected for batch schedules, project allocations, onboarding guides, and all official announcements.
-                </div>
-
-                <a
-                  href="https://chat.whatsapp.com/FhFGlaZiIet7xK193lGYgX"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="wa-shine-button"
-                  style={{
-                    display: "flex",
-                    width: "100%",
-                    padding: "14px 20px",
-                    borderRadius: "10px",
-                    background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)",
-                    color: "#FFFFFF",
-                    fontSize: "15px",
-                    fontWeight: 700,
-                    textDecoration: "none",
-                    gap: "10px",
-                    cursor: "pointer",
-                  }}
-                >
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17.472 14.382c-.301-.15-1.78-.879-2.056-.98-.276-.1-.476-.15-.677.15-.2.301-.776.98-.952 1.181-.176.2-.351.226-.652.075-.3-.15-1.267-.467-2.413-1.489-.893-.796-1.496-1.778-1.671-2.079-.176-.301-.019-.464.132-.614.135-.135.301-.351.451-.527.151-.176.2-.301.301-.502.1-.201.05-.376-.025-.526-.075-.15-.677-1.632-.928-2.235-.245-.588-.495-.508-.677-.517-.176-.009-.376-.01-.577-.01s-.527.075-.802.376c-.276.301-1.053 1.029-1.053 2.509s1.078 2.905 1.229 3.106c.15.2 2.122 3.24 5.14 4.544.718.31 1.278.495 1.716.634.72.229 1.375.197 1.892.12.578-.087 1.78-.727 2.03-1.43.251-.703.251-1.305.176-1.43-.075-.125-.276-.2-.577-.35zM12.04 2C6.54 2 2.079 6.46 2.079 11.96c0 1.93.551 3.731 1.505 5.267L2 22l4.908-1.543c1.482.879 3.208 1.385 5.132 1.385 5.5 0 9.96-4.46 9.96-9.96C22 6.46 17.54 2 12.04 2zm0 18.174c-1.644 0-3.167-.492-4.444-1.339l-.319-.21-2.919.917.935-2.846-.23-.339A8.172 8.172 0 0 1 3.868 11.96c0-4.506 3.666-8.173 8.172-8.173 4.507 0 8.173 3.667 8.173 8.173 0 4.506-3.666 8.174-8.173 8.174z" />
-                  </svg>
-                  <span>Join WhatsApp Group for All Updates</span>
-                  <ArrowRight size={18} />
-                </a>
-              </div>
-            )}
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {/* Action Buttons */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               <Link
                 href="/"
                 style={{
                   display: "block",
                   width: "100%",
-                  padding: "12px",
+                  padding: "11px",
                   borderRadius: "8px",
                   backgroundColor: isWomenMode ? "#BE185D" : "#7C3AED",
                   color: "#FFFFFF",
-                  fontSize: "14px",
+                  fontSize: "13.5px",
                   fontWeight: 700,
                   textDecoration: "none",
                   textAlign: "center",
@@ -1117,12 +1106,12 @@ export default function InternshipFormClient() {
                 onClick={handleReset}
                 style={{
                   width: "100%",
-                  padding: "11px",
+                  padding: "9px",
                   borderRadius: "8px",
                   backgroundColor: "#FFFFFF",
                   border: "1px solid #E5E7EB",
                   color: "#374151",
-                  fontSize: "13px",
+                  fontSize: "12px",
                   fontWeight: 600,
                   cursor: "pointer",
                 }}

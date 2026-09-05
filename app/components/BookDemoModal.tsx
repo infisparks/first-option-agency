@@ -86,42 +86,75 @@ export default function BookDemoModal({
             </div>
 
             {/* Right Side: Form */}
-            <div className="modal-right" style={{ padding: "clamp(28px, 4.5vw, 52px)", borderLeft: "1px solid rgba(0, 0, 0, 0.03)", position: "relative" }}>
+            <div className="modal-right" style={{ padding: "clamp(24px, 4vw, 44px)", position: "relative" }}>
                <button 
                  onClick={onClose}
                  aria-label="Close modal"
-                 style={{ position: "absolute", top: 24, right: 30, color: "var(--text-muted)", background: "transparent", border: "none", cursor: "pointer", transition: "color 0.3s" }}
-                 onMouseEnter={(e) => e.currentTarget.style.color = "var(--color-primary)"}
-                 onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-muted)"}
+                 style={{ 
+                   position: "absolute", 
+                   top: 18, 
+                   right: 20, 
+                   color: "var(--text-muted)", 
+                   background: "rgba(0,0,0,0.04)", 
+                   border: "none", 
+                   borderRadius: "50%",
+                   width: 36,
+                   height: 36,
+                   display: "flex",
+                   alignItems: "center",
+                   justifyContent: "center",
+                   cursor: "pointer", 
+                   transition: "all 0.2s ease",
+                   zIndex: 10
+                 }}
+                 onMouseEnter={(e) => {
+                   e.currentTarget.style.color = "#7C3AED";
+                   e.currentTarget.style.background = "rgba(124, 58, 237, 0.08)";
+                 }}
+                 onMouseLeave={(e) => {
+                   e.currentTarget.style.color = "var(--text-muted)";
+                   e.currentTarget.style.background = "rgba(0,0,0,0.04)";
+                 }}
                >
-                 <X size={28} />
+                 <X size={20} />
                </button>
 
-               <form style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                 <ModalInput label="Full Name" icon={<User size={18} />} type="text" id="name" placeholder="John Doe" focused={focused==="name"} onFocus={()=>setFocused("name")} onBlur={()=>setFocused(null)} />
-                 <ModalInput label="Website / Company" icon={<Building size={18} />} type="text" id="address" placeholder="www.yourname.com" focused={focused==="address"} onFocus={()=>setFocused("address")} onBlur={()=>setFocused(null)} />
-                 <ModalInput label="Contact Number" icon={<Mail size={18} />} type="text" id="phone" placeholder="+91 XXXX XXXX XXX" focused={focused==="phone"} onFocus={()=>setFocused("phone")} onBlur={()=>setFocused(null)} />
+               {/* Mobile-Only Header */}
+               <div className="modal-mobile-header" style={{ marginBottom: 18, display: "none" }}>
+                 <div style={{ display: "inline-block", padding: "3px 8px", borderRadius: "999px", background: "rgba(124, 58, 237, 0.1)", color: "#7C3AED", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>
+                   Private Access
+                 </div>
+                 <h2 style={{ fontSize: "1.25rem", fontWeight: 800, color: "#111827", lineHeight: 1.25, marginBottom: 4 }}>{title}</h2>
+                 <p style={{ color: "#6B7280", fontSize: "0.8rem", lineHeight: 1.4 }}>{description}</p>
+               </div>
+
+               <form style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                 <ModalInput label="Full Name" icon={<User size={16} />} type="text" id="name" placeholder="John Doe" focused={focused==="name"} onFocus={()=>setFocused("name")} onBlur={()=>setFocused(null)} />
+                 <ModalInput label="Website / Company" icon={<Building size={16} />} type="text" id="address" placeholder="www.yourname.com" focused={focused==="address"} onFocus={()=>setFocused("address")} onBlur={()=>setFocused(null)} />
+                 <ModalInput label="Contact Number" icon={<Mail size={16} />} type="text" id="phone" placeholder="+91 XXXX XXXX XXX" focused={focused==="phone"} onFocus={()=>setFocused("phone")} onBlur={()=>setFocused(null)} />
 
                  <button
                    className="glow-btn-primary"
                    aria-label="Submit request"
                    style={{ 
-                     padding: "clamp(12px, 2vw, 16px)", 
-                     borderRadius: "50px", 
+                     padding: "13px 20px", 
+                     borderRadius: "12px", 
                      border: "none", 
                      color: "#fff", 
-                     fontSize: "clamp(0.8rem, 1.5vw, 0.9rem)", 
+                     fontSize: "0.9rem", 
                      fontWeight: 700, 
                      display: "flex", 
                      alignItems: "center", 
                      justifyContent: "center", 
                      gap: 10,
-                     marginTop: 12,
-                     cursor: "pointer"
+                     marginTop: 6,
+                     cursor: "pointer",
+                     background: "linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)",
+                     boxShadow: "0 6px 20px rgba(124, 58, 237, 0.35)",
                    }}
                  >
                    {buttonText}
-                   <ArrowRight size={20} strokeWidth={2.5} />
+                   <ArrowRight size={18} strokeWidth={2.5} />
                  </button>
                </form>
             </div>
@@ -133,16 +166,21 @@ export default function BookDemoModal({
         @media (max-width: 900px) {
           .modal-container {
              grid-template-columns: 1fr !important;
-             max-height: 85vh !important;
+             max-height: calc(100dvh - 32px) !important;
+             height: auto !important;
              overflow-y: auto !important;
-             border-radius: 32px !important;
+             -webkit-overflow-scrolling: touch;
+             border-radius: 24px !important;
+             margin: auto 0 !important;
           }
           .modal-left {
-             padding: 40px !important;
              display: none !important;
           }
+          .modal-mobile-header {
+             display: block !important;
+          }
           .modal-right {
-             padding: 40px !important;
+             padding: 24px 18px !important;
              border-left: none !important;
           }
         }
@@ -153,10 +191,14 @@ export default function BookDemoModal({
 
 function ModalInput({ label, icon, type, id, placeholder, focused, onFocus, onBlur }: any) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <label htmlFor={id} style={{ fontSize: "0.85rem", fontWeight: 700, color: focused ? "var(--color-primary)" : "var(--text-dim)", transition: "all 0.3s ease" }}>{label}</label>
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <label htmlFor={id} style={{ fontSize: "12px", fontWeight: 700, color: focused ? "#7C3AED" : "#4B5563", transition: "all 0.2s ease" }}>
+        {label}
+      </label>
       <div style={{ position: "relative" }}>
-        <div style={{ position: "absolute", left: 24, top: "50%", transform: "translateY(-50%)", color: focused ? "var(--color-primary)" : "var(--text-muted)", transition: "all 0.3s ease" }}>{icon}</div>
+        <div style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: focused ? "#7C3AED" : "#9CA3AF", transition: "all 0.2s ease", display: "flex", alignItems: "center" }}>
+          {icon}
+        </div>
         <input 
           type={type} 
           id={id} 
@@ -165,16 +207,16 @@ function ModalInput({ label, icon, type, id, placeholder, focused, onFocus, onBl
           onBlur={onBlur}
           style={{ 
             width: "100%",
-            padding: "0 24px 0 60px", 
-            height: "64px", 
-            borderRadius: "20px", 
-            background: "#F8FAFC", 
-            border: `1px solid ${focused ? "var(--color-primary)" : "rgba(0,0,0,0.05)"}`, 
-            color: "var(--text-main)", 
-            fontSize: "1.05rem", 
+            padding: "0 16px 0 44px", 
+            height: "46px", 
+            borderRadius: "10px", 
+            background: "#F9FAFB", 
+            border: `1px solid ${focused ? "#7C3AED" : "#E5E7EB"}`, 
+            color: "#111827", 
+            fontSize: "14px", 
             outline: "none", 
-            transition: "all 0.3s ease",
-            boxShadow: focused ? "0 10px 20px rgba(37, 99, 235, 0.05)" : "none"
+            transition: "all 0.2s ease",
+            boxShadow: focused ? "0 0 0 3px rgba(124, 58, 237, 0.12)" : "none"
           }} 
         />
       </div>

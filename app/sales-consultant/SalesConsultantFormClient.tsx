@@ -477,34 +477,39 @@ export default function SalesConsultantFormClient() {
         }}
       >
         {submitSuccess ? (
-          /* ─── SUBMISSION RECEIPT ─── */
+          /* ─── SUBMISSION RECEIPT (OPTIMIZED FOR MOBILE VIEWPORT) ─── */
           <div
             style={{
               backgroundColor: "#FFFFFF",
               borderRadius: "16px",
               border: "1px solid #E5E7EB",
-              padding: "32px 20px",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
+              padding: "clamp(18px, 4vw, 28px) clamp(14px, 3.5vw, 24px)",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
               textAlign: "center",
-              maxWidth: "560px",
-              margin: "16px auto",
+              maxWidth: "520px",
+              width: "100%",
+              margin: "0 auto",
+              maxHeight: "calc(100dvh - 40px)",
+              overflowY: "auto",
+              WebkitOverflowScrolling: "touch",
             }}
           >
+            {/* Header: Compact Icon & Title */}
             <div
               style={{
-                width: "60px",
-                height: "60px",
+                width: "48px",
+                height: "48px",
                 borderRadius: "50%",
                 backgroundColor: "#ECFDF5",
-                border: "1px solid #A7F3D0",
+                border: "1.5px solid #A7F3D0",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                margin: "0 auto 16px auto",
+                margin: "0 auto 10px auto",
                 color: "#059669",
               }}
             >
-              <CheckCircle2 size={34} strokeWidth={2.5} />
+              <CheckCircle2 size={26} strokeWidth={2.5} />
             </div>
 
             <div
@@ -512,7 +517,7 @@ export default function SalesConsultantFormClient() {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "5px",
-                padding: "4px 12px",
+                padding: "3px 10px",
                 backgroundColor: "#ECFDF5",
                 color: "#047857",
                 borderRadius: "999px",
@@ -520,140 +525,148 @@ export default function SalesConsultantFormClient() {
                 fontWeight: 700,
                 textTransform: "uppercase",
                 letterSpacing: "0.05em",
-                marginBottom: "12px",
+                marginBottom: "8px",
                 border: "1px solid #A7F3D0",
               }}
             >
-              <FileCheck size={13} />
-              <span>Application Successfully Submitted</span>
+              <FileCheck size={12} />
+              <span>Application Received</span>
             </div>
 
-            <div style={{ fontSize: "22px", fontWeight: 700, color: "#111827", marginBottom: "6px" }}>
+            <div style={{ fontSize: "18px", fontWeight: 800, color: "#111827", marginBottom: "4px" }}>
               Thank You, {formData.fullName}!
             </div>
-            <div style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.5, marginBottom: "22px" }}>
-              Your Sales Consultant application has been registered. Our sales hiring team will review your profile and contact you for an interview.
+            <div style={{ fontSize: "12.5px", color: "#6B7280", lineHeight: 1.4, marginBottom: "14px", maxWidth: "380px", margin: "0 auto 14px auto" }}>
+              Your Sales Consultant application is recorded. Our hiring team will review your profile shortly.
             </div>
 
-            {/* Receipt Summary Card */}
+            {/* Reference ID Pill */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                backgroundColor: "#F5F3FF",
+                border: "1px solid #DDD6FE",
+                borderRadius: "10px",
+                padding: "8px 12px",
+                marginBottom: "14px",
+              }}
+            >
+              <div style={{ textAlign: "left" }}>
+                <span style={{ color: "#6B7280", fontSize: "11px", display: "block", fontWeight: 600 }}>
+                  REFERENCE ID
+                </span>
+                <span
+                  style={{
+                    fontFamily: "monospace",
+                    fontWeight: 800,
+                    color: "#7C3AED",
+                    fontSize: "14px",
+                  }}
+                >
+                  {applicationId}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleCopyId}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  backgroundColor: "#FFFFFF",
+                  border: "1px solid #E5E7EB",
+                  borderRadius: "6px",
+                  color: "#374151",
+                  padding: "4px 8px",
+                  fontSize: "12px",
+                  cursor: "pointer",
+                }}
+                title="Copy Reference ID"
+              >
+                {copiedId ? (
+                  <>
+                    <Check size={13} color="#10B981" />
+                    <span style={{ color: "#10B981", fontWeight: 600 }}>Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy size={13} />
+                    <span>Copy</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Compact Receipt Summary Card */}
             <div
               style={{
                 backgroundColor: "#F9FAFB",
                 border: "1px solid #E5E7EB",
-                borderRadius: "12px",
-                padding: "18px",
+                borderRadius: "10px",
+                padding: "12px 14px",
                 textAlign: "left",
-                marginBottom: "20px",
-                fontSize: "13px",
+                marginBottom: "16px",
+                fontSize: "12.5px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "6px",
               }}
             >
-              {/* Application ID */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  borderBottom: "1px solid #E5E7EB",
-                  paddingBottom: "12px",
-                  marginBottom: "12px",
-                }}
-              >
-                <div>
-                  <span style={{ color: "#6B7280", fontSize: "12px", display: "block" }}>
-                    Reference ID
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: "monospace",
-                      fontWeight: 700,
-                      color: "#7C3AED",
-                      fontSize: "14px",
-                    }}
-                  >
-                    {applicationId}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleCopyId}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    backgroundColor: "#FFFFFF",
-                    border: "1px solid #E5E7EB",
-                    borderRadius: "6px",
-                    color: "#374151",
-                    padding: "4px 8px",
-                    fontSize: "12px",
-                    cursor: "pointer",
-                  }}
-                  title="Copy Reference ID"
-                >
-                  {copiedId ? (
-                    <>
-                      <Check size={13} color="#10B981" />
-                      <span style={{ color: "#10B981", fontWeight: 600 }}>Copied!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={13} />
-                      <span>Copy</span>
-                    </>
-                  )}
-                </button>
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                <span style={{ color: "#6B7280" }}>Candidate Name</span>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "#6B7280" }}>Candidate</span>
                 <span style={{ fontWeight: 600, color: "#111827" }}>
                   {formData.fullName} ({formData.age} yrs)
                 </span>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                <span style={{ color: "#6B7280" }}>Mobile / WhatsApp</span>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "#6B7280" }}>Contact</span>
                 <span style={{ fontWeight: 600, color: "#111827" }}>
                   {formData.countryCode} {formData.phone}
                 </span>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ color: "#6B7280" }}>Email</span>
-                <span style={{ fontWeight: 600, color: "#111827" }}>{formData.email}</span>
+                <span style={{ fontWeight: 600, color: "#111827", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {formData.email}
+                </span>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ color: "#6B7280" }}>City</span>
                 <span style={{ fontWeight: 600, color: "#111827" }}>{formData.city}</span>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                <span style={{ color: "#6B7280" }}>Sales Experience</span>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "#6B7280" }}>Sales Exp.</span>
                 <span style={{ fontWeight: 600, color: formData.hasSalesExperience === "Yes" ? "#059669" : "#6B7280" }}>
                   {formData.hasSalesExperience}
                 </span>
               </div>
 
               <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "#6B7280" }}>Agency / Commission Sales</span>
+                <span style={{ color: "#6B7280" }}>Commission Sales</span>
                 <span style={{ fontWeight: 600, color: "#111827" }}>
                   {formData.hasAgencyOrCommissionSales}
                 </span>
               </div>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {/* Action Buttons */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               <Link
                 href="/"
                 style={{
                   display: "block",
                   width: "100%",
-                  padding: "12px",
+                  padding: "11px",
                   borderRadius: "8px",
                   backgroundColor: "#7C3AED",
                   color: "#FFFFFF",
-                  fontSize: "14px",
+                  fontSize: "13.5px",
                   fontWeight: 700,
                   textDecoration: "none",
                   textAlign: "center",
@@ -666,12 +679,12 @@ export default function SalesConsultantFormClient() {
                 onClick={handleReset}
                 style={{
                   width: "100%",
-                  padding: "11px",
+                  padding: "10px",
                   borderRadius: "8px",
                   backgroundColor: "#FFFFFF",
                   border: "1px solid #E5E7EB",
                   color: "#374151",
-                  fontSize: "13px",
+                  fontSize: "12.5px",
                   fontWeight: 600,
                   cursor: "pointer",
                 }}
