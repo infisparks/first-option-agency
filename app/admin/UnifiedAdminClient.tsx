@@ -2390,12 +2390,12 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                           cursor: "pointer",
                         }}
                       >
-                        <option value="ALL">All Call Statuses</option>
-                        <option value="Call Not Picked">📞 Call Not Picked</option>
-                        <option value="Call Picked - Not Visited Office">📞 Call Picked - Not Visited Office</option>
-                        <option value="Call Picked - Visited Office">🏢 Call Picked - Visited Office</option>
-                        <option value="Paid for Internship">🎓 Paid for Internship</option>
-                        <option value="NONE">⚪ Not Called Yet</option>
+                        <option value="ALL">All Call Statuses ({salesCallCounts.all})</option>
+                        <option value="Call Not Picked">📞 Call Not Picked ({salesCallCounts.call_not_picked})</option>
+                        <option value="Call Picked - Not Visited Office">📞 Call Picked - Not Visited ({salesCallCounts.call_picked_not_visited})</option>
+                        <option value="Call Picked - Visited Office">🏢 Call Picked - Visited Office ({salesCallCounts.call_picked_visited})</option>
+                        <option value="Paid for Internship">🎓 Paid for Internship ({salesCallCounts.paid_for_internship})</option>
+                        <option value="NONE">⚪ Not Called Yet ({salesCallCounts.none})</option>
                       </select>
                     </div>
 
@@ -2471,6 +2471,114 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                       <span>Export CSV</span>
                     </button>
                   </div>
+                </div>
+
+                {/* Sales Filter Results & Total Count Bar */}
+                <div
+                  style={{
+                    backgroundColor: isSalesFiltered ? "#F5F3FF" : "#FFFFFF",
+                    border: isSalesFiltered ? "1px solid #DDD6FE" : "1px solid #E5E7EB",
+                    borderRadius: "10px",
+                    padding: "10px 16px",
+                    marginBottom: "12px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    flexWrap: "wrap",
+                    gap: "8px",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                    <span style={{ fontSize: "13px", fontWeight: 700, color: "#111827" }}>
+                      Total Results:{" "}
+                      <span
+                        style={{
+                          color: isSalesFiltered ? "#7C3AED" : "#111827",
+                          backgroundColor: isSalesFiltered ? "#EDE9FE" : "#F3F4F6",
+                          padding: "2px 8px",
+                          borderRadius: "6px",
+                          fontSize: "14px",
+                          fontWeight: 800,
+                        }}
+                      >
+                        {filteredSales.length}
+                      </span>
+                    </span>
+
+                    <span style={{ fontSize: "12px", color: "#6B7280" }}>
+                      (showing {filteredSales.length} of {totalSales} total candidates)
+                    </span>
+
+                    {isSalesFiltered && (
+                      <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                        {salesFilter !== "ALL" && (
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: 600,
+                              backgroundColor: "#EDE9FE",
+                              color: "#6D28D9",
+                              padding: "2px 8px",
+                              borderRadius: "999px",
+                            }}
+                          >
+                            Filter: {salesFilter}
+                          </span>
+                        )}
+                        {salesCallFilter !== "ALL" && (
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: 600,
+                              backgroundColor: "#EDE9FE",
+                              color: "#6D28D9",
+                              padding: "2px 8px",
+                              borderRadius: "999px",
+                            }}
+                          >
+                            Call: {salesCallFilter}
+                          </span>
+                        )}
+                        {salesSearch && (
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: 600,
+                              backgroundColor: "#EDE9FE",
+                              color: "#6D28D9",
+                              padding: "2px 8px",
+                              borderRadius: "999px",
+                            }}
+                          >
+                            Search: "{salesSearch}"
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {isSalesFiltered && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSalesFilter("ALL");
+                        setSalesCallFilter("ALL");
+                        setSalesSearch("");
+                      }}
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        color: "#7C3AED",
+                        backgroundColor: "#FFFFFF",
+                        border: "1px solid #DDD6FE",
+                        padding: "4px 10px",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Clear / Reset Filter
+                    </button>
+                  )}
                 </div>
 
                 {/* Sales List */}
