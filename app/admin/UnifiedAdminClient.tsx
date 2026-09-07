@@ -9,7 +9,7 @@ import {
   onAuthStateChanged,
   User,
 } from "firebase/auth";
-import { ref, get, remove } from "firebase/database";
+import { ref, get, remove, update } from "firebase/database";
 import { auth, rtdb, ADMIN_UID } from "@/app/lib/firebase";
 import {
   Lock,
@@ -36,6 +36,14 @@ import {
   Globe,
   Trash2,
   X,
+  Phone,
+  PhoneCall,
+  PhoneOff,
+  Building2,
+  Circle,
+  MessageCircle,
+  Check,
+  Filter,
 } from "lucide-react";
 
 // Types
@@ -59,6 +67,9 @@ interface InternshipRecord {
   amountPaid?: number | string;
   orderId?: string;
   paidAt?: string;
+  callStatus?: string;
+  callTags?: string[];
+  callStatusUpdatedAt?: string;
 }
 
 interface SalesRecord {
@@ -76,7 +87,62 @@ interface SalesRecord {
   expensiveObjectionHandling: string;
   whyGoodAtSales: string;
   submittedAt: string;
+  callStatus?: string;
+  callTags?: string[];
+  callStatusUpdatedAt?: string;
 }
+
+// Call Disposition Options requested by Marketing / Caller Admin
+export const CALL_STATUS_OPTIONS = [
+  {
+    id: "call_not_picked",
+    label: "Call Not Picked",
+    badgeLabel: "Call Not Picked",
+    color: "#B45309",
+    bgColor: "#FFFBEB",
+    borderColor: "#FDE68A",
+    activeBorderColor: "#F59E0B",
+    activeBgColor: "#FEF3C7",
+    icon: PhoneOff,
+    description: "Applicant did not answer the phone call",
+  },
+  {
+    id: "call_picked_not_visited",
+    label: "Call Picked - Not Visited Office",
+    badgeLabel: "Picked (Not Visited)",
+    color: "#0369A1",
+    bgColor: "#F0F9FF",
+    borderColor: "#BAE6FD",
+    activeBorderColor: "#0284C7",
+    activeBgColor: "#E0F2FE",
+    icon: PhoneCall,
+    description: "Applicant attended call, but has not visited the office yet",
+  },
+  {
+    id: "call_picked_visited",
+    label: "Call Picked - Visited Office",
+    badgeLabel: "Visited Office",
+    color: "#6D28D9",
+    bgColor: "#F5F3FF",
+    borderColor: "#DDD6FE",
+    activeBorderColor: "#7C3AED",
+    activeBgColor: "#EDE9FE",
+    icon: Building2,
+    description: "Applicant attended call and successfully visited the office",
+  },
+  {
+    id: "paid_for_internship",
+    label: "Paid for Internship",
+    badgeLabel: "Paid Internship",
+    color: "#047857",
+    bgColor: "#ECFDF5",
+    borderColor: "#A7F3D0",
+    activeBorderColor: "#10B981",
+    activeBgColor: "#D1FAE5",
+    icon: CheckCircle2,
+    description: "Applicant has paid fee and confirmed enrollment / internship",
+  },
+] as const;
 
 interface UnifiedAdminProps {
   initialTab?: "internship" | "sales";
@@ -124,6 +190,220 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
 
   const [salesSearch, setSalesSearch] = useState("");
   const [salesFilter, setSalesFilter] = useState<"ALL" | "EXPERIENCED" | "AGENCY">("ALL");
+
+  // Call Status Modal State & Filters
+  const [internshipCallFilter, setInternshipCallFilter] = useState<string>("ALL");
+  const [salesCallFilter, setSalesCallFilter] = useState<string>("ALL");
+
+  const [callModalItem, setCallModalItem] = useState<{
+    type: "internship" | "sales";
+    applicationId: string;
+    fullName: string;
+    phone: string;
+    countryCode: string;
+    callStatus?: string;
+    callTags?: string[];
+  } | null>(null);
+
+  const [selectedCallStatus, setSelectedCallStatus] = useState<string>("");
+  const [selectedCallTags, setSelectedCallTags] = useState<string[]>([]);
+  const [isUpdatingCallStatus, setIsUpdatingCallStatus] = useState(false);
+  const [callStatusError, setCallStatusError] = useState("");
+  const [callStatusSuccess, setCallStatusSuccess] = useState(false);
+
+  const openCallStatusModal = (
+    type: "internship" | "sales",
+    app: InternshipRecord | SalesRecord
+  ) => {
+    setCallModalItem({
+      type,
+      applicationId: app.applicationId,
+      fullName: app.fullName,
+      phone: app.phone,
+      countryCode: app.countryCode || "+91",
+      callStatus: app.callStatus,
+      callTags: app.callTags,
+    });
+    setSelectedCallStatus(app.callStatus || "");
+    setSelectedCallTags(app.callTags || (app.callStatus ? [app.callStatus] : []));
+    setCallStatusError("");
+    setCallStatusSuccess(false);
+  };
+
+  const closeCallStatusModal = () => {
+    if (isUpdatingCallStatus) return;
+    setCallModalItem(null);
+    setSelectedCallStatus("");
+    setSelectedCallTags([]);
+    setCallStatusError("");
+    setCallStatusSuccess(false);
+  };
+
+  // Toggle behavior requested by user:
+  // 1 tick activates option, 2nd tick deactivates / unticks option
+  const handleToggleCallOption = (optionLabel: string) => {
+    if (selectedCallStatus === optionLabel) {
+      // 2nd click: untick / deactivate
+      setSelectedCallStatus("");
+      setSelectedCallTags((prev) => prev.filter((t) => t !== optionLabel));
+    } else {
+      // 1st click: tick / activate
+      setSelectedCallStatus(optionLabel);
+      setSelectedCallTags([optionLabel]);
+    }
+  };
+
+  // Strictly non-destructive update: modifies only call disposition fields in RTDB
+  const handleSaveCallStatus = async () => {
+    if (!callModalItem) return;
+
+    setIsUpdatingCallStatus(true);
+    setCallStatusError("");
+
+    try {
+      const nodeName =
+        callModalItem.type === "internship"
+          ? "internship_applications"
+          : "sales_consultant_applications";
+
+      const targetRef = ref(rtdb, `${nodeName}/${callModalItem.applicationId}`);
+      const nowIso = new Date().toISOString();
+
+      const newStatus = selectedCallStatus.trim() ? selectedCallStatus : null;
+      const newTags = selectedCallTags.length > 0 ? selectedCallTags : null;
+      const updatedAt = newStatus ? nowIso : null;
+
+      await update(targetRef, {
+        callStatus: newStatus,
+        callTags: newTags,
+        callStatusUpdatedAt: updatedAt,
+      });
+
+      // Update state without refreshing or touching other fields
+      if (callModalItem.type === "internship") {
+        setInternships((prev) =>
+          prev.map((a) =>
+            a.applicationId === callModalItem.applicationId
+              ? {
+                  ...a,
+                  callStatus: newStatus || undefined,
+                  callTags: newTags || undefined,
+                  callStatusUpdatedAt: updatedAt || undefined,
+                }
+              : a
+          )
+        );
+        try {
+          const localSaved = JSON.parse(
+            localStorage.getItem("foa_internship_applications") || "[]"
+          );
+          const updated = localSaved.map((a: any) =>
+            a.applicationId === callModalItem.applicationId
+              ? {
+                  ...a,
+                  callStatus: newStatus || undefined,
+                  callTags: newTags || undefined,
+                  callStatusUpdatedAt: updatedAt || undefined,
+                }
+              : a
+          );
+          localStorage.setItem("foa_internship_applications", JSON.stringify(updated));
+        } catch (storageErr) {}
+      } else {
+        setSalesApps((prev) =>
+          prev.map((a) =>
+            a.applicationId === callModalItem.applicationId
+              ? {
+                  ...a,
+                  callStatus: newStatus || undefined,
+                  callTags: newTags || undefined,
+                  callStatusUpdatedAt: updatedAt || undefined,
+                }
+              : a
+          )
+        );
+        try {
+          const localSaved = JSON.parse(
+            localStorage.getItem("foa_sales_applications") || "[]"
+          );
+          const updated = localSaved.map((a: any) =>
+            a.applicationId === callModalItem.applicationId
+              ? {
+                  ...a,
+                  callStatus: newStatus || undefined,
+                  callTags: newTags || undefined,
+                  callStatusUpdatedAt: updatedAt || undefined,
+                }
+              : a
+          );
+          localStorage.setItem("foa_sales_applications", JSON.stringify(updated));
+        } catch (storageErr) {}
+      }
+
+      setCallStatusSuccess(true);
+      setTimeout(() => {
+        closeCallStatusModal();
+      }, 450);
+    } catch (err: any) {
+      console.error("Error updating call status:", err);
+      setCallStatusError(err?.message || "Failed to update call status in database.");
+    } finally {
+      setIsUpdatingCallStatus(false);
+    }
+  };
+
+  const renderCallStatusBadge = (status?: string, tags?: string[]) => {
+    const active = status || (tags && tags[0]);
+    if (!active) return null;
+
+    const matched = CALL_STATUS_OPTIONS.find(
+      (opt) => opt.label.toLowerCase() === active.toLowerCase() || opt.id === active
+    );
+
+    if (!matched) {
+      return (
+        <span
+          style={{
+            fontSize: "11px",
+            fontWeight: 700,
+            backgroundColor: "#F3F4F6",
+            color: "#374151",
+            border: "1px solid #E5E7EB",
+            padding: "2px 8px",
+            borderRadius: "999px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "4px",
+          }}
+        >
+          <Phone size={11} />
+          <span>{active}</span>
+        </span>
+      );
+    }
+
+    const IconComp = matched.icon;
+    return (
+      <span
+        style={{
+          fontSize: "11px",
+          fontWeight: 700,
+          backgroundColor: matched.bgColor,
+          color: matched.color,
+          border: `1px solid ${matched.borderColor}`,
+          padding: "2px 8px",
+          borderRadius: "999px",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "4px",
+        }}
+        title={`Call Status: ${matched.label}`}
+      >
+        <IconComp size={11} />
+        <span>{matched.badgeLabel}</span>
+      </span>
+    );
+  };
 
   // Delete Modal State
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -318,6 +598,8 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
     const headers = [
       "Application ID",
       "Lead Source Type",
+      "Call Status",
+      "Call Status Updated At",
       "Full Name",
       "Gender",
       "Email",
@@ -348,6 +630,8 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
       return [
         `"${app.applicationId || ""}"`,
         `"${leadLabel}"`,
+        `"${app.callStatus || "Not Called"}"`,
+        `"${app.callStatusUpdatedAt ? new Date(app.callStatusUpdatedAt).toLocaleString() : ""}"`,
         `"${app.fullName || ""}"`,
         `"${app.gender || (lType === "women" ? "Female" : "Not specified")}"`,
         `"${app.email || ""}"`,
@@ -387,6 +671,8 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
     if (salesApps.length === 0) return;
     const headers = [
       "Application ID",
+      "Call Status",
+      "Call Status Updated At",
       "Full Name",
       "Age",
       "Email",
@@ -403,6 +689,8 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
 
     const rows = salesApps.map((app) => [
       `"${app.applicationId || ""}"`,
+      `"${app.callStatus || "Not Called"}"`,
+      `"${app.callStatusUpdatedAt ? new Date(app.callStatusUpdatedAt).toLocaleString() : ""}"`,
       `"${app.fullName || ""}"`,
       `"${app.age || ""}"`,
       `"${app.email || ""}"`,
@@ -447,6 +735,19 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
     if (internshipTypeFilter === "COMMON" && lType !== "common") return false;
     if (internshipTypeFilter === "AMOUNT" && lType !== "amount") return false;
 
+    // Call Status Filter
+    if (internshipCallFilter !== "ALL") {
+      if (internshipCallFilter === "NONE") {
+        if (app.callStatus || (app.callTags && app.callTags.length > 0)) return false;
+      } else {
+        const matchesStatus = (app.callStatus || "").toLowerCase() === internshipCallFilter.toLowerCase();
+        const matchesTags = (app.callTags || []).some(
+          (t) => t.toLowerCase() === internshipCallFilter.toLowerCase()
+        );
+        if (!matchesStatus && !matchesTags) return false;
+      }
+    }
+
     const q = internshipSearch.toLowerCase();
     return (
       app.fullName?.toLowerCase().includes(q) ||
@@ -455,7 +756,8 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
       app.city?.toLowerCase().includes(q) ||
       app.skills?.some((s) => s.toLowerCase().includes(q)) ||
       app.applicationId?.toLowerCase().includes(q) ||
-      app.paymentId?.toLowerCase().includes(q)
+      app.paymentId?.toLowerCase().includes(q) ||
+      app.callStatus?.toLowerCase().includes(q)
     );
   });
 
@@ -469,6 +771,19 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
     if (salesFilter === "EXPERIENCED" && !app.hasSalesExperience) return false;
     if (salesFilter === "AGENCY" && !app.hasAgencyOrCommissionSales) return false;
 
+    // Call Status Filter
+    if (salesCallFilter !== "ALL") {
+      if (salesCallFilter === "NONE") {
+        if (app.callStatus || (app.callTags && app.callTags.length > 0)) return false;
+      } else {
+        const matchesStatus = (app.callStatus || "").toLowerCase() === salesCallFilter.toLowerCase();
+        const matchesTags = (app.callTags || []).some(
+          (t) => t.toLowerCase() === salesCallFilter.toLowerCase()
+        );
+        if (!matchesStatus && !matchesTags) return false;
+      }
+    }
+
     const q = salesSearch.toLowerCase();
     return (
       app.fullName?.toLowerCase().includes(q) ||
@@ -476,7 +791,8 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
       app.phone?.includes(q) ||
       app.city?.toLowerCase().includes(q) ||
       app.applicationId?.toLowerCase().includes(q) ||
-      app.productsSoldBefore?.toLowerCase().includes(q)
+      app.productsSoldBefore?.toLowerCase().includes(q) ||
+      app.callStatus?.toLowerCase().includes(q)
     );
   });
 
@@ -1162,6 +1478,33 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                   </div>
 
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                    {/* Call Status Filter Dropdown */}
+                    <div style={{ position: "relative" }}>
+                      <select
+                        value={internshipCallFilter}
+                        onChange={(e) => setInternshipCallFilter(e.target.value)}
+                        style={{
+                          height: "36px",
+                          padding: "0 10px",
+                          fontSize: "12px",
+                          fontWeight: 500,
+                          borderRadius: "6px",
+                          border: internshipCallFilter !== "ALL" ? "1px solid #7C3AED" : "1px solid #E5E7EB",
+                          backgroundColor: internshipCallFilter !== "ALL" ? "#F5F3FF" : "#FFFFFF",
+                          color: internshipCallFilter !== "ALL" ? "#7C3AED" : "#374151",
+                          outline: "none",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <option value="ALL">All Call Statuses</option>
+                        <option value="Call Not Picked">📞 Call Not Picked</option>
+                        <option value="Call Picked - Not Visited Office">📞 Call Picked - Not Visited Office</option>
+                        <option value="Call Picked - Visited Office">🏢 Call Picked - Visited Office</option>
+                        <option value="Paid for Internship">🎓 Paid for Internship</option>
+                        <option value="NONE">⚪ Not Called Yet</option>
+                      </select>
+                    </div>
+
                     <div style={{ position: "relative" }}>
                       <Search
                         size={14}
@@ -1186,7 +1529,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                           border: "1px solid #E5E7EB",
                           backgroundColor: "#FFFFFF",
                           outline: "none",
-                          width: "220px",
+                          width: "200px",
                         }}
                       />
                     </div>
@@ -1421,9 +1764,12 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                                   Free Form
                                 </span>
                               )}
+
+                              {/* Call Disposition Status Tag */}
+                              {renderCallStatusBadge(app.callStatus, app.callTags)}
                             </div>
 
-                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
                               <div
                                 style={{
                                   fontSize: "11px",
@@ -1436,6 +1782,30 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                                 <Calendar size={12} />
                                 <span>{app.submittedAt ? new Date(app.submittedAt).toLocaleString() : "Recent"}</span>
                               </div>
+
+                              {/* Call Status Action Button */}
+                              <button
+                                type="button"
+                                onClick={() => openCallStatusModal("internship", app)}
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "4px",
+                                  fontSize: "11px",
+                                  fontWeight: 600,
+                                  color: app.callStatus ? "#6D28D9" : "#4B5563",
+                                  backgroundColor: app.callStatus ? "#F5F3FF" : "#F9FAFB",
+                                  border: app.callStatus ? "1px solid #DDD6FE" : "1px solid #E5E7EB",
+                                  padding: "3px 9px",
+                                  borderRadius: "6px",
+                                  cursor: "pointer",
+                                  transition: "all 0.15s ease",
+                                }}
+                                title="Set call result / follow-up status"
+                              >
+                                <Phone size={11} />
+                                <span>{app.callStatus ? "Update Status" : "Call Status"}</span>
+                              </button>
 
                               <button
                                 type="button"
@@ -1506,13 +1876,36 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                               marginBottom: "10px",
                             }}
                           >
-                            <div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
                               <span style={{ color: "#6B7280" }}>Contact: </span>
                               <a
                                 href={`tel:${app.phone}`}
-                                style={{ color: "#7C3AED", fontWeight: 600, textDecoration: "none" }}
+                                style={{ color: "#7C3AED", fontWeight: 600, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "3px" }}
                               >
-                                {app.countryCode || "+91"} {app.phone}
+                                <Phone size={11} />
+                                <span>{app.countryCode || "+91"} {app.phone}</span>
+                              </a>
+                              <a
+                                href={`https://wa.me/${(app.countryCode || "+91").replace(/\+/g, "")}${app.phone.replace(/[^0-9]/g, "")}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{
+                                  fontSize: "10px",
+                                  fontWeight: 600,
+                                  color: "#059669",
+                                  backgroundColor: "#ECFDF5",
+                                  border: "1px solid #A7F3D0",
+                                  padding: "1px 6px",
+                                  borderRadius: "4px",
+                                  textDecoration: "none",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "2px",
+                                }}
+                                title="Chat on WhatsApp"
+                              >
+                                <MessageCircle size={10} />
+                                <span>WhatsApp</span>
                               </a>
                             </div>
 
@@ -1812,6 +2205,33 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                   </div>
 
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                    {/* Call Status Filter Dropdown for Sales */}
+                    <div style={{ position: "relative" }}>
+                      <select
+                        value={salesCallFilter}
+                        onChange={(e) => setSalesCallFilter(e.target.value)}
+                        style={{
+                          height: "36px",
+                          padding: "0 10px",
+                          fontSize: "12px",
+                          fontWeight: 500,
+                          borderRadius: "6px",
+                          border: salesCallFilter !== "ALL" ? "1px solid #7C3AED" : "1px solid #E5E7EB",
+                          backgroundColor: salesCallFilter !== "ALL" ? "#F5F3FF" : "#FFFFFF",
+                          color: salesCallFilter !== "ALL" ? "#7C3AED" : "#374151",
+                          outline: "none",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <option value="ALL">All Call Statuses</option>
+                        <option value="Call Not Picked">📞 Call Not Picked</option>
+                        <option value="Call Picked - Not Visited Office">📞 Call Picked - Not Visited Office</option>
+                        <option value="Call Picked - Visited Office">🏢 Call Picked - Visited Office</option>
+                        <option value="Paid for Internship">🎓 Paid for Internship</option>
+                        <option value="NONE">⚪ Not Called Yet</option>
+                      </select>
+                    </div>
+
                     <div style={{ position: "relative" }}>
                       <Search
                         size={14}
@@ -1836,7 +2256,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                           border: "1px solid #E5E7EB",
                           backgroundColor: "#FFFFFF",
                           outline: "none",
-                          width: "220px",
+                          width: "200px",
                         }}
                       />
                     </div>
@@ -1995,48 +2415,75 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                             >
                               Agency/Commission: {app.hasAgencyOrCommissionSales ? "Yes" : "No"}
                             </span>
+
+                            {/* Call Disposition Status Tag */}
+                            {renderCallStatusBadge(app.callStatus, app.callTags)}
                           </div>
 
-                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                              <div
-                                style={{
-                                  fontSize: "11px",
-                                  color: "#9CA3AF",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: "4px",
-                                }}
-                              >
-                                <Calendar size={12} />
-                                <span>{app.submittedAt ? new Date(app.submittedAt).toLocaleString() : "Recent"}</span>
-                              </div>
-
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  openDeleteModal("sales", app.applicationId, app.fullName)
-                                }
-                                style={{
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: "4px",
-                                  fontSize: "11px",
-                                  fontWeight: 600,
-                                  color: "#EF4444",
-                                  backgroundColor: "#FEF2F2",
-                                  border: "1px solid #FECACA",
-                                  padding: "3px 8px",
-                                  borderRadius: "6px",
-                                  cursor: "pointer",
-                                  transition: "all 0.15s ease",
-                                }}
-                                title="Delete this application"
-                              >
-                                <Trash2 size={12} />
-                                <span>Delete</span>
-                              </button>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                            <div
+                              style={{
+                                fontSize: "11px",
+                                color: "#9CA3AF",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "4px",
+                              }}
+                            >
+                              <Calendar size={12} />
+                              <span>{app.submittedAt ? new Date(app.submittedAt).toLocaleString() : "Recent"}</span>
                             </div>
+
+                            {/* Call Status Action Button */}
+                            <button
+                              type="button"
+                              onClick={() => openCallStatusModal("sales", app)}
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                fontSize: "11px",
+                                fontWeight: 600,
+                                color: app.callStatus ? "#6D28D9" : "#4B5563",
+                                backgroundColor: app.callStatus ? "#F5F3FF" : "#F9FAFB",
+                                border: app.callStatus ? "1px solid #DDD6FE" : "1px solid #E5E7EB",
+                                padding: "3px 9px",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                transition: "all 0.15s ease",
+                              }}
+                              title="Set call result / follow-up status"
+                            >
+                              <Phone size={11} />
+                              <span>{app.callStatus ? "Update Status" : "Call Status"}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                openDeleteModal("sales", app.applicationId, app.fullName)
+                              }
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                fontSize: "11px",
+                                fontWeight: 600,
+                                color: "#EF4444",
+                                backgroundColor: "#FEF2F2",
+                                border: "1px solid #FECACA",
+                                padding: "3px 8px",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                transition: "all 0.15s ease",
+                              }}
+                              title="Delete this application"
+                            >
+                              <Trash2 size={12} />
+                              <span>Delete</span>
+                            </button>
                           </div>
+                        </div>
 
                         <div
                           style={{
@@ -2047,13 +2494,36 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                             marginBottom: "12px",
                           }}
                         >
-                          <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
                             <span style={{ color: "#6B7280" }}>Contact: </span>
                             <a
                               href={`tel:${app.phone}`}
-                              style={{ color: "#7C3AED", fontWeight: 600, textDecoration: "none" }}
+                              style={{ color: "#7C3AED", fontWeight: 600, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "3px" }}
                             >
-                              {app.countryCode || "+91"} {app.phone}
+                              <Phone size={11} />
+                              <span>{app.countryCode || "+91"} {app.phone}</span>
+                            </a>
+                            <a
+                              href={`https://wa.me/${(app.countryCode || "+91").replace(/\+/g, "")}${app.phone.replace(/[^0-9]/g, "")}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{
+                                fontSize: "10px",
+                                fontWeight: 600,
+                                color: "#059669",
+                                backgroundColor: "#ECFDF5",
+                                border: "1px solid #A7F3D0",
+                                padding: "1px 6px",
+                                borderRadius: "4px",
+                                textDecoration: "none",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "2px",
+                              }}
+                              title="Chat on WhatsApp"
+                            >
+                              <MessageCircle size={10} />
+                              <span>WhatsApp</span>
                             </a>
                           </div>
 
@@ -2151,6 +2621,354 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
             )}
           </div>
         )}
+        {/* ─── CALL DISPOSITION / FOLLOW-UP STATUS MODAL ─── */}
+        {callModalItem && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 100,
+              backgroundColor: "rgba(17, 24, 39, 0.6)",
+              backdropFilter: "blur(4px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "16px",
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: "#FFFFFF",
+                borderRadius: "16px",
+                border: "1px solid #E5E7EB",
+                boxShadow: "0 20px 30px rgba(0,0,0,0.15)",
+                width: "100%",
+                maxWidth: "460px",
+                maxHeight: "90vh",
+                overflowY: "auto",
+                padding: "22px",
+                position: "relative",
+              }}
+            >
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={closeCallStatusModal}
+                disabled={isUpdatingCallStatus}
+                style={{
+                  position: "absolute",
+                  top: "16px",
+                  right: "16px",
+                  background: "none",
+                  border: "none",
+                  color: "#9CA3AF",
+                  cursor: isUpdatingCallStatus ? "not-allowed" : "pointer",
+                  padding: "4px",
+                }}
+              >
+                <X size={18} />
+              </button>
+
+              {/* Header */}
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+                <div
+                  style={{
+                    width: "44px",
+                    height: "44px",
+                    borderRadius: "12px",
+                    backgroundColor: "#F5F3FF",
+                    color: "#7C3AED",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <PhoneCall size={22} />
+                </div>
+                <div>
+                  <div style={{ fontSize: "16px", fontWeight: 700, color: "#111827" }}>
+                    Candidate Call Disposition
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#6B7280" }}>
+                    {callModalItem.type === "internship" ? "Internship Application" : "Sales Consultant Application"} • <span style={{ fontFamily: "monospace", color: "#7C3AED", fontWeight: 600 }}>{callModalItem.applicationId}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Candidate Contact & Dial Card */}
+              <div
+                style={{
+                  backgroundColor: "#F9FAFB",
+                  border: "1px solid #E5E7EB",
+                  borderRadius: "10px",
+                  padding: "12px 14px",
+                  marginBottom: "16px",
+                }}
+              >
+                <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827", marginBottom: "6px" }}>
+                  {callModalItem.fullName}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
+                  <div style={{ fontSize: "13px", color: "#374151", fontWeight: 600 }}>
+                    {callModalItem.countryCode} {callModalItem.phone}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <a
+                      href={`tel:${callModalItem.phone}`}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        color: "#FFFFFF",
+                        backgroundColor: "#7C3AED",
+                        padding: "5px 10px",
+                        borderRadius: "6px",
+                        textDecoration: "none",
+                      }}
+                      title="Direct phone call"
+                    >
+                      <Phone size={11} />
+                      <span>Call</span>
+                    </a>
+                    <a
+                      href={`https://wa.me/${callModalItem.countryCode.replace(/\+/g, "")}${callModalItem.phone.replace(/[^0-9]/g, "")}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        color: "#FFFFFF",
+                        backgroundColor: "#059669",
+                        padding: "5px 10px",
+                        borderRadius: "6px",
+                        textDecoration: "none",
+                      }}
+                      title="Open WhatsApp chat"
+                    >
+                      <MessageCircle size={11} />
+                      <span>WhatsApp</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Status Selector Header & Instruction */}
+              <div style={{ marginBottom: "12px" }}>
+                <div style={{ fontSize: "13px", fontWeight: 700, color: "#111827" }}>
+                  Select Disposition Tag
+                </div>
+                <div style={{ fontSize: "11px", color: "#6B7280", marginTop: "2px" }}>
+                  Tap once to activate/tick tag. Tap again to deactivate/untick.
+                </div>
+              </div>
+
+              {/* Status Options (4 items requested) */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px", marginBottom: "16px" }}>
+                {CALL_STATUS_OPTIONS.map((opt) => {
+                  const isSelected = selectedCallStatus === opt.label;
+                  const IconComp = opt.icon;
+
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => handleToggleCallOption(opt.label)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "10px 12px",
+                        borderRadius: "10px",
+                        border: isSelected ? `2px solid ${opt.activeBorderColor}` : "1px solid #E5E7EB",
+                        backgroundColor: isSelected ? opt.activeBgColor : "#FFFFFF",
+                        cursor: "pointer",
+                        transition: "all 0.15s ease",
+                        textAlign: "left",
+                        width: "100%",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <div
+                          style={{
+                            width: "32px",
+                            height: "32px",
+                            borderRadius: "8px",
+                            backgroundColor: opt.bgColor,
+                            color: opt.color,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                            border: `1px solid ${opt.borderColor}`,
+                          }}
+                        >
+                          <IconComp size={16} />
+                        </div>
+                        <div>
+                          <div
+                            style={{
+                              fontSize: "13px",
+                              fontWeight: 700,
+                              color: isSelected ? opt.color : "#111827",
+                            }}
+                          >
+                            {opt.label}
+                          </div>
+                          <div style={{ fontSize: "11px", color: "#6B7280" }}>
+                            {opt.description}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Tick Checkbox / Indicator */}
+                      <div
+                        style={{
+                          width: "22px",
+                          height: "22px",
+                          borderRadius: "6px",
+                          border: isSelected ? `2px solid ${opt.color}` : "2px solid #D1D5DB",
+                          backgroundColor: isSelected ? opt.color : "#FFFFFF",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                          marginLeft: "8px",
+                        }}
+                      >
+                        {isSelected && <Check size={14} color="#FFFFFF" strokeWidth={3} />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Error or Success notification */}
+              {callStatusError && (
+                <div
+                  style={{
+                    backgroundColor: "#FEF2F2",
+                    border: "1px solid #FECACA",
+                    borderRadius: "8px",
+                    padding: "8px 12px",
+                    fontSize: "12px",
+                    color: "#DC2626",
+                    marginBottom: "14px",
+                  }}
+                >
+                  {callStatusError}
+                </div>
+              )}
+
+              {callStatusSuccess && (
+                <div
+                  style={{
+                    backgroundColor: "#ECFDF5",
+                    border: "1px solid #A7F3D0",
+                    borderRadius: "8px",
+                    padding: "8px 12px",
+                    fontSize: "12px",
+                    color: "#047857",
+                    marginBottom: "14px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                  }}
+                >
+                  <CheckCircle2 size={14} />
+                  <span>Call status updated successfully!</span>
+                </div>
+              )}
+
+              {/* Footer Actions */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", marginTop: "12px" }}>
+                <div>
+                  {selectedCallStatus && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedCallStatus("");
+                        setSelectedCallTags([]);
+                      }}
+                      disabled={isUpdatingCallStatus}
+                      style={{
+                        fontSize: "12px",
+                        color: "#EF4444",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        textDecoration: "underline",
+                        padding: "4px",
+                      }}
+                    >
+                      Clear / Untick Status
+                    </button>
+                  )}
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <button
+                    type="button"
+                    onClick={closeCallStatusModal}
+                    disabled={isUpdatingCallStatus}
+                    style={{
+                      padding: "8px 14px",
+                      borderRadius: "8px",
+                      border: "1px solid #E5E7EB",
+                      backgroundColor: "#FFFFFF",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      color: "#4B5563",
+                      cursor: isUpdatingCallStatus ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleSaveCallStatus}
+                    disabled={isUpdatingCallStatus}
+                    style={{
+                      padding: "8px 16px",
+                      borderRadius: "8px",
+                      border: "none",
+                      backgroundColor: "#7C3AED",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      color: "#FFFFFF",
+                      cursor: isUpdatingCallStatus ? "not-allowed" : "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
+                  >
+                    {isUpdatingCallStatus ? (
+                      <>
+                        <Loader2 size={14} className="animate-spin" />
+                        <span>Updating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Check size={14} />
+                        <span>Update Status</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ─── DELETE VERIFICATION MODAL POPUP ─── */}
         {deleteModalOpen && itemToDelete && (
           <div
