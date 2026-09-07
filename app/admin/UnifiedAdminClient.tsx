@@ -796,6 +796,57 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
     );
   });
 
+  // Filter state flags
+  const isInternshipFiltered =
+    internshipTypeFilter !== "ALL" ||
+    internshipCallFilter !== "ALL" ||
+    internshipSearch.trim() !== "";
+
+  const isSalesFiltered =
+    salesFilter !== "ALL" ||
+    salesCallFilter !== "ALL" ||
+    salesSearch.trim() !== "";
+
+  // Call Status counts for Internship dropdown & stats
+  const internshipCallCounts = {
+    all: internships.length,
+    call_not_picked: internships.filter(
+      (a) => (a.callStatus || "").toLowerCase() === "call not picked"
+    ).length,
+    call_picked_not_visited: internships.filter(
+      (a) => (a.callStatus || "").toLowerCase() === "call picked - not visited office"
+    ).length,
+    call_picked_visited: internships.filter(
+      (a) => (a.callStatus || "").toLowerCase() === "call picked - visited office"
+    ).length,
+    paid_for_internship: internships.filter(
+      (a) => (a.callStatus || "").toLowerCase() === "paid for internship"
+    ).length,
+    none: internships.filter(
+      (a) => !a.callStatus && (!a.callTags || a.callTags.length === 0)
+    ).length,
+  };
+
+  // Call Status counts for Sales dropdown & stats
+  const salesCallCounts = {
+    all: salesApps.length,
+    call_not_picked: salesApps.filter(
+      (a) => (a.callStatus || "").toLowerCase() === "call not picked"
+    ).length,
+    call_picked_not_visited: salesApps.filter(
+      (a) => (a.callStatus || "").toLowerCase() === "call picked - not visited office"
+    ).length,
+    call_picked_visited: salesApps.filter(
+      (a) => (a.callStatus || "").toLowerCase() === "call picked - visited office"
+    ).length,
+    paid_for_internship: salesApps.filter(
+      (a) => (a.callStatus || "").toLowerCase() === "paid for internship"
+    ).length,
+    none: salesApps.filter(
+      (a) => !a.callStatus && (!a.callTags || a.callTags.length === 0)
+    ).length,
+  };
+
   if (authLoading) {
     return (
       <div
@@ -1178,7 +1229,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                     color: activeTab === "internship" ? "#FFFFFF" : "#6B7280",
                   }}
                 >
-                  {totalInternships}
+                  {isInternshipFiltered ? `${filteredInternships.length} / ${totalInternships}` : totalInternships}
                 </span>
               </button>
 
@@ -1216,7 +1267,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                     color: activeTab === "sales" ? "#FFFFFF" : "#6B7280",
                   }}
                 >
-                  {totalSales}
+                  {isSalesFiltered ? `${filteredSales.length} / ${totalSales}` : totalSales}
                 </span>
               </button>
             </div>
@@ -1239,20 +1290,24 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                   <div
                     style={{
                       backgroundColor: "#FFFFFF",
-                      border: "1px solid #E5E7EB",
+                      border: isInternshipFiltered ? "1px solid #C4B5FD" : "1px solid #E5E7EB",
                       borderRadius: "12px",
                       padding: "16px",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
+                      boxShadow: isInternshipFiltered ? "0 2px 8px rgba(124, 58, 237, 0.08)" : "none",
                     }}
                   >
                     <div>
-                      <div style={{ fontSize: "12px", color: "#6B7280", fontWeight: 500 }}>
-                        Total Applicants
+                      <div style={{ fontSize: "12px", color: isInternshipFiltered ? "#7C3AED" : "#6B7280", fontWeight: 600 }}>
+                        {isInternshipFiltered ? "Filtered Results" : "Total Applicants"}
                       </div>
-                      <div style={{ fontSize: "22px", fontWeight: 800, color: "#111827", marginTop: "2px" }}>
-                        {totalInternships}
+                      <div style={{ fontSize: "22px", fontWeight: 800, color: isInternshipFiltered ? "#7C3AED" : "#111827", marginTop: "2px" }}>
+                        {filteredInternships.length}
+                      </div>
+                      <div style={{ fontSize: "11px", color: isInternshipFiltered ? "#6D28D9" : "#9CA3AF", marginTop: "2px" }}>
+                        {isInternshipFiltered ? `Showing ${filteredInternships.length} of ${totalInternships}` : `${totalInternships} total records`}
                       </div>
                     </div>
                     <div
