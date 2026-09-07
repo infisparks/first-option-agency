@@ -1551,12 +1551,12 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                           cursor: "pointer",
                         }}
                       >
-                        <option value="ALL">All Call Statuses</option>
-                        <option value="Call Not Picked">📞 Call Not Picked</option>
-                        <option value="Call Picked - Not Visited Office">📞 Call Picked - Not Visited Office</option>
-                        <option value="Call Picked - Visited Office">🏢 Call Picked - Visited Office</option>
-                        <option value="Paid for Internship">🎓 Paid for Internship</option>
-                        <option value="NONE">⚪ Not Called Yet</option>
+                        <option value="ALL">All Call Statuses ({internshipCallCounts.all})</option>
+                        <option value="Call Not Picked">📞 Call Not Picked ({internshipCallCounts.call_not_picked})</option>
+                        <option value="Call Picked - Not Visited Office">📞 Call Picked - Not Visited ({internshipCallCounts.call_picked_not_visited})</option>
+                        <option value="Call Picked - Visited Office">🏢 Call Picked - Visited Office ({internshipCallCounts.call_picked_visited})</option>
+                        <option value="Paid for Internship">🎓 Paid for Internship ({internshipCallCounts.paid_for_internship})</option>
+                        <option value="NONE">⚪ Not Called Yet ({internshipCallCounts.none})</option>
                       </select>
                     </div>
 
@@ -1632,6 +1632,114 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                       <span>Export CSV</span>
                     </button>
                   </div>
+                </div>
+
+                {/* Filter Results & Total Count Bar */}
+                <div
+                  style={{
+                    backgroundColor: isInternshipFiltered ? "#F5F3FF" : "#FFFFFF",
+                    border: isInternshipFiltered ? "1px solid #DDD6FE" : "1px solid #E5E7EB",
+                    borderRadius: "10px",
+                    padding: "10px 16px",
+                    marginBottom: "12px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    flexWrap: "wrap",
+                    gap: "8px",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                    <span style={{ fontSize: "13px", fontWeight: 700, color: "#111827" }}>
+                      Total Results:{" "}
+                      <span
+                        style={{
+                          color: isInternshipFiltered ? "#7C3AED" : "#111827",
+                          backgroundColor: isInternshipFiltered ? "#EDE9FE" : "#F3F4F6",
+                          padding: "2px 8px",
+                          borderRadius: "6px",
+                          fontSize: "14px",
+                          fontWeight: 800,
+                        }}
+                      >
+                        {filteredInternships.length}
+                      </span>
+                    </span>
+
+                    <span style={{ fontSize: "12px", color: "#6B7280" }}>
+                      (showing {filteredInternships.length} of {totalInternships} total applications)
+                    </span>
+
+                    {isInternshipFiltered && (
+                      <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                        {internshipTypeFilter !== "ALL" && (
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: 600,
+                              backgroundColor: "#EDE9FE",
+                              color: "#6D28D9",
+                              padding: "2px 8px",
+                              borderRadius: "999px",
+                            }}
+                          >
+                            Type: {internshipTypeFilter}
+                          </span>
+                        )}
+                        {internshipCallFilter !== "ALL" && (
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: 600,
+                              backgroundColor: "#EDE9FE",
+                              color: "#6D28D9",
+                              padding: "2px 8px",
+                              borderRadius: "999px",
+                            }}
+                          >
+                            Call: {internshipCallFilter}
+                          </span>
+                        )}
+                        {internshipSearch && (
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: 600,
+                              backgroundColor: "#EDE9FE",
+                              color: "#6D28D9",
+                              padding: "2px 8px",
+                              borderRadius: "999px",
+                            }}
+                          >
+                            Search: "{internshipSearch}"
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {isInternshipFiltered && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setInternshipTypeFilter("ALL");
+                        setInternshipCallFilter("ALL");
+                        setInternshipSearch("");
+                      }}
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        color: "#7C3AED",
+                        backgroundColor: "#FFFFFF",
+                        border: "1px solid #DDD6FE",
+                        padding: "4px 10px",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Clear / Reset Filter
+                    </button>
+                  )}
                 </div>
 
                 {/* Internship List */}
@@ -2080,20 +2188,24 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                   <div
                     style={{
                       backgroundColor: "#FFFFFF",
-                      border: "1px solid #E5E7EB",
+                      border: isSalesFiltered ? "1px solid #C4B5FD" : "1px solid #E5E7EB",
                       borderRadius: "12px",
                       padding: "16px",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
+                      boxShadow: isSalesFiltered ? "0 2px 8px rgba(124, 58, 237, 0.08)" : "none",
                     }}
                   >
                     <div>
-                      <div style={{ fontSize: "12px", color: "#6B7280", fontWeight: 500 }}>
-                        Total Sales Candidates
+                      <div style={{ fontSize: "12px", color: isSalesFiltered ? "#7C3AED" : "#6B7280", fontWeight: 600 }}>
+                        {isSalesFiltered ? "Filtered Results" : "Total Sales Candidates"}
                       </div>
-                      <div style={{ fontSize: "22px", fontWeight: 800, color: "#111827", marginTop: "2px" }}>
-                        {totalSales}
+                      <div style={{ fontSize: "22px", fontWeight: 800, color: isSalesFiltered ? "#7C3AED" : "#111827", marginTop: "2px" }}>
+                        {filteredSales.length}
+                      </div>
+                      <div style={{ fontSize: "11px", color: isSalesFiltered ? "#6D28D9" : "#9CA3AF", marginTop: "2px" }}>
+                        {isSalesFiltered ? `Showing ${filteredSales.length} of ${totalSales}` : `${totalSales} total candidates`}
                       </div>
                     </div>
                     <div
