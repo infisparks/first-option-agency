@@ -26,6 +26,7 @@ import {
   ArrowLeft,
   RefreshCw,
   CheckCircle2,
+  AlertCircle,
   AlertTriangle,
   CreditCard,
   BadgeIndianRupee,
@@ -61,6 +62,8 @@ interface InternshipRecord {
   aboutYourself: string;
   resumeUrl?: string;
   submittedAt: string;
+  type?: string;
+  status?: string;
   leadType?: "women" | "common" | "amount" | string;
   paymentStatus?: "Paid" | "Free" | "Unpaid" | "Pending" | string;
   paymentId?: string;
@@ -151,10 +154,16 @@ interface UnifiedAdminProps {
 // Helper: Determine Lead Type
 // If leadType is missing (all existing/old data), treat as "women"
 export const getInternshipLeadType = (app: InternshipRecord): "women" | "common" | "amount" => {
-  if (app.leadType === "amount" || app.paymentStatus === "Paid" || Boolean(app.paymentId)) {
+  if (
+    app.leadType === "amount" ||
+    app.type === "amount" ||
+    app.paymentStatus === "Paid" ||
+    app.paymentStatus === "Pending" ||
+    Boolean(app.paymentId)
+  ) {
     return "amount";
   }
-  if (app.leadType === "common") {
+  if (app.leadType === "common" || app.type === "common") {
     return "common";
   }
   // Default assumption: If leadType is "women" OR undefined/empty, it's a Women form lead
@@ -186,7 +195,9 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
 
   // Search & Filter states
   const [internshipSearch, setInternshipSearch] = useState("");
-  const [internshipTypeFilter, setInternshipTypeFilter] = useState<"ALL" | "WOMEN" | "COMMON" | "AMOUNT">("ALL");
+  const [internshipTypeFilter, setInternshipTypeFilter] = useState<
+    "ALL" | "WOMEN" | "COMMON" | "AMOUNT" | "AMOUNT_PAID" | "AMOUNT_PENDING"
+  >("ALL");
 
   const [salesSearch, setSalesSearch] = useState("");
   const [salesFilter, setSalesFilter] = useState<"ALL" | "EXPERIENCED" | "AGENCY">("ALL");
@@ -619,13 +630,16 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
 
     const rows = internships.map((app) => {
       const lType = getInternshipLeadType(app);
-      const isPaid = lType === "amount";
+      const isPaid = lType === "amount" && (app.paymentStatus === "Paid" || Boolean(app.paymentId));
+      const isAmountPending = lType === "amount" && !isPaid;
       const leadLabel =
         lType === "women"
           ? "Women Drive (Free)"
           : lType === "common"
           ? "Common Free"
-          : "Common + Amount (₹5,000)";
+          : isPaid
+          ? "Common + Amount (₹5,000 Paid)"
+          : "Common + Amount (Payment Pending)";
 
       return [
         `"${app.applicationId || ""}"`,
@@ -640,9 +654,9 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
         `"${app.qualification || ""}"`,
         `"${app.passingYear || ""}"`,
         `"${(app.skills || []).join(", ")}"`,
-        `"${isPaid ? "Paid" : "Free (No Payment)"}"`,
+        `"${isPaid ? "Paid" : isAmountPending ? "Payment Pending" : "Free (No Payment)"}"`,
         `"${isPaid ? String(app.amountPaid || "5000") : "0"}"`,
-        `"${isPaid ? (app.paymentId || "Verified") : "N/A"}"`,
+        `"${isPaid ? (app.paymentId || "Verified") : isAmountPending ? "Pending" : "N/A"}"`,
         `"${app.orderId || "N/A"}"`,
         `"${app.paidAt || app.submittedAt || ""}"`,
         `"${(app.aboutYourself || "").replace(/"/g, '""')}"`,
@@ -725,15 +739,21 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
   const totalInternships = internships.length;
   const womenCount = internships.filter((a) => getInternshipLeadType(a) === "women").length;
   const commonCount = internships.filter((a) => getInternshipLeadType(a) === "common").length;
-  const amountCount = internships.filter((a) => getInternshipLeadType(a) === "amount").length;
-  const totalRevenue = amountCount * 5000;
+  const amountLeads = internships.filter((a) => getInternshipLeadType(a) === "amount");
+  const amountPaidCount = amountLeads.filter((a) => a.paymentStatus === "Paid" || Boolean(a.paymentId)).length;
+  const amountPendingCount = amountLeads.length - amountPaidCount;
+  const amountCount = amountLeads.length;
+  const totalRevenue = amountPaidCount * 5000;
 
   // Filtered Internships
   const filteredInternships = internships.filter((app) => {
     const lType = getInternshipLeadType(app);
+    const isPaid = lType === "amount" && (app.paymentStatus === "Paid" || Boolean(app.paymentId));
     if (internshipTypeFilter === "WOMEN" && lType !== "women") return false;
     if (internshipTypeFilter === "COMMON" && lType !== "common") return false;
     if (internshipTypeFilter === "AMOUNT" && lType !== "amount") return false;
+    if (internshipTypeFilter === "AMOUNT_PAID" && !isPaid) return false;
+    if (internshipTypeFilter === "AMOUNT_PENDING" && (lType !== "amount" || isPaid)) return false;
 
     // Call Status Filter
     if (internshipCallFilter !== "ALL") {
@@ -1512,23 +1532,44 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
 
                     <button
                       type="button"
-                      onClick={() => setInternshipTypeFilter("AMOUNT")}
+                      onClick={() => setInternshipTypeFilter("AMOUNT_PAID")}
                       style={{
                         padding: "6px 12px",
                         borderRadius: "6px",
                         fontSize: "12px",
                         fontWeight: 600,
                         cursor: "pointer",
-                        border: internshipTypeFilter === "AMOUNT" ? "1px solid #059669" : "1px solid #E5E7EB",
-                        backgroundColor: internshipTypeFilter === "AMOUNT" ? "#ECFDF5" : "#FFFFFF",
-                        color: internshipTypeFilter === "AMOUNT" ? "#047857" : "#4B5563",
+                        border: internshipTypeFilter === "AMOUNT_PAID" ? "1px solid #059669" : "1px solid #E5E7EB",
+                        backgroundColor: internshipTypeFilter === "AMOUNT_PAID" ? "#ECFDF5" : "#FFFFFF",
+                        color: internshipTypeFilter === "AMOUNT_PAID" ? "#047857" : "#4B5563",
                         display: "inline-flex",
                         alignItems: "center",
                         gap: "4px",
                       }}
                     >
                       <CheckCircle2 size={13} color="#059669" />
-                      <span>Paid Leads ({amountCount})</span>
+                      <span>Paid ({amountPaidCount})</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setInternshipTypeFilter("AMOUNT_PENDING")}
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: "6px",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        border: internshipTypeFilter === "AMOUNT_PENDING" ? "1px solid #F59E0B" : "1px solid #E5E7EB",
+                        backgroundColor: internshipTypeFilter === "AMOUNT_PENDING" ? "#FEF3C7" : "#FFFFFF",
+                        color: internshipTypeFilter === "AMOUNT_PENDING" ? "#B45309" : "#4B5563",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
+                    >
+                      <AlertCircle size={13} color="#D97706" />
+                      <span>Payment Pending ({amountPendingCount})</span>
                     </button>
                   </div>
 
@@ -1773,7 +1814,9 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                   <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "12px" }}>
                     {filteredInternships.map((app) => {
                       const lType = getInternshipLeadType(app);
-                      const isPaid = lType === "amount";
+                      const isAmountLead = lType === "amount";
+                      const isPaid = isAmountLead && (app.paymentStatus === "Paid" || Boolean(app.paymentId));
+                      const isPendingPayment = isAmountLead && !isPaid;
 
                       return (
                         <div
@@ -1786,7 +1829,9 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                                 ? "1px solid #FBCFE8"
                                 : lType === "common"
                                 ? "1px solid #BFDBFE"
-                                : "1px solid #A7F3D0",
+                                : isPaid
+                                ? "1px solid #A7F3D0"
+                                : "1px solid #FDE68A",
                             padding: "16px",
                             boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
                           }}
@@ -1859,7 +1904,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                                   <Globe size={11} />
                                   <span>Common Free</span>
                                 </span>
-                              ) : (
+                              ) : isPaid ? (
                                 <span
                                   style={{
                                     fontSize: "11px",
@@ -1876,6 +1921,24 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                                 >
                                   <CheckCircle2 size={11} />
                                   <span>Common + Paid (₹5k)</span>
+                                </span>
+                              ) : (
+                                <span
+                                  style={{
+                                    fontSize: "11px",
+                                    fontWeight: 700,
+                                    backgroundColor: "#FEF3C7",
+                                    color: "#B45309",
+                                    border: "1px solid #FDE68A",
+                                    padding: "2px 8px",
+                                    borderRadius: "999px",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "3px",
+                                  }}
+                                >
+                                  <AlertCircle size={11} />
+                                  <span>Amount Track (Pending)</span>
                                 </span>
                               )}
 
@@ -1911,6 +1974,24 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                                 >
                                   <CheckCircle2 size={12} color="#059669" />
                                   <span>Paid (₹{app.amountPaid || "5,000"})</span>
+                                </span>
+                              ) : isPendingPayment ? (
+                                <span
+                                  style={{
+                                    fontSize: "11px",
+                                    fontWeight: 700,
+                                    backgroundColor: "#FFFBEB",
+                                    color: "#D97706",
+                                    border: "1px solid #FDE68A",
+                                    padding: "2px 8px",
+                                    borderRadius: "999px",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "4px",
+                                  }}
+                                >
+                                  <AlertCircle size={12} color="#D97706" />
+                                  <span>Payment Pending (₹5,000)</span>
                                 </span>
                               ) : (
                                 <span

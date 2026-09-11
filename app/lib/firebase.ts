@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getDatabase, ref, set, serverTimestamp } from "firebase/database";
+import { getDatabase, ref, set, update, serverTimestamp } from "firebase/database";
 import { getAuth } from "firebase/auth";
 
 // Exact Firebase project configuration for firstoptioncom-a0713 (Realtime Database & Auth Only)
@@ -68,6 +68,27 @@ export async function saveApplicationToRealtimeDb(
   } catch (err: any) {
     console.warn("Realtime DB save error:", err?.message || err);
     return { success: false, id: data.applicationId, error: err?.message };
+  }
+}
+
+/**
+ * Updates an existing internship application directly in Firebase Realtime Database.
+ */
+export async function updateApplicationInRealtimeDb(
+  applicationId: string,
+  partialData: Partial<InternshipApplicationPayload>
+): Promise<{ success: boolean; id: string; error?: string }> {
+  try {
+    const appRef = ref(rtdb, `internship_applications/${applicationId}`);
+    await update(appRef, {
+      ...partialData,
+      updatedAt: serverTimestamp(),
+    });
+
+    return { success: true, id: applicationId };
+  } catch (err: any) {
+    console.warn("Realtime DB update error:", err?.message || err);
+    return { success: false, id: applicationId, error: err?.message };
   }
 }
 

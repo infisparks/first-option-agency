@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -30,7 +30,11 @@ import {
   PASSING_YEARS,
   COUNTRY_CODES,
 } from "./skills-data";
-import { saveApplicationToRealtimeDb, InternshipApplicationPayload } from "@/app/lib/firebase";
+import {
+  saveApplicationToRealtimeDb,
+  updateApplicationInRealtimeDb,
+  InternshipApplicationPayload,
+} from "@/app/lib/firebase";
 import {
   triggerInternshipWhatsAppNotifications,
   PROGRAM_TITLES,
@@ -131,6 +135,7 @@ export default function InternshipFormClient() {
   const [copiedId, setCopiedId] = useState(false);
   const [paymentError, setPaymentError] = useState<string>("");
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo | null>(null);
+  const pendingAppIdRef = useRef<string>("");
 
   // Show submission confirmation if URL has status=submit (e.g. Meta Event Setup Tool / Direct URL tracking)
   useEffect(() => {
@@ -336,17 +341,64 @@ export default function InternshipFormClient() {
     const submissionTimestamp = new Date().toISOString();
 
     // ─────────────────────────────────────────────────────────────
-    // BRANCH A: AMOUNT MODE -> COMPULSORY ₹5,000 VIA RAZORPAY
+    // BRANCH A: AMOUNT MODE -> SAVE DRAFT AS PENDING + PAY ₹5,000 VIA RAZORPAY
     // ─────────────────────────────────────────────────────────────
     if (isAmountMode) {
+      const targetAppId = pendingAppIdRef.current || generatedId;
+      pendingAppIdRef.current = targetAppId;
+      const amountInRupees = 5000;
+
+      // 1. Immediately Save Candidate Form to Firebase RTDB with paymentStatus: "Pending"
+      // Ensures 100% data capture even if user closes/cancels payment modal
+      const initialPendingRecord: InternshipApplicationPayload = {
+        applicationId: targetAppId,
+        submittedAt: submissionTimestamp,
+        fullName: formData.fullName,
+        email: formData.email,
+        countryCode: formData.countryCode,
+        phone: formData.phone,
+        city: formData.city,
+        gender: formData.gender,
+        qualification: formData.qualification,
+        passingYear: formData.passingYear,
+        skills: formData.skills,
+        aboutYourself: formData.aboutYourself,
+        resumeUrl: formData.resumeUrl,
+        leadType: "amount",
+        type: "amount",
+        status: "pending",
+        programTitle: PROGRAM_TITLES.PAID,
+        paymentStatus: "Pending",
+        amountPaid: 0,
+      };
+
+      try {
+        await saveApplicationToRealtimeDb(initialPendingRecord);
+      } catch (rtdbErr) {
+        console.warn("Realtime DB initial save warning:", rtdbErr);
+      }
+
+      // Save initial pending status to localStorage
+      try {
+        const existing = JSON.parse(
+          localStorage.getItem("foa_internship_applications") || "[]"
+        );
+        const filtered = existing.filter((item: any) => item.applicationId !== targetAppId);
+        filtered.unshift(initialPendingRecord);
+        localStorage.setItem("foa_internship_applications", JSON.stringify(filtered));
+      } catch (storageError) {
+        console.warn("Could not save to localStorage:", storageError);
+      }
+
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded || !(window as any).Razorpay) {
         setIsSubmitting(false);
-        setPaymentError("Could not initialize Razorpay gateway. Please check your internet connection.");
+        setPaymentError(
+          `Your details have been saved (Application ID: ${targetAppId}), but could not initialize the Razorpay gateway. Please check your internet connection and try again.`
+        );
         return;
       }
 
-      const amountInRupees = 5000;
       const amountInPaise = amountInRupees * 100;
 
       const options = {
@@ -362,7 +414,7 @@ export default function InternshipFormClient() {
           contact: `${formData.countryCode}${formData.phone}`,
         },
         notes: {
-          applicationId: generatedId,
+          applicationId: targetAppId,
           leadType: "amount",
           programTitle: PROGRAM_TITLES.PAID,
           candidateName: formData.fullName,
@@ -376,59 +428,48 @@ export default function InternshipFormClient() {
         handler: async function (response: any) {
           const paymentId = response.razorpay_payment_id || `pay_${Date.now()}`;
           const orderId = response.razorpay_order_id || "";
+          const paidAtTimestamp = new Date().toISOString();
 
-          const applicationRecord: InternshipApplicationPayload = {
-            applicationId: generatedId,
-            submittedAt: submissionTimestamp,
-            fullName: formData.fullName,
-            email: formData.email,
-            countryCode: formData.countryCode,
-            phone: formData.phone,
-            city: formData.city,
-            gender: formData.gender,
-            qualification: formData.qualification,
-            passingYear: formData.passingYear,
-            skills: formData.skills,
-            aboutYourself: formData.aboutYourself,
-            resumeUrl: formData.resumeUrl,
-            leadType: "amount",
-            type: "amount",
-            status: "submit",
-            programTitle: PROGRAM_TITLES.PAID,
+          const paidUpdateData: Partial<InternshipApplicationPayload> = {
             paymentStatus: "Paid",
+            status: "submit",
             amountPaid: amountInRupees,
             paymentId: paymentId,
             orderId: orderId,
-            paidAt: submissionTimestamp,
+            paidAt: paidAtTimestamp,
           };
 
-          // 1. Save to Firebase RTDB
+          // 1. Update Firebase RTDB record from "Pending" to "Paid"
           try {
-            await saveApplicationToRealtimeDb(applicationRecord);
+            await updateApplicationInRealtimeDb(targetAppId, paidUpdateData);
           } catch (rtdbErr) {
-            console.warn("Realtime DB save warning:", rtdbErr);
+            console.warn("Realtime DB update warning:", rtdbErr);
           }
 
           // 2. WhatsApp Notification with Custom Title for Paid Track
           triggerInternshipWhatsAppNotifications({
             candidatePhone: `${formData.countryCode}${formData.phone}`,
             candidateName: formData.fullName,
-            applicationId: generatedId,
+            applicationId: targetAppId,
             candidateEmail: formData.email,
             city: formData.city,
             programTitle: PROGRAM_TITLES.PAID,
             mode: "amount",
           });
 
-          // 3. Save to localStorage backup
+          // 3. Update localStorage backup with Paid status
           try {
             const existing = JSON.parse(
               localStorage.getItem("foa_internship_applications") || "[]"
             );
-            existing.unshift(applicationRecord);
+            const updated = existing.map((item: any) =>
+              item.applicationId === targetAppId
+                ? { ...item, ...paidUpdateData }
+                : item
+            );
             localStorage.setItem(
               "foa_internship_applications",
-              JSON.stringify(existing)
+              JSON.stringify(updated)
             );
           } catch (storageError) {
             console.warn("Could not save to localStorage:", storageError);
@@ -443,9 +484,10 @@ export default function InternshipFormClient() {
               timeStyle: "short",
             }),
           });
-          setApplicationId(generatedId);
+          setApplicationId(targetAppId);
           setIsSubmitting(false);
           setSubmitSuccess(true);
+          pendingAppIdRef.current = "";
 
           // Update URL with status=submit and type=amount for Meta Pixel & Event Setup Tool tracking
           try {
@@ -454,8 +496,13 @@ export default function InternshipFormClient() {
             url.searchParams.set("status", "submit");
             window.history.pushState({}, "", url.toString());
 
-            // Fire Meta Pixel standard Lead event if pixel is initialized
+            // Fire Meta Pixel Purchase & Lead events if pixel is initialized
             if (typeof window !== "undefined" && (window as any).fbq) {
+              (window as any).fbq("track", "Purchase", {
+                value: 5000,
+                currency: "INR",
+                content_name: "Internship Program Paid Seat",
+              });
               (window as any).fbq("track", "Lead", {
                 content_name: "internship-amount",
                 status: "submit",
@@ -470,18 +517,22 @@ export default function InternshipFormClient() {
         modal: {
           ondismiss: function () {
             setIsSubmitting(false);
-            setPaymentError("Payment window was closed. Your application has NOT been submitted yet. Please complete the ₹5,000 fee payment to submit.");
+            setPaymentError(
+              `Your application details have been saved (Application ID: ${targetAppId}). Payment was not completed. Click "Proceed to Pay ₹5,000 & Submit" to complete payment and confirm your seat.`
+            );
           },
         },
       };
 
       try {
         const rzpInstance = new (window as any).Razorpay(options);
-        rzpInstance.on("payment.failed", function (response: any) {
+        rzpInstance.on("payment.failed", async function (response: any) {
           setIsSubmitting(false);
-          setPaymentError(
+          const failureReason =
             response?.error?.description ||
-              "Payment failed or declined by bank. Please try again."
+            "Payment failed or declined by bank. Please try again.";
+          setPaymentError(
+            `Payment failed: ${failureReason}. Your application details are saved (Application ID: ${targetAppId}). You can retry payment below.`
           );
         });
         rzpInstance.open();
