@@ -152,6 +152,11 @@ export default function InternshipFormClient() {
   // Toggle skill selection
   const toggleSkill = (skillTitle: string) => {
     setFormData((prev) => {
+      if (isAmountMode) {
+        const isSelected = prev.skills.includes(skillTitle);
+        const updated = isSelected ? [] : [skillTitle];
+        return { ...prev, skills: updated };
+      }
       const exists = prev.skills.includes(skillTitle);
       const updated = exists
         ? prev.skills.filter((s) => s !== skillTitle)
@@ -295,7 +300,9 @@ export default function InternshipFormClient() {
     }
 
     if (formData.skills.length === 0) {
-      newErrors.skills = "Please select at least 1 internship track";
+      newErrors.skills = isAmountMode
+        ? "Please select 1 internship track"
+        : "Please select at least 1 internship track";
     }
 
     if (!formData.aboutYourself.trim()) {
@@ -1754,7 +1761,7 @@ export default function InternshipFormClient() {
                     3
                   </div>
                   <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
-                    Select Internship Track(s) <span style={{ color: "#EF4444" }}>*</span>
+                    {isAmountMode ? "Select Internship Track" : "Select Internship Track(s)"} <span style={{ color: "#EF4444" }}>*</span>
                   </div>
                 </div>
 
@@ -1768,7 +1775,9 @@ export default function InternshipFormClient() {
                       marginBottom: "8px",
                     }}
                   >
-                    Tick the role(s) you are interested in applying for:
+                    {isAmountMode
+                      ? "Select the 1 role you are interested in applying for:"
+                      : "Tick the role(s) you are interested in applying for:"}
                   </label>
 
                   <div
@@ -1820,7 +1829,7 @@ export default function InternshipFormClient() {
                               style={{
                                 width: "20px",
                                 height: "20px",
-                                borderRadius: "6px",
+                                borderRadius: isAmountMode ? "50%" : "6px",
                                 border: `1.5px solid ${isChecked ? primaryColor : "#D1D5DB"}`,
                                 backgroundColor: isChecked ? primaryColor : "#FFFFFF",
                                 display: "flex",
@@ -1830,7 +1839,20 @@ export default function InternshipFormClient() {
                                 transition: "all 0.2s ease",
                               }}
                             >
-                              {isChecked && <Check size={14} strokeWidth={3} />}
+                              {isChecked && (
+                                isAmountMode ? (
+                                  <div
+                                    style={{
+                                      width: "8px",
+                                      height: "8px",
+                                      borderRadius: "50%",
+                                      backgroundColor: "#FFFFFF",
+                                    }}
+                                  />
+                                ) : (
+                                  <Check size={14} strokeWidth={3} />
+                                )
+                              )}
                             </div>
                           </div>
 
