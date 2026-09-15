@@ -40,13 +40,14 @@ export interface InternshipApplicationPayload {
   // Lead type & Payment fields
   type?: string;
   status?: string;
-  leadType?: "women" | "common" | "amount" | string;
+  leadType?: "women" | "common" | "amount" | "seat-confirmation" | string;
   programTitle?: string;
   paymentStatus?: "Paid" | "Free" | "Unpaid" | "Pending" | string;
   amountPaid?: number;
   paymentId?: string;
   orderId?: string;
   paidAt?: string;
+  isSeatConfirmedCheckbox?: boolean;
 }
 
 /**

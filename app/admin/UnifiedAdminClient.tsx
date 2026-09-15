@@ -45,6 +45,7 @@ import {
   MessageCircle,
   Check,
   Filter,
+  Sparkles,
 } from "lucide-react";
 
 // Types
@@ -64,7 +65,9 @@ interface InternshipRecord {
   submittedAt: string;
   type?: string;
   status?: string;
-  leadType?: "women" | "common" | "amount" | string;
+  leadType?: "women" | "common" | "amount" | "seat-confirmation" | string;
+  isSeatConfirmedCheckbox?: boolean;
+  programTitle?: string;
   paymentStatus?: "Paid" | "Free" | "Unpaid" | "Pending" | string;
   paymentId?: string;
   amountPaid?: number | string;
@@ -112,14 +115,14 @@ export const CALL_STATUS_OPTIONS = [
   {
     id: "call_picked_not_visited",
     label: "Call Picked - Not Visited Office",
-    badgeLabel: "Picked (Not Visited)",
-    color: "#0369A1",
-    bgColor: "#F0F9FF",
-    borderColor: "#BAE6FD",
-    activeBorderColor: "#0284C7",
-    activeBgColor: "#E0F2FE",
+    badgeLabel: "Picked - Not Visited",
+    color: "#2563EB",
+    bgColor: "#EFF6FF",
+    borderColor: "#BFDBFE",
+    activeBorderColor: "#3B82F6",
+    activeBgColor: "#DBEAFE",
     icon: PhoneCall,
-    description: "Applicant attended call, but has not visited the office yet",
+    description: "Applicant attended call but has not visited the office yet",
   },
   {
     id: "call_picked_visited",
@@ -153,13 +156,27 @@ interface UnifiedAdminProps {
 
 // Helper: Determine Lead Type
 // If leadType is missing (all existing/old data), treat as "women"
-export const getInternshipLeadType = (app: InternshipRecord): "women" | "common" | "amount" => {
+export const getInternshipLeadType = (
+  app: InternshipRecord
+): "women" | "common" | "amount" | "seat-confirmation" => {
+  if (
+    app.leadType === "seat-confirmation" ||
+    app.type === "seat-confirmation" ||
+    app.type === "seatconfirmation" ||
+    app.type === "seat_confirmation" ||
+    Number(app.amountPaid) === 500 ||
+    (typeof app.applicationId === "string" && app.applicationId.startsWith("FOA-SEAT-")) ||
+    (typeof app.programTitle === "string" && app.programTitle.toLowerCase().includes("seat"))
+  ) {
+    return "seat-confirmation";
+  }
   if (
     app.leadType === "amount" ||
     app.type === "amount" ||
-    app.paymentStatus === "Paid" ||
-    app.paymentStatus === "Pending" ||
-    Boolean(app.paymentId)
+    (Number(app.amountPaid) === 5000 && (app.paymentStatus === "Paid" || Boolean(app.paymentId))) ||
+    (app.paymentStatus === "Paid" && Number(app.amountPaid) !== 500) ||
+    (app.paymentStatus === "Pending" && Number(app.amountPaid) !== 500) ||
+    Boolean(app.paymentId && Number(app.amountPaid) !== 500)
   ) {
     return "amount";
   }
@@ -196,7 +213,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
   // Search & Filter states
   const [internshipSearch, setInternshipSearch] = useState("");
   const [internshipTypeFilter, setInternshipTypeFilter] = useState<
-    "ALL" | "WOMEN" | "COMMON" | "AMOUNT" | "AMOUNT_PAID" | "AMOUNT_PENDING"
+    "ALL" | "WOMEN" | "COMMON" | "AMOUNT" | "AMOUNT_PAID" | "AMOUNT_PENDING" | "SEAT_CONFIRMATION" | "SEAT_PAID" | "SEAT_PENDING"
   >("ALL");
 
   const [salesSearch, setSalesSearch] = useState("");
@@ -630,16 +647,26 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
 
     const rows = internships.map((app) => {
       const lType = getInternshipLeadType(app);
-      const isPaid = lType === "amount" && (app.paymentStatus === "Paid" || Boolean(app.paymentId));
-      const isAmountPending = lType === "amount" && !isPaid;
+      const isSeatLead = lType === "seat-confirmation";
+      const isAmountLead = lType === "amount";
+      const isPaid = (isSeatLead || isAmountLead) && (app.paymentStatus === "Paid" || Boolean(app.paymentId));
+      const isPaymentPending = (isSeatLead || isAmountLead) && !isPaid;
       const leadLabel =
-        lType === "women"
+        isSeatLead
+          ? isPaid
+            ? "Seat Confirmation (₹500 Paid - Deductible)"
+            : "Seat Confirmation (₹500 Pending)"
+          : lType === "women"
           ? "Women Drive (Free)"
           : lType === "common"
           ? "Common Free"
           : isPaid
           ? "Common + Amount (₹5,000 Paid)"
           : "Common + Amount (Payment Pending)";
+
+      const amountVal = isPaid
+        ? String(app.amountPaid || (isSeatLead ? "500" : "5000"))
+        : "0";
 
       return [
         `"${app.applicationId || ""}"`,
@@ -651,12 +678,12 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
         `"${app.email || ""}"`,
         `"${app.countryCode || "+91"} ${app.phone || ""}"`,
         `"${app.city || ""}"`,
-        `"${app.qualification || ""}"`,
-        `"${app.passingYear || ""}"`,
+        `"${app.qualification || "N/A"}"`,
+        `"${app.passingYear || "N/A"}"`,
         `"${(app.skills || []).join(", ")}"`,
-        `"${isPaid ? "Paid" : isAmountPending ? "Payment Pending" : "Free (No Payment)"}"`,
-        `"${isPaid ? String(app.amountPaid || "5000") : "0"}"`,
-        `"${isPaid ? (app.paymentId || "Verified") : isAmountPending ? "Pending" : "N/A"}"`,
+        `"${isPaid ? "Paid" : isPaymentPending ? "Payment Pending" : "Free (No Payment)"}"`,
+        `"${amountVal}"`,
+        `"${isPaid ? (app.paymentId || "Verified") : isPaymentPending ? "Pending" : "N/A"}"`,
         `"${app.orderId || "N/A"}"`,
         `"${app.paidAt || app.submittedAt || ""}"`,
         `"${(app.aboutYourself || "").replace(/"/g, '""')}"`,
@@ -682,30 +709,34 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
 
   // Export Sales CSV
   const handleExportSalesCSV = () => {
-    if (salesApps.length === 0) return;
+    if (salesApps.length === 0) {
+      alert("No sales applications to export.");
+      return;
+    }
+
     const headers = [
       "Application ID",
+      "Full Name",
       "Call Status",
       "Call Status Updated At",
-      "Full Name",
       "Age",
       "Email",
       "Phone",
       "City",
-      "Has Sales Experience",
-      "Sales Experience Details",
+      "Sales Experience",
+      "Experience Details",
       "Agency / Commission Experience",
-      "Products / Services Sold Before",
-      "Objection Handling (Too Expensive)",
+      "Products Sold Before",
+      "Expensive Objection Handling",
       "Why Good At Sales",
       "Submitted At",
     ];
 
     const rows = salesApps.map((app) => [
       `"${app.applicationId || ""}"`,
+      `"${app.fullName || ""}"`,
       `"${app.callStatus || "Not Called"}"`,
       `"${app.callStatusUpdatedAt ? new Date(app.callStatusUpdatedAt).toLocaleString() : ""}"`,
-      `"${app.fullName || ""}"`,
       `"${app.age || ""}"`,
       `"${app.email || ""}"`,
       `"${app.countryCode || "+91"} ${app.phone || ""}"`,
@@ -739,21 +770,37 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
   const totalInternships = internships.length;
   const womenCount = internships.filter((a) => getInternshipLeadType(a) === "women").length;
   const commonCount = internships.filter((a) => getInternshipLeadType(a) === "common").length;
+
+  // ₹5k Amount Leads
   const amountLeads = internships.filter((a) => getInternshipLeadType(a) === "amount");
   const amountPaidCount = amountLeads.filter((a) => a.paymentStatus === "Paid" || Boolean(a.paymentId)).length;
   const amountPendingCount = amountLeads.length - amountPaidCount;
   const amountCount = amountLeads.length;
-  const totalRevenue = amountPaidCount * 5000;
+
+  // ₹500 Seat Confirmation Leads
+  const seatLeads = internships.filter((a) => getInternshipLeadType(a) === "seat-confirmation");
+  const seatPaidCount = seatLeads.filter((a) => a.paymentStatus === "Paid" || Boolean(a.paymentId)).length;
+  const seatPendingCount = seatLeads.length - seatPaidCount;
+  const seatCount = seatLeads.length;
+
+  // Total Revenue: (₹5000 * amountPaidCount) + (₹500 * seatPaidCount)
+  const totalRevenue = (amountPaidCount * 5000) + (seatPaidCount * 500);
 
   // Filtered Internships
   const filteredInternships = internships.filter((app) => {
     const lType = getInternshipLeadType(app);
-    const isPaid = lType === "amount" && (app.paymentStatus === "Paid" || Boolean(app.paymentId));
+    const isPaid =
+      (lType === "amount" || lType === "seat-confirmation") &&
+      (app.paymentStatus === "Paid" || Boolean(app.paymentId));
+
     if (internshipTypeFilter === "WOMEN" && lType !== "women") return false;
     if (internshipTypeFilter === "COMMON" && lType !== "common") return false;
     if (internshipTypeFilter === "AMOUNT" && lType !== "amount") return false;
-    if (internshipTypeFilter === "AMOUNT_PAID" && !isPaid) return false;
+    if (internshipTypeFilter === "AMOUNT_PAID" && (lType !== "amount" || !isPaid)) return false;
     if (internshipTypeFilter === "AMOUNT_PENDING" && (lType !== "amount" || isPaid)) return false;
+    if (internshipTypeFilter === "SEAT_CONFIRMATION" && lType !== "seat-confirmation") return false;
+    if (internshipTypeFilter === "SEAT_PAID" && (lType !== "seat-confirmation" || !isPaid)) return false;
+    if (internshipTypeFilter === "SEAT_PENDING" && (lType !== "seat-confirmation" || isPaid)) return false;
 
     // Call Status Filter
     if (internshipCallFilter !== "ALL") {
@@ -1418,6 +1465,45 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                     </div>
                   </div>
 
+                  {/* Seat Confirmation (₹500 Deductible) */}
+                  <div
+                    style={{
+                      backgroundColor: "#FFFFFF",
+                      border: "1px solid #DDD6FE",
+                      borderRadius: "12px",
+                      padding: "16px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: "12px", color: "#6D28D9", fontWeight: 600 }}>
+                        🎯 Seat Bookings (₹500)
+                      </div>
+                      <div style={{ fontSize: "22px", fontWeight: 800, color: "#7C3AED", marginTop: "2px" }}>
+                        {seatCount}
+                      </div>
+                      <div style={{ fontSize: "11px", color: "#7C3AED", marginTop: "2px", fontWeight: 600 }}>
+                        {seatPaidCount} Paid • {seatPendingCount} Pending
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "10px",
+                        backgroundColor: "#F5F3FF",
+                        color: "#7C3AED",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Sparkles size={20} />
+                    </div>
+                  </div>
+
                   {/* Common + Amount (₹5k Paid) */}
                   <div
                     style={{
@@ -1436,6 +1522,9 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                       </div>
                       <div style={{ fontSize: "22px", fontWeight: 800, color: "#059669", marginTop: "2px" }}>
                         {amountCount}
+                      </div>
+                      <div style={{ fontSize: "11px", color: "#059669", marginTop: "2px", fontWeight: 600 }}>
+                        {amountPaidCount} Paid • {amountPendingCount} Pending
                       </div>
                     </div>
                     <div
@@ -1490,6 +1579,63 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
 
                     <button
                       type="button"
+                      onClick={() => setInternshipTypeFilter("SEAT_CONFIRMATION")}
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: "6px",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        border:
+                          internshipTypeFilter === "SEAT_CONFIRMATION" ||
+                          internshipTypeFilter === "SEAT_PAID" ||
+                          internshipTypeFilter === "SEAT_PENDING"
+                            ? "1px solid #7C3AED"
+                            : "1px solid #E5E7EB",
+                        backgroundColor:
+                          internshipTypeFilter === "SEAT_CONFIRMATION" ||
+                          internshipTypeFilter === "SEAT_PAID" ||
+                          internshipTypeFilter === "SEAT_PENDING"
+                            ? "#F5F3FF"
+                            : "#FFFFFF",
+                        color:
+                          internshipTypeFilter === "SEAT_CONFIRMATION" ||
+                          internshipTypeFilter === "SEAT_PAID" ||
+                          internshipTypeFilter === "SEAT_PENDING"
+                            ? "#7C3AED"
+                            : "#4B5563",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
+                    >
+                      <Sparkles size={13} color="#7C3AED" />
+                      <span>Seat Bookings ({seatCount})</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setInternshipTypeFilter("SEAT_PAID")}
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: "6px",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        border: internshipTypeFilter === "SEAT_PAID" ? "1px solid #7C3AED" : "1px solid #E5E7EB",
+                        backgroundColor: internshipTypeFilter === "SEAT_PAID" ? "#EDE9FE" : "#FFFFFF",
+                        color: internshipTypeFilter === "SEAT_PAID" ? "#6D28D9" : "#4B5563",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
+                    >
+                      <CheckCircle2 size={13} color="#7C3AED" />
+                      <span>Seat Paid ₹500 ({seatPaidCount})</span>
+                    </button>
+
+                    <button
+                      type="button"
                       onClick={() => setInternshipTypeFilter("WOMEN")}
                       style={{
                         padding: "6px 12px",
@@ -1506,7 +1652,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                       }}
                     >
                       <Heart size={13} color="#BE185D" />
-                      <span>Women Leads ({womenCount})</span>
+                      <span>Women ({womenCount})</span>
                     </button>
 
                     <button
@@ -1527,7 +1673,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                       }}
                     >
                       <Globe size={13} color="#1D4ED8" />
-                      <span>Common Free ({commonCount})</span>
+                      <span>Free ({commonCount})</span>
                     </button>
 
                     <button
@@ -1548,7 +1694,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                       }}
                     >
                       <CheckCircle2 size={13} color="#059669" />
-                      <span>Paid ({amountPaidCount})</span>
+                      <span>₹5k Paid ({amountPaidCount})</span>
                     </button>
 
                     <button
@@ -1569,7 +1715,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                       }}
                     >
                       <AlertCircle size={13} color="#D97706" />
-                      <span>Payment Pending ({amountPendingCount})</span>
+                      <span>₹5k Pending ({amountPendingCount})</span>
                     </button>
                   </div>
 
@@ -1814,9 +1960,10 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                   <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "12px" }}>
                     {filteredInternships.map((app) => {
                       const lType = getInternshipLeadType(app);
+                      const isSeatLead = lType === "seat-confirmation";
                       const isAmountLead = lType === "amount";
-                      const isPaid = isAmountLead && (app.paymentStatus === "Paid" || Boolean(app.paymentId));
-                      const isPendingPayment = isAmountLead && !isPaid;
+                      const isPaid = (isSeatLead || isAmountLead) && (app.paymentStatus === "Paid" || Boolean(app.paymentId));
+                      const isPendingPayment = (isSeatLead || isAmountLead) && !isPaid;
 
                       return (
                         <div
@@ -1825,7 +1972,11 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                             backgroundColor: "#FFFFFF",
                             borderRadius: "12px",
                             border:
-                              lType === "women"
+                              isSeatLead
+                                ? isPaid
+                                  ? "1px solid #C4B5FD"
+                                  : "1px solid #FDE68A"
+                                : lType === "women"
                                 ? "1px solid #FBCFE8"
                                 : lType === "common"
                                 ? "1px solid #BFDBFE"
@@ -1833,7 +1984,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                                 ? "1px solid #A7F3D0"
                                 : "1px solid #FDE68A",
                             padding: "16px",
-                            boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+                            boxShadow: isSeatLead && isPaid ? "0 2px 8px rgba(124, 58, 237, 0.06)" : "0 1px 3px rgba(0,0,0,0.02)",
                           }}
                         >
                           <div
@@ -1868,7 +2019,25 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                               </span>
 
                               {/* Lead Source Badge */}
-                              {lType === "women" ? (
+                              {isSeatLead ? (
+                                <span
+                                  style={{
+                                    fontSize: "11px",
+                                    fontWeight: 700,
+                                    backgroundColor: isPaid ? "#F5F3FF" : "#FEF3C7",
+                                    color: isPaid ? "#7C3AED" : "#B45309",
+                                    border: isPaid ? "1px solid #DDD6FE" : "1px solid #FDE68A",
+                                    padding: "2px 8px",
+                                    borderRadius: "999px",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "3px",
+                                  }}
+                                >
+                                  <Sparkles size={11} />
+                                  <span>{isPaid ? "Seat Confirmed (₹500 Paid)" : "Seat Booking (₹500 Pending)"}</span>
+                                </span>
+                              ) : lType === "women" ? (
                                 <span
                                   style={{
                                     fontSize: "11px",
@@ -1973,7 +2142,10 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                                   }}
                                 >
                                   <CheckCircle2 size={12} color="#059669" />
-                                  <span>Paid (₹{app.amountPaid || "5,000"})</span>
+                                  <span>
+                                    Paid ₹{app.amountPaid || (isSeatLead ? "500" : "5,000")}
+                                    {isSeatLead ? " (Deductible)" : ""}
+                                  </span>
                                 </span>
                               ) : isPendingPayment ? (
                                 <span
@@ -1991,7 +2163,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                                   }}
                                 >
                                   <AlertCircle size={12} color="#D97706" />
-                                  <span>Payment Pending (₹5,000)</span>
+                                  <span>Payment Pending (₹{isSeatLead ? "500" : "5,000"})</span>
                                 </span>
                               ) : (
                                 <span
@@ -2169,9 +2341,13 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                             </div>
 
                             <div>
-                              <span style={{ color: "#6B7280" }}>Qualification: </span>
+                              <span style={{ color: "#6B7280" }}>
+                                {isSeatLead ? "Application Type: " : "Qualification: "}
+                              </span>
                               <strong style={{ color: "#111827" }}>
-                                {app.qualification} ({app.passingYear})
+                                {isSeatLead
+                                  ? "Internship Seat Confirmation (₹500)"
+                                  : `${app.qualification || "N/A"} (${app.passingYear || "N/A"})`}
                               </strong>
                             </div>
                           </div>
@@ -2181,12 +2357,12 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                               style={{
                                 fontSize: "11px",
                                 fontWeight: 600,
-                                color: "#6B7280",
+                                color: isSeatLead ? "#7C3AED" : "#6B7280",
                                 display: "block",
                                 marginBottom: "4px",
                               }}
                             >
-                              Tracks:
+                              {isSeatLead ? "Selected Role for Seat Booking:" : "Tracks:"}
                             </span>
                             <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
                               {(app.skills || []).map((skill) => (

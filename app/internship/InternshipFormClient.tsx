@@ -53,6 +53,7 @@ interface FormData {
   skills: string[];
   aboutYourself: string;
   resumeUrl: string;
+  seatBookingConfirmed?: boolean;
 }
 
 interface FormErrors {
@@ -84,15 +85,24 @@ export default function InternshipFormClient() {
   const searchParams = useSearchParams();
 
   // Determine Form Mode:
-  // 1. "amount": ?payment OR ?type=amount -> open for all + compulsory ₹5000 payment
-  // 2. "common": ?type=common OR ?type=comon -> open for all + NO payment (free)
-  // 3. "women": default (no params) OR ?type=women -> locked to female + women content + NO payment (free)
+  // 1. "seat-confirmation": ?type=seat-confirmation -> Seat booking/confirmation + compulsory ₹500 payment (100% deductible from fees)
+  // 2. "amount": ?payment OR ?type=amount -> open for all + compulsory ₹5000 payment
+  // 3. "common": ?type=common OR ?type=comon -> open for all + NO payment (free)
+  // 4. "women": default (no params) OR ?type=women -> locked to female + women content + NO payment (free)
   const hasPaymentParam = searchParams.has("payment");
   const typeParam = (searchParams.get("type") || "").toLowerCase().trim();
   const statusParam = (searchParams.get("status") || "").toLowerCase().trim();
 
-  const mode: "women" | "common" | "amount" =
-    hasPaymentParam || typeParam === "amount"
+  const isSeatConfirmationParam =
+    typeParam === "seat-confirmation" ||
+    typeParam === "seatconfirmation" ||
+    typeParam === "seat_confirmation" ||
+    typeParam === "seat";
+
+  const mode: "women" | "common" | "amount" | "seat-confirmation" =
+    isSeatConfirmationParam
+      ? "seat-confirmation"
+      : hasPaymentParam || typeParam === "amount"
       ? "amount"
       : typeParam === "common" || typeParam === "comon"
       ? "common"
@@ -101,6 +111,7 @@ export default function InternshipFormClient() {
   const isWomenMode = mode === "women";
   const isAmountMode = mode === "amount";
   const isCommonMode = mode === "common";
+  const isSeatConfirmationMode = mode === "seat-confirmation";
 
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
@@ -115,6 +126,7 @@ export default function InternshipFormClient() {
     skills: [],
     aboutYourself: "",
     resumeUrl: "",
+    seatBookingConfirmed: false,
   });
 
   // Re-sync gender default if mode changes
@@ -142,22 +154,24 @@ export default function InternshipFormClient() {
     if (statusParam === "submit") {
       setSubmitSuccess(true);
       if (!applicationId) {
-        setApplicationId("FOA-INTERN-SUBMITTED");
+        setApplicationId(
+          isSeatConfirmationMode ? "FOA-SEAT-SUBMITTED" : "FOA-INTERN-SUBMITTED"
+        );
       }
     }
-  }, [statusParam]);
+  }, [statusParam, isSeatConfirmationMode]);
 
-  // Preload Razorpay script if in amount mode
+  // Preload Razorpay script if in amount mode or seat confirmation mode
   useEffect(() => {
-    if (isAmountMode) {
+    if (isAmountMode || isSeatConfirmationMode) {
       loadRazorpayScript();
     }
-  }, [isAmountMode]);
+  }, [isAmountMode, isSeatConfirmationMode]);
 
-  // Toggle skill selection
+  // Toggle skill selection (In seat-confirmation & amount modes: single select 1 role)
   const toggleSkill = (skillTitle: string) => {
     setFormData((prev) => {
-      if (isAmountMode) {
+      if (isAmountMode || isSeatConfirmationMode) {
         const isSelected = prev.skills.includes(skillTitle);
         const updated = isSelected ? [] : [skillTitle];
         return { ...prev, skills: updated };
@@ -279,7 +293,20 @@ export default function InternshipFormClient() {
     }
 
     if (!formData.city.trim()) {
-      newErrors.city = "City / Location is required";
+      newErrors.city = "Current City / Location is required";
+    }
+
+    // If in Seat Confirmation Mode: validate Role selection & Seat Confirmation Checkbox
+    if (isSeatConfirmationMode) {
+      if (formData.skills.length === 0) {
+        newErrors.skills = "Please select the 1 role you are interested in applying for";
+      }
+      if (!formData.seatBookingConfirmed) {
+        newErrors.seatBookingConfirmed =
+          "Please check the confirmation box to acknowledge that the ₹500 seat confirmation fee will be deducted from your actual fees.";
+      }
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
     }
 
     // Gender Validation
@@ -336,9 +363,216 @@ export default function InternshipFormClient() {
     setIsSubmitting(true);
 
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const prefix = isWomenMode ? "FOA-WOMEN" : "FOA-INT";
+    const prefix = isSeatConfirmationMode
+      ? "FOA-SEAT"
+      : isWomenMode
+      ? "FOA-WOMEN"
+      : "FOA-INT";
     const generatedId = `${prefix}-${new Date().getFullYear()}-${randomSuffix}`;
     const submissionTimestamp = new Date().toISOString();
+
+    // ─────────────────────────────────────────────────────────────
+    // BRANCH 0: SEAT CONFIRMATION MODE -> SAVE DRAFT + PAY ₹500 VIA RAZORPAY (100% DEDUCTIBLE)
+    // ─────────────────────────────────────────────────────────────
+    if (isSeatConfirmationMode) {
+      const targetAppId = pendingAppIdRef.current || generatedId;
+      pendingAppIdRef.current = targetAppId;
+      const amountInRupees = 500;
+
+      // 1. Immediately Save Candidate Form to Firebase RTDB with paymentStatus: "Pending"
+      const initialPendingRecord: InternshipApplicationPayload = {
+        applicationId: targetAppId,
+        submittedAt: submissionTimestamp,
+        fullName: formData.fullName,
+        email: formData.email,
+        countryCode: formData.countryCode,
+        phone: formData.phone,
+        city: formData.city,
+        gender: "Applicant",
+        qualification: "Seat Confirmation",
+        passingYear: "2026",
+        skills: formData.skills,
+        aboutYourself: `Seat Confirmation for ${formData.skills.join(", ")}`,
+        resumeUrl: "",
+        leadType: "seat-confirmation",
+        type: "seat-confirmation",
+        status: "pending",
+        programTitle: PROGRAM_TITLES.SEAT_CONFIRMATION,
+        paymentStatus: "Pending",
+        amountPaid: 0,
+        isSeatConfirmedCheckbox: true,
+      };
+
+      try {
+        await saveApplicationToRealtimeDb(initialPendingRecord);
+      } catch (rtdbErr) {
+        console.warn("Realtime DB initial save warning:", rtdbErr);
+      }
+
+      // Save initial pending status to localStorage
+      try {
+        const existing = JSON.parse(
+          localStorage.getItem("foa_internship_applications") || "[]"
+        );
+        const filtered = existing.filter((item: any) => item.applicationId !== targetAppId);
+        filtered.unshift(initialPendingRecord);
+        localStorage.setItem("foa_internship_applications", JSON.stringify(filtered));
+      } catch (storageError) {
+        console.warn("Could not save to localStorage:", storageError);
+      }
+
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded || !(window as any).Razorpay) {
+        setIsSubmitting(false);
+        setPaymentError(
+          `Your details have been saved (Application ID: ${targetAppId}), but could not initialize the Razorpay gateway. Please check your internet connection and try again.`
+        );
+        return;
+      }
+
+      const amountInPaise = amountInRupees * 100; // 50000 paise = ₹500
+
+      const options = {
+        key: "rzp_live_TXvv4nCnkVjFWm",
+        amount: amountInPaise,
+        currency: "INR",
+        name: "First Option Agency",
+        description: "Seat Confirmation Deposit (₹500 - 100% Deductible)",
+        image: "/meta-logo.webp",
+        prefill: {
+          name: formData.fullName,
+          email: formData.email,
+          contact: `${formData.countryCode}${formData.phone}`,
+        },
+        notes: {
+          applicationId: targetAppId,
+          leadType: "seat-confirmation",
+          programTitle: PROGRAM_TITLES.SEAT_CONFIRMATION,
+          candidateName: formData.fullName,
+          city: formData.city,
+          skills: formData.skills.join(", "),
+        },
+        theme: {
+          color: "#7C3AED",
+          backdrop_color: "#111827",
+        },
+        handler: async function (response: any) {
+          const paymentId = response.razorpay_payment_id || `pay_${Date.now()}`;
+          const orderId = response.razorpay_order_id || "";
+          const paidAtTimestamp = new Date().toISOString();
+
+          const paidUpdateData: Partial<InternshipApplicationPayload> = {
+            paymentStatus: "Paid",
+            status: "submit",
+            amountPaid: amountInRupees,
+            paymentId: paymentId,
+            orderId: orderId,
+            paidAt: paidAtTimestamp,
+          };
+
+          // 1. Update Firebase RTDB record from "Pending" to "Paid"
+          try {
+            await updateApplicationInRealtimeDb(targetAppId, paidUpdateData);
+          } catch (rtdbErr) {
+            console.warn("Realtime DB update warning:", rtdbErr);
+          }
+
+          // 2. WhatsApp Notification with Custom Title for Seat Confirmation Track
+          triggerInternshipWhatsAppNotifications({
+            candidatePhone: `${formData.countryCode}${formData.phone}`,
+            candidateName: formData.fullName,
+            applicationId: targetAppId,
+            candidateEmail: formData.email,
+            city: formData.city,
+            programTitle: PROGRAM_TITLES.SEAT_CONFIRMATION,
+            mode: "seat-confirmation",
+          });
+
+          // 3. Update localStorage backup with Paid status
+          try {
+            const existing = JSON.parse(
+              localStorage.getItem("foa_internship_applications") || "[]"
+            );
+            const updated = existing.map((item: any) =>
+              item.applicationId === targetAppId
+                ? { ...item, ...paidUpdateData }
+                : item
+            );
+            localStorage.setItem(
+              "foa_internship_applications",
+              JSON.stringify(updated)
+            );
+          } catch (storageError) {
+            console.warn("Could not save to localStorage:", storageError);
+          }
+
+          setPaymentInfo({
+            paymentId,
+            orderId,
+            amount: amountInRupees,
+            date: new Date().toLocaleString("en-IN", {
+              dateStyle: "medium",
+              timeStyle: "short",
+            }),
+          });
+          setApplicationId(targetAppId);
+          setIsSubmitting(false);
+          setSubmitSuccess(true);
+          pendingAppIdRef.current = "";
+
+          // Update URL with status=submit and type=seat-confirmation
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.set("type", "seat-confirmation");
+            url.searchParams.set("status", "submit");
+            window.history.pushState({}, "", url.toString());
+
+            // Fire Meta Pixel Purchase & Lead events
+            if (typeof window !== "undefined" && (window as any).fbq) {
+              (window as any).fbq("track", "Purchase", {
+                value: 500,
+                currency: "INR",
+                content_name: "Internship Seat Confirmation Deposit",
+              });
+              (window as any).fbq("track", "Lead", {
+                content_name: "internship-seat-confirmation",
+                status: "submit",
+              });
+            }
+          } catch (err) {
+            console.warn("URL update error:", err);
+          }
+
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        },
+        modal: {
+          ondismiss: function () {
+            setIsSubmitting(false);
+            setPaymentError(
+              `Your seat confirmation details have been saved (Application ID: ${targetAppId}). Payment was not completed. Click "Pay ₹500 & Confirm Seat" below to complete payment and reserve your seat.`
+            );
+          },
+        },
+      };
+
+      try {
+        const rzpInstance = new (window as any).Razorpay(options);
+        rzpInstance.on("payment.failed", async function (response: any) {
+          setIsSubmitting(false);
+          const failureReason =
+            response?.error?.description ||
+            "Payment failed or declined by bank. Please try again.";
+          setPaymentError(
+            `Payment failed: ${failureReason}. Your details are saved (Application ID: ${targetAppId}). You can retry payment below.`
+          );
+        });
+        rzpInstance.open();
+      } catch (err: any) {
+        setIsSubmitting(false);
+        setPaymentError(err?.message || "Failed to open Razorpay payment window.");
+      }
+      return;
+    }
 
     // ─────────────────────────────────────────────────────────────
     // BRANCH A: AMOUNT MODE -> SAVE DRAFT AS PENDING + PAY ₹5,000 VIA RAZORPAY
@@ -726,27 +960,26 @@ export default function InternshipFormClient() {
               alignItems: "center",
               gap: "10px",
               textDecoration: "none",
-              color: "inherit",
             }}
           >
             <div
               style={{
-                width: "34px",
-                height: "34px",
+                width: "36px",
+                height: "36px",
                 borderRadius: "8px",
                 backgroundColor: isWomenMode ? "#BE185D" : "#7C3AED",
                 color: "#FFFFFF",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontWeight: 700,
+                fontWeight: 800,
                 fontSize: "14px",
               }}
             >
-              FO
+              FOA
             </div>
             <div>
-              <div style={{ fontSize: "15px", fontWeight: 700, color: "#111827", lineHeight: 1.2 }}>
+              <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
                 First Option Agency
               </div>
               <div
@@ -756,7 +989,11 @@ export default function InternshipFormClient() {
                   fontWeight: 600,
                 }}
               >
-                {isWomenMode ? "Women’s Internship Portal" : "Internship Portal 2026"}
+                {isWomenMode
+                  ? "Women’s Internship Portal"
+                  : isSeatConfirmationMode
+                  ? "Seat Confirmation & Booking Portal"
+                  : "Internship Portal 2026"}
               </div>
             </div>
           </Link>
@@ -839,18 +1076,23 @@ export default function InternshipFormClient() {
                 alignItems: "center",
                 gap: "5px",
                 padding: "3px 10px",
-                backgroundColor: isWomenMode ? "#FDF2F8" : isAmountMode ? "#ECFDF5" : "#EFF6FF",
-                color: isWomenMode ? "#BE185D" : isAmountMode ? "#047857" : "#1D4ED8",
+                backgroundColor: isWomenMode ? "#FDF2F8" : isSeatConfirmationMode || isAmountMode ? "#ECFDF5" : "#EFF6FF",
+                color: isWomenMode ? "#BE185D" : isSeatConfirmationMode || isAmountMode ? "#047857" : "#1D4ED8",
                 borderRadius: "999px",
                 fontSize: "11px",
                 fontWeight: 700,
                 textTransform: "uppercase",
                 letterSpacing: "0.05em",
                 marginBottom: "8px",
-                border: `1px solid ${isWomenMode ? "#FBCFE8" : isAmountMode ? "#A7F3D0" : "#BFDBFE"}`,
+                border: `1px solid ${isWomenMode ? "#FBCFE8" : isSeatConfirmationMode || isAmountMode ? "#A7F3D0" : "#BFDBFE"}`,
               }}
             >
-              {isAmountMode ? (
+              {isSeatConfirmationMode ? (
+                <>
+                  <FileCheck size={12} />
+                  <span>Seat Reserved &amp; ₹500 Paid</span>
+                </>
+              ) : isAmountMode ? (
                 <>
                   <FileCheck size={12} />
                   <span>Submitted &amp; Payment Confirmed</span>
@@ -866,7 +1108,9 @@ export default function InternshipFormClient() {
               Thank You, {formData.fullName}!
             </div>
             <div style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.4, marginBottom: "12px", maxWidth: "400px", margin: "0 auto 12px auto" }}>
-              {isAmountMode
+              {isSeatConfirmationMode
+                ? "Your ₹500 seat confirmation fee was verified. Your seat is officially reserved and this ₹500 will be deducted from your actual course & internship fees."
+                : isAmountMode
                 ? "Your ₹5,000 fee was verified. Your application is officially registered."
                 : "Your application is received. Our recruitment team is reviewing your profile."}
             </div>
@@ -930,97 +1174,95 @@ export default function InternshipFormClient() {
               </button>
             </div>
 
-            {/* ─── WHATSAPP GROUP JOIN CARD WITH SHINE EFFECT (WOMEN & COMMON DRIVES ONLY) ─── */}
-            {(isWomenMode || isCommonMode) && (
+            {/* ─── WHATSAPP GROUP JOIN CARD WITH SHINE EFFECT ─── */}
+            <div
+              style={{
+                backgroundColor: "#F0FDF4",
+                border: "1.5px solid #86EFAC",
+                borderRadius: "12px",
+                padding: "14px 12px",
+                marginBottom: "14px",
+                textAlign: "center",
+                boxShadow: "0 3px 12px rgba(34, 197, 94, 0.08)",
+              }}
+            >
               <div
                 style={{
-                  backgroundColor: "#F0FDF4",
-                  border: "1.5px solid #86EFAC",
-                  borderRadius: "12px",
-                  padding: "14px 12px",
-                  marginBottom: "14px",
-                  textAlign: "center",
-                  boxShadow: "0 3px 12px rgba(34, 197, 94, 0.08)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  padding: "2px 8px",
+                  backgroundColor: "#DCFCE7",
+                  color: "#15803D",
+                  borderRadius: "999px",
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  marginBottom: "6px",
+                  border: "1px solid #BBF7D0",
                 }}
               >
-                <div
+                <span
                   style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "5px",
-                    padding: "2px 8px",
-                    backgroundColor: "#DCFCE7",
-                    color: "#15803D",
-                    borderRadius: "999px",
-                    fontSize: "10px",
-                    fontWeight: 700,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    marginBottom: "6px",
-                    border: "1px solid #BBF7D0",
+                    width: "6px",
+                    height: "6px",
+                    borderRadius: "50%",
+                    backgroundColor: "#16A34A",
+                    display: "inline-block",
                   }}
-                >
-                  <span
-                    style={{
-                      width: "6px",
-                      height: "6px",
-                      borderRadius: "50%",
-                      backgroundColor: "#16A34A",
-                      display: "inline-block",
-                    }}
-                  />
-                  Mandatory Next Step
-                </div>
-
-                <div
-                  style={{
-                    fontSize: "14px",
-                    fontWeight: 800,
-                    color: "#14532D",
-                    marginBottom: "3px",
-                  }}
-                >
-                  Join Official WhatsApp Group
-                </div>
-
-                <div
-                  style={{
-                    fontSize: "11.5px",
-                    color: "#166534",
-                    lineHeight: 1.35,
-                    marginBottom: "10px",
-                  }}
-                >
-                  Batch schedules, project links, and direct announcements are posted inside this group.
-                </div>
-
-                <a
-                  href="https://chat.whatsapp.com/FhFGlaZiIet7xK193lGYgX"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="wa-shine-button"
-                  style={{
-                    display: "flex",
-                    width: "100%",
-                    padding: "11px 16px",
-                    borderRadius: "8px",
-                    background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)",
-                    color: "#FFFFFF",
-                    fontSize: "13.5px",
-                    fontWeight: 700,
-                    textDecoration: "none",
-                    gap: "8px",
-                    cursor: "pointer",
-                  }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17.472 14.382c-.301-.15-1.78-.879-2.056-.98-.276-.1-.476-.15-.677.15-.2.301-.776.98-.952 1.181-.176.2-.351.226-.652.075-.3-.15-1.267-.467-2.413-1.489-.893-.796-1.496-1.778-1.671-2.079-.176-.301-.019-.464.132-.614.135-.135.301-.351.451-.527.151-.176.2-.301.301-.502.1-.201.05-.376-.025-.526-.075-.15-.677-1.632-.928-2.235-.245-.588-.495-.508-.677-.517-.176-.009-.376-.01-.577-.01s-.527.075-.802.376c-.276.301-1.053 1.029-1.053 2.509s1.078 2.905 1.229 3.106c.15.2 2.122 3.24 5.14 4.544.718.31 1.278.495 1.716.634.72.229 1.375.197 1.892.12.578-.087 1.78-.727 2.03-1.43.251-.703.251-1.305.176-1.43-.075-.125-.276-.2-.577-.35zM12.04 2C6.54 2 2.079 6.46 2.079 11.96c0 1.93.551 3.731 1.505 5.267L2 22l4.908-1.543c1.482.879 3.208 1.385 5.132 1.385 5.5 0 9.96-4.46 9.96-9.96C22 6.46 17.54 2 12.04 2zm0 18.174c-1.644 0-3.167-.492-4.444-1.339l-.319-.21-2.919.917.935-2.846-.23-.339A8.172 8.172 0 0 1 3.868 11.96c0-4.506 3.666-8.173 8.172-8.173 4.507 0 8.173 3.667 8.173 8.173 0 4.506-3.666 8.174-8.173 8.174z" />
-                  </svg>
-                  <span>Join WhatsApp Group for All Updates</span>
-                  <ArrowRight size={16} />
-                </a>
+                />
+                Official Candidate Group
               </div>
-            )}
+
+              <div
+                style={{
+                  fontSize: "14px",
+                  fontWeight: 800,
+                  color: "#14532D",
+                  marginBottom: "3px",
+                }}
+              >
+                Join Official WhatsApp Group
+              </div>
+
+              <div
+                style={{
+                  fontSize: "11.5px",
+                  color: "#166534",
+                  lineHeight: 1.35,
+                  marginBottom: "10px",
+                }}
+              >
+                Batch schedules, onboarding details, and direct mentor announcements are posted inside this group.
+              </div>
+
+              <a
+                href="https://chat.whatsapp.com/FhFGlaZiIet7xK193lGYgX"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="wa-shine-button"
+                style={{
+                  display: "flex",
+                  width: "100%",
+                  padding: "11px 16px",
+                  borderRadius: "8px",
+                  background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)",
+                  color: "#FFFFFF",
+                  fontSize: "13.5px",
+                  fontWeight: 700,
+                  textDecoration: "none",
+                  gap: "8px",
+                  cursor: "pointer",
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.301-.15-1.78-.879-2.056-.98-.276-.1-.476-.15-.677.15-.2.301-.776.98-.952 1.181-.176.2-.351.226-.652.075-.3-.15-1.267-.467-2.413-1.489-.893-.796-1.496-1.778-1.671-2.079-.176-.301-.019-.464.132-.614.135-.135.301-.351.451-.527.151-.176.2-.301.301-.502.1-.201.05-.376-.025-.526-.075-.15-.677-1.632-.928-2.235-.245-.588-.495-.508-.677-.517-.176-.009-.376-.01-.577-.01s-.527.075-.802.376c-.276.301-1.053 1.029-1.053 2.509s1.078 2.905 1.229 3.106c.15.2 2.122 3.24 5.14 4.544.718.31 1.278.495 1.716.634.72.229 1.375.197 1.892.12.578-.087 1.78-.727 2.03-1.43.251-.703.251-1.305.176-1.43-.075-.125-.276-.2-.577-.35zM12.04 2C6.54 2 2.079 6.46 2.079 11.96c0 1.93.551 3.731 1.505 5.267L2 22l4.908-1.543c1.482.879 3.208 1.385 5.132 1.385 5.5 0 9.96-4.46 9.96-9.96C22 6.46 17.54 2 12.04 2zm0 18.174c-1.644 0-3.167-.492-4.444-1.339l-.319-.21-2.919.917.935-2.846-.23-.339A8.172 8.172 0 0 1 3.868 11.96c0-4.506 3.666-8.173 8.172-8.173 4.507 0 8.173 3.667 8.173 8.173 0 4.506-3.666 8.174-8.173 8.174z" />
+                </svg>
+                <span>Join WhatsApp Group for All Updates</span>
+                <ArrowRight size={16} />
+              </a>
+            </div>
 
             {/* Compact Receipt Summary Card */}
             <div
@@ -1037,6 +1279,38 @@ export default function InternshipFormClient() {
                 gap: "5px",
               }}
             >
+              {/* Seat Confirmation payment status badge */}
+              {isSeatConfirmationMode && (
+                <div
+                  style={{
+                    backgroundColor: "#ECFDF5",
+                    border: "1px solid #A7F3D0",
+                    borderRadius: "6px",
+                    padding: "6px 10px",
+                    marginBottom: "4px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span style={{ fontSize: "11px", color: "#065F46", fontWeight: 700 }}>
+                    SEAT BOOKING STATUS:
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "10.5px",
+                      fontWeight: 700,
+                      backgroundColor: "#059669",
+                      color: "#FFFFFF",
+                      padding: "2px 6px",
+                      borderRadius: "999px",
+                    }}
+                  >
+                    PAID ₹500 INR (100% DEDUCTIBLE)
+                  </span>
+                </div>
+              )}
+
               {/* Amount mode payment box */}
               {isAmountMode && (
                 <div
@@ -1072,9 +1346,19 @@ export default function InternshipFormClient() {
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ color: "#6B7280" }}>Candidate</span>
                 <span style={{ fontWeight: 600, color: "#111827" }}>
-                  {formData.fullName} ({isWomenMode ? "Female" : formData.gender || "Applicant"})
+                  {formData.fullName} {isWomenMode ? "(Female)" : formData.gender ? `(${formData.gender})` : ""}
                 </span>
               </div>
+
+              {/* Role selection for seat confirmation */}
+              {isSeatConfirmationMode && formData.skills.length > 0 && (
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ color: "#6B7280" }}>Confirmed Role Track</span>
+                  <span style={{ fontWeight: 700, color: "#7C3AED" }}>
+                    {formData.skills.join(", ")}
+                  </span>
+                </div>
+              )}
 
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ color: "#6B7280" }}>Contact</span>
@@ -1095,49 +1379,53 @@ export default function InternshipFormClient() {
                 <span style={{ fontWeight: 600, color: "#111827" }}>{formData.city}</span>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "#6B7280" }}>Degree</span>
-                <span
+              {!isSeatConfirmationMode && formData.qualification && (
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ color: "#6B7280" }}>Degree</span>
+                  <span
+                    style={{
+                      fontWeight: 600,
+                      color: "#111827",
+                      maxWidth: "180px",
+                      textAlign: "right",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {formData.qualification.split("(")[0]} ({formData.passingYear})
+                  </span>
+                </div>
+              )}
+
+              {!isSeatConfirmationMode && formData.skills.length > 0 && (
+                <div
                   style={{
-                    fontWeight: 600,
-                    color: "#111827",
-                    maxWidth: "180px",
-                    textAlign: "right",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
+                    borderTop: "1px solid #E5E7EB",
+                    paddingTop: "6px",
+                    marginTop: "2px",
                   }}
                 >
-                  {formData.qualification.split("(")[0]} ({formData.passingYear})
-                </span>
-              </div>
-
-              <div
-                style={{
-                  borderTop: "1px solid #E5E7EB",
-                  paddingTop: "6px",
-                  marginTop: "2px",
-                }}
-              >
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "3px" }}>
-                  {formData.skills.map((skill) => (
-                    <span
-                      key={skill}
-                      style={{
-                        fontSize: "10.5px",
-                        fontWeight: 600,
-                        backgroundColor: "#FFFFFF",
-                        border: "1px solid #E5E7EB",
-                        color: isWomenMode ? "#BE185D" : "#7C3AED",
-                        padding: "1px 6px",
-                        borderRadius: "4px",
-                      }}
-                    >
-                      ✓ {skill}
-                    </span>
-                  ))}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "3px" }}>
+                    {formData.skills.map((skill) => (
+                      <span
+                        key={skill}
+                        style={{
+                          fontSize: "10.5px",
+                          fontWeight: 600,
+                          backgroundColor: "#FFFFFF",
+                          border: "1px solid #E5E7EB",
+                          color: isWomenMode ? "#BE185D" : "#7C3AED",
+                          padding: "1px 6px",
+                          borderRadius: "4px",
+                        }}
+                      >
+                        ✓ {skill}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Action Buttons */}
@@ -1179,7 +1467,7 @@ export default function InternshipFormClient() {
             </div>
           </div>
         ) : (
-          /* ─── DYNAMIC FORM (WOMEN / COMMON / AMOUNT) ─── */
+          /* ─── DYNAMIC FORM (SEAT-CONFIRMATION / WOMEN / COMMON / AMOUNT) ─── */
           <div
             style={{
               backgroundColor: "#FFFFFF",
@@ -1194,7 +1482,7 @@ export default function InternshipFormClient() {
               style={{
                 padding: "20px 18px",
                 borderBottom: "1px solid #E5E7EB",
-                backgroundColor: isWomenMode ? "#FDF2F8" : "#FAF5FF",
+                backgroundColor: isWomenMode ? "#FDF2F8" : isSeatConfirmationMode ? "#FAF5FF" : "#FAF5FF",
               }}
             >
               <div
@@ -1214,7 +1502,9 @@ export default function InternshipFormClient() {
               >
                 <Sparkles size={12} />
                 <span>
-                  {isWomenMode
+                  {isSeatConfirmationMode
+                    ? "SEAT RESERVATION • ₹500 CONFIRMATION DEPOSIT (100% DEDUCTIBLE)"
+                    : isWomenMode
                     ? "EXCLUSIVELY FOR FEMALE CANDIDATES / GIRLS"
                     : isAmountMode
                     ? "INTERNSHIP DRIVE 2026 • REGISTRATION & ENROLLMENT"
@@ -1231,7 +1521,9 @@ export default function InternshipFormClient() {
                   letterSpacing: "-0.02em",
                 }}
               >
-                {isWomenMode
+                {isSeatConfirmationMode
+                  ? "Internship Seat Confirmation Form"
+                  : isWomenMode
                   ? "Women’s Internship Application Form"
                   : isAmountMode
                   ? "Internship Application & Registration Form"
@@ -1239,7 +1531,9 @@ export default function InternshipFormClient() {
               </div>
 
               <div style={{ fontSize: "13px", color: "#6B7280", marginTop: "4px", lineHeight: 1.45 }}>
-                {isWomenMode
+                {isSeatConfirmationMode
+                  ? "Fill in your details, select your desired role track, and pay ₹500 to reserve your seat. This ₹500 fee is 100% deductible from your actual fees."
+                  : isWomenMode
                   ? "Please fill in your details and tick your interested role tracks below. Fields marked with * are required."
                   : isAmountMode
                   ? "Fill out your application details below. After filling the form, an enrollment fee of ₹5,000 is required via Razorpay to submit."
@@ -1507,8 +1801,8 @@ export default function InternshipFormClient() {
                       style={{
                         width: "100%",
                         height: "40px",
-                        padding: "0 12px",
-                        fontSize: "14px",
+                        padding: "0 10px",
+                        fontSize: "13px",
                         backgroundColor: "#FFFFFF",
                         borderRadius: "8px",
                         border: `1px solid ${errors.city ? "#EF4444" : "#E5E7EB"}`,
@@ -1523,8 +1817,8 @@ export default function InternshipFormClient() {
                     )}
                   </div>
 
-                  {/* Gender Selector: In Women Mode, locked to Female. In other modes, any gender can select. */}
-                  {!isWomenMode && (
+                  {/* Gender Selector: In Women Mode, locked to Female. In Common/Amount modes, any gender can select. Not shown in Seat Confirmation. */}
+                  {!isWomenMode && !isSeatConfirmationMode && (
                     <div className={errors.gender ? "has-field-error" : ""}>
                       <label
                         htmlFor="gender"
@@ -1623,600 +1917,998 @@ export default function InternshipFormClient() {
                 )}
               </div>
 
-              {/* ════════ SECTION 2: QUALIFICATION & EDUCATION ════════ */}
-              <div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    paddingBottom: "8px",
-                    borderBottom: "1px solid #F3F4F6",
-                    marginBottom: "14px",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "22px",
-                      height: "22px",
-                      borderRadius: "6px",
-                      backgroundColor: isWomenMode ? "#FDF2F8" : "#EDE9FE",
-                      color: isWomenMode ? "#BE185D" : "#6D28D9",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "11px",
-                      fontWeight: 700,
-                    }}
-                  >
-                    2
-                  </div>
-                  <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
-                    Qualification (Min. 12th Completed)
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-                    gap: "12px",
-                  }}
-                >
-                  <div className={errors.qualification ? "has-field-error" : ""}>
-                    <label
-                      htmlFor="qualification"
+              {/* ═════════════════════════════════════════════════════════════════ */}
+              {/* BRANCH 1: SEAT CONFIRMATION FORM (ROLE SELECTION + FEE DEDUCTION NOTICE + CONFIRMATION) */}
+              {/* ═════════════════════════════════════════════════════════════════ */}
+              {isSeatConfirmationMode ? (
+                <>
+                  {/* ── SECTION 2: ROLE SELECTION (1 ROLE OUT OF 4) ── */}
+                  <div>
+                    <div
                       style={{
-                        display: "block",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        color: "#374151",
-                        marginBottom: "4px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        paddingBottom: "8px",
+                        borderBottom: "1px solid #F3F4F6",
+                        marginBottom: "14px",
                       }}
                     >
-                      Highest Qualification <span style={{ color: "#EF4444" }}>*</span>
-                    </label>
-                    <div style={{ position: "relative" }}>
-                      <select
-                        id="qualification"
-                        name="qualification"
-                        value={formData.qualification}
-                        onChange={handleInputChange}
-                        style={{
-                          width: "100%",
-                          height: "40px",
-                          padding: "0 28px 0 10px",
-                          fontSize: "13px",
-                          backgroundColor: "#FFFFFF",
-                          borderRadius: "8px",
-                          border: `1px solid ${errors.qualification ? "#EF4444" : "#E5E7EB"}`,
-                          color: formData.qualification ? "#111827" : "#9CA3AF",
-                          outline: "none",
-                          appearance: "none",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <option value="" disabled>Select qualification...</option>
-                        {QUALIFICATION_OPTIONS.map((q) => (
-                          <option key={q} value={q} style={{ color: "#111827" }}>
-                            {q}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown
-                        size={14}
-                        style={{
-                          position: "absolute",
-                          right: "8px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          pointerEvents: "none",
-                          color: "#6B7280",
-                        }}
-                      />
-                    </div>
-                    {errors.qualification && (
-                      <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "3px", fontWeight: 500 }}>
-                        {errors.qualification}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className={errors.passingYear ? "has-field-error" : ""}>
-                    <label
-                      htmlFor="passingYear"
-                      style={{
-                        display: "block",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        color: "#374151",
-                        marginBottom: "4px",
-                      }}
-                    >
-                      Passing / Graduation Year <span style={{ color: "#EF4444" }}>*</span>
-                    </label>
-                    <div style={{ position: "relative" }}>
-                      <select
-                        id="passingYear"
-                        name="passingYear"
-                        value={formData.passingYear}
-                        onChange={handleInputChange}
-                        style={{
-                          width: "100%",
-                          height: "40px",
-                          padding: "0 28px 0 10px",
-                          fontSize: "13px",
-                          backgroundColor: "#FFFFFF",
-                          borderRadius: "8px",
-                          border: `1px solid ${errors.passingYear ? "#EF4444" : "#E5E7EB"}`,
-                          color: formData.passingYear ? "#111827" : "#9CA3AF",
-                          outline: "none",
-                          appearance: "none",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <option value="" disabled>Select passing year...</option>
-                        {PASSING_YEARS.map((y) => (
-                          <option key={y} value={y} style={{ color: "#111827" }}>
-                            {y}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown
-                        size={14}
-                        style={{
-                          position: "absolute",
-                          right: "8px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          pointerEvents: "none",
-                          color: "#6B7280",
-                        }}
-                      />
-                    </div>
-                    {errors.passingYear && (
-                      <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "3px", fontWeight: 500 }}>
-                        {errors.passingYear}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* ════════ SECTION 3: SKILLS / ROLE SELECTION ════════ */}
-              <div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    paddingBottom: "8px",
-                    borderBottom: "1px solid #F3F4F6",
-                    marginBottom: "14px",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "22px",
-                      height: "22px",
-                      borderRadius: "6px",
-                      backgroundColor: isWomenMode ? "#FDF2F8" : "#EDE9FE",
-                      color: isWomenMode ? "#BE185D" : "#6D28D9",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "11px",
-                      fontWeight: 700,
-                    }}
-                  >
-                    3
-                  </div>
-                  <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
-                    {isAmountMode ? "Select Internship Track" : "Select Internship Track(s)"} <span style={{ color: "#EF4444" }}>*</span>
-                  </div>
-                </div>
-
-                <div className={errors.skills ? "has-field-error" : ""}>
-                  <label
-                    style={{
-                      display: "block",
-                      fontSize: "12px",
-                      fontWeight: 600,
-                      color: "#374151",
-                      marginBottom: "8px",
-                    }}
-                  >
-                    {isAmountMode
-                      ? "Select the 1 role you are interested in applying for:"
-                      : "Tick the role(s) you are interested in applying for:"}
-                  </label>
-
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
-                      gap: "10px",
-                    }}
-                  >
-                    {TARGET_SKILLS.map((skill) => {
-                      const isChecked = formData.skills.includes(skill.title);
-                      const primaryColor = isWomenMode ? "#BE185D" : "#7C3AED";
-                      const lightBg = isWomenMode ? "#FDF2F8" : "#F5F3FF";
-
-                      return (
-                        <div
-                          key={skill.id}
-                          onClick={() => toggleSkill(skill.title)}
-                          style={{
-                            padding: "14px 12px",
-                            borderRadius: "10px",
-                            border: `1.5px solid ${isChecked ? primaryColor : "#E5E7EB"}`,
-                            backgroundColor: isChecked ? lightBg : "#FFFFFF",
-                            cursor: "pointer",
-                            transition: "all 0.2s ease",
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "6px",
-                            boxShadow: isChecked
-                              ? `0 2px 8px ${isWomenMode ? "rgba(190, 24, 93, 0.08)" : "rgba(124, 58, 237, 0.08)"}`
-                              : "none",
-                          }}
-                        >
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                              {getSkillIcon(skill.id)}
-                              <span
-                                style={{
-                                  fontSize: "14px",
-                                  fontWeight: 700,
-                                  color: isChecked ? primaryColor : "#111827",
-                                }}
-                              >
-                                {skill.title}
-                              </span>
-                            </div>
-
-                            <div
-                              style={{
-                                width: "20px",
-                                height: "20px",
-                                borderRadius: isAmountMode ? "50%" : "6px",
-                                border: `1.5px solid ${isChecked ? primaryColor : "#D1D5DB"}`,
-                                backgroundColor: isChecked ? primaryColor : "#FFFFFF",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                color: "#FFFFFF",
-                                transition: "all 0.2s ease",
-                              }}
-                            >
-                              {isChecked && (
-                                isAmountMode ? (
-                                  <div
-                                    style={{
-                                      width: "8px",
-                                      height: "8px",
-                                      borderRadius: "50%",
-                                      backgroundColor: "#FFFFFF",
-                                    }}
-                                  />
-                                ) : (
-                                  <Check size={14} strokeWidth={3} />
-                                )
-                              )}
-                            </div>
-                          </div>
-
-                          <div style={{ fontSize: "11px", color: "#6B7280", lineHeight: 1.35 }}>
-                            {skill.desc}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {errors.skills && (
-                    <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "6px", fontWeight: 500, display: "flex", alignItems: "center", gap: "4px" }}>
-                      <AlertCircle size={12} />
-                      <span>{errors.skills}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* ════════ SECTION 4: ABOUT YOURSELF ════════ */}
-              <div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    paddingBottom: "8px",
-                    borderBottom: "1px solid #F3F4F6",
-                    marginBottom: "14px",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "22px",
-                      height: "22px",
-                      borderRadius: "6px",
-                      backgroundColor: isWomenMode ? "#FDF2F8" : "#EDE9FE",
-                      color: isWomenMode ? "#BE185D" : "#6D28D9",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "11px",
-                      fontWeight: 700,
-                    }}
-                  >
-                    4
-                  </div>
-                  <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
-                    About Yourself &amp; Introduction <span style={{ color: "#EF4444" }}>*</span>
-                  </div>
-                </div>
-
-                <div className={errors.aboutYourself ? "has-field-error" : ""} style={{ marginBottom: "12px" }}>
-                  <label
-                    htmlFor="aboutYourself"
-                    style={{
-                      display: "block",
-                      fontSize: "12px",
-                      fontWeight: 600,
-                      color: "#374151",
-                      marginBottom: "4px",
-                    }}
-                  >
-                    Tell us about yourself (Introduction, strengths &amp; background)
-                  </label>
-                  <textarea
-                    id="aboutYourself"
-                    name="aboutYourself"
-                    rows={4}
-                    value={formData.aboutYourself}
-                    onChange={handleInputChange}
-                    placeholder="Briefly introduce yourself: your background, strengths, practical projects or reels you've created, and why you are excited to join us..."
-                    style={{
-                      width: "100%",
-                      padding: "10px 12px",
-                      fontSize: "14px",
-                      backgroundColor: "#FFFFFF",
-                      borderRadius: "8px",
-                      border: `1px solid ${errors.aboutYourself ? "#EF4444" : "#E5E7EB"}`,
-                      color: "#111827",
-                      outline: "none",
-                      resize: "vertical",
-                      lineHeight: 1.5,
-                    }}
-                  />
-                  {errors.aboutYourself ? (
-                    <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "3px", fontWeight: 500 }}>
-                      {errors.aboutYourself}
-                    </div>
-                  ) : (
-                    <div style={{ fontSize: "11px", color: "#6B7280", marginTop: "3px" }}>
-                      Minimum 15 characters ({formData.aboutYourself.length} characters)
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="resumeUrl"
-                    style={{
-                      display: "block",
-                      fontSize: "12px",
-                      fontWeight: 600,
-                      color: "#374151",
-                      marginBottom: "4px",
-                    }}
-                  >
-                    Resume / Drive / Portfolio Link <span style={{ fontSize: "11px", fontWeight: 400, color: "#6B7280" }}>(Optional)</span>
-                  </label>
-                  <input
-                    type="url"
-                    id="resumeUrl"
-                    name="resumeUrl"
-                    value={formData.resumeUrl}
-                    onChange={handleInputChange}
-                    placeholder="https://drive.google.com/file/... or portfolio link"
-                    style={{
-                      width: "100%",
-                      height: "40px",
-                      padding: "0 12px",
-                      fontSize: "14px",
-                      backgroundColor: "#FFFFFF",
-                      borderRadius: "8px",
-                      border: "1px solid #E5E7EB",
-                      color: "#111827",
-                      outline: "none",
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* ════════ PAYMENT BOX (ONLY FOR AMOUNT MODE) ════════ */}
-              {isAmountMode && (
-                <div
-                  style={{
-                    backgroundColor: "#F9FAFB",
-                    borderRadius: "12px",
-                    border: "1px solid #E5E7EB",
-                    padding: "16px",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      flexWrap: "wrap",
-                      gap: "8px",
-                      borderBottom: "1px solid #E5E7EB",
-                      paddingBottom: "12px",
-                      marginBottom: "12px",
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <div
                         style={{
-                          width: "32px",
-                          height: "32px",
-                          borderRadius: "8px",
+                          width: "22px",
+                          height: "22px",
+                          borderRadius: "6px",
                           backgroundColor: "#EDE9FE",
-                          color: "#7C3AED",
+                          color: "#6D28D9",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
+                          fontSize: "11px",
+                          fontWeight: 700,
                         }}
                       >
-                        <Receipt size={16} />
+                        2
                       </div>
-                      <div>
-                        <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
-                          Internship Enrollment &amp; Registration Fee
-                        </div>
-                        <div style={{ fontSize: "11px", color: "#6B7280" }}>
-                          Mandatory one-time registration fee required to submit application
-                        </div>
+                      <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
+                        Role Selection <span style={{ color: "#EF4444" }}>*</span>
                       </div>
                     </div>
 
-                    <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: "20px", fontWeight: 800, color: "#7C3AED" }}>
-                        ₹5,000
+                    <div className={errors.skills ? "has-field-error" : ""}>
+                      <label
+                        style={{
+                          display: "block",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          color: "#374151",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        Tick the role(s) you are interested in applying for: <span style={{ fontSize: "11px", fontWeight: 400, color: "#6B7280" }}>(Select any 1)</span>
+                      </label>
+
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
+                          gap: "10px",
+                        }}
+                      >
+                        {TARGET_SKILLS.map((skill) => {
+                          const isChecked = formData.skills.includes(skill.title);
+                          const primaryColor = "#7C3AED";
+                          const lightBg = "#F5F3FF";
+
+                          return (
+                            <div
+                              key={skill.id}
+                              onClick={() => toggleSkill(skill.title)}
+                              style={{
+                                padding: "14px 12px",
+                                borderRadius: "10px",
+                                border: `1.5px solid ${isChecked ? primaryColor : "#E5E7EB"}`,
+                                backgroundColor: isChecked ? lightBg : "#FFFFFF",
+                                cursor: "pointer",
+                                transition: "all 0.2s ease",
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "6px",
+                                boxShadow: isChecked
+                                  ? "0 2px 8px rgba(124, 58, 237, 0.08)"
+                                  : "none",
+                              }}
+                            >
+                              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                  {getSkillIcon(skill.id)}
+                                  <span
+                                    style={{
+                                      fontSize: "14px",
+                                      fontWeight: 700,
+                                      color: isChecked ? primaryColor : "#111827",
+                                    }}
+                                  >
+                                    {skill.title}
+                                  </span>
+                                </div>
+
+                                <div
+                                  style={{
+                                    width: "20px",
+                                    height: "20px",
+                                    borderRadius: "50%",
+                                    border: `1.5px solid ${isChecked ? primaryColor : "#D1D5DB"}`,
+                                    backgroundColor: isChecked ? primaryColor : "#FFFFFF",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    color: "#FFFFFF",
+                                    transition: "all 0.2s ease",
+                                  }}
+                                >
+                                  {isChecked && (
+                                    <div
+                                      style={{
+                                        width: "8px",
+                                        height: "8px",
+                                        borderRadius: "50%",
+                                        backgroundColor: "#FFFFFF",
+                                      }}
+                                    />
+                                  )}
+                                </div>
+                              </div>
+
+                              <div style={{ fontSize: "11px", color: "#6B7280", lineHeight: 1.35 }}>
+                                {skill.desc}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                      <div style={{ fontSize: "11px", color: "#059669", fontWeight: 600 }}>
-                        All inclusive • Live Agency Projects
-                      </div>
+
+                      {errors.skills && (
+                        <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "6px", fontWeight: 500, display: "flex", alignItems: "center", gap: "4px" }}>
+                          <AlertCircle size={12} />
+                          <span>{errors.skills}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
+                  {/* ── SECTION 3: SEAT CONFIRMATION FEE & 100% FEE DEDUCTION NOTICE ── */}
                   <div
                     style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                      gap: "8px",
-                      fontSize: "12px",
-                      color: "#4B5563",
-                      marginBottom: "12px",
+                      backgroundColor: "#F9FAFB",
+                      borderRadius: "12px",
+                      border: "1.5px solid #DDD6FE",
+                      padding: "16px",
+                      boxShadow: "0 2px 10px rgba(124, 58, 237, 0.04)",
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <Check size={14} color="#10B981" />
-                      <span>Hands-on Live Client Projects</span>
+                    {/* Header with Fee & Highlight Badge */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        flexWrap: "wrap",
+                        gap: "8px",
+                        borderBottom: "1px solid #E5E7EB",
+                        paddingBottom: "12px",
+                        marginBottom: "12px",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <div
+                          style={{
+                            width: "34px",
+                            height: "34px",
+                            borderRadius: "8px",
+                            backgroundColor: "#EDE9FE",
+                            color: "#7C3AED",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Receipt size={18} />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
+                            Seat Confirmation Deposit
+                          </div>
+                          <div style={{ fontSize: "11px", color: "#6B7280" }}>
+                            Guaranteed slot reservation in your selected track
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ fontSize: "22px", fontWeight: 800, color: "#7C3AED" }}>
+                          ₹500
+                        </div>
+                        <div
+                          style={{
+                            fontSize: "10.5px",
+                            color: "#047857",
+                            fontWeight: 700,
+                            backgroundColor: "#ECFDF5",
+                            padding: "2px 6px",
+                            borderRadius: "4px",
+                            border: "1px solid #A7F3D0",
+                            display: "inline-block",
+                          }}
+                        >
+                          100% Fee Adjustment
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <Check size={14} color="#10B981" />
-                      <span>Industry Mentorship &amp; Guidance</span>
+
+                    {/* Prominent Highlight Alert Box */}
+                    <div
+                      style={{
+                        backgroundColor: "#F5F3FF",
+                        border: "1.5px solid #C4B5FD",
+                        borderRadius: "8px",
+                        padding: "10px 12px",
+                        marginBottom: "12px",
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: "8px",
+                      }}
+                    >
+                      <Sparkles size={16} color="#7C3AED" style={{ flexShrink: 0, marginTop: "2px" }} />
+                      <div style={{ fontSize: "12.5px", color: "#4C1D95", lineHeight: 1.45, fontWeight: 600 }}>
+                        Important Note: This ₹500 fee is for seat booking &amp; reservation. This entire ₹500 amount will be directly deducted from your actual course &amp; internship fees upon enrollment.
+                      </div>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <Check size={14} color="#10B981" />
-                      <span>Performance-based Stipend &amp; PPO</span>
+
+                    {/* Value Points */}
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                        gap: "8px",
+                        fontSize: "12px",
+                        color: "#4B5563",
+                        marginBottom: "12px",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <Check size={14} color="#10B981" />
+                        <span>Reserved workstation &amp; batch slot</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <Check size={14} color="#10B981" />
+                        <span>₹500 deducted directly from total fees</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <Check size={14} color="#10B981" />
+                        <span>Priority 1-on-1 mentor onboarding</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <Check size={14} color="#10B981" />
+                        <span>Instant verified payment receipt</span>
+                      </div>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <Check size={14} color="#10B981" />
-                      <span>Official Experience Certificate</span>
+
+                    <div
+                      style={{
+                        backgroundColor: "#FFFFFF",
+                        borderRadius: "8px",
+                        padding: "8px 12px",
+                        border: "1px solid #E5E7EB",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        fontSize: "11px",
+                        color: "#6B7280",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <Lock size={13} color="#059669" />
+                        <span>100% Encrypted &amp; Secured via <strong>Razorpay</strong></span>
+                      </div>
+                      <div>UPI • Credit/Debit Cards • NetBanking</div>
                     </div>
                   </div>
 
+                  {/* ── SECTION 4: MANDATORY SEAT CONFIRMATION CHECKBOX ── */}
                   <div
                     style={{
-                      backgroundColor: "#FFFFFF",
+                      padding: "12px 14px",
+                      backgroundColor: formData.seatBookingConfirmed ? "#F5F3FF" : "#FFFFFF",
                       borderRadius: "8px",
-                      padding: "8px 12px",
-                      border: "1px solid #E5E7EB",
+                      border: `1.5px solid ${errors.seatBookingConfirmed ? "#EF4444" : formData.seatBookingConfirmed ? "#7C3AED" : "#E5E7EB"}`,
                       display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      fontSize: "11px",
-                      color: "#6B7280",
+                      alignItems: "flex-start",
+                      gap: "10px",
+                      transition: "all 0.2s ease",
+                    }}
+                    className={errors.seatBookingConfirmed ? "has-field-error" : ""}
+                  >
+                    <input
+                      type="checkbox"
+                      id="seatBookingConfirmed"
+                      name="seatBookingConfirmed"
+                      checked={formData.seatBookingConfirmed || false}
+                      onChange={handleInputChange}
+                      style={{
+                        width: "18px",
+                        height: "18px",
+                        marginTop: "2px",
+                        accentColor: "#7C3AED",
+                        cursor: "pointer",
+                        flexShrink: 0,
+                      }}
+                    />
+                    <label
+                      htmlFor="seatBookingConfirmed"
+                      style={{
+                        fontSize: "12.5px",
+                        color: "#1F2937",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        lineHeight: 1.45,
+                      }}
+                    >
+                      I confirm and understand that this ₹500 is for seat confirmation &amp; slot booking, and this ₹500 fee will be deducted directly from my actual course &amp; internship fees amount. <span style={{ color: "#EF4444" }}>*</span>
+                    </label>
+                  </div>
+                  {errors.seatBookingConfirmed && (
+                    <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "-14px", fontWeight: 500, display: "flex", alignItems: "center", gap: "4px" }}>
+                      <AlertCircle size={12} />
+                      <span>{errors.seatBookingConfirmed}</span>
+                    </div>
+                  )}
+
+                  {/* ── SECTION 5: SUBMIT & PAY ₹500 BUTTON ── */}
+                  <div
+                    style={{
+                      paddingTop: "14px",
+                      borderTop: "1px solid #E5E7EB",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "10px",
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <Lock size={13} color="#059669" />
-                      <span>100% Encrypted &amp; Secured via <strong>Razorpay</strong></span>
-                    </div>
-                    <div>UPI • Credit/Debit Cards • NetBanking</div>
-                  </div>
-                </div>
-              )}
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      style={{
+                        width: "100%",
+                        height: "46px",
+                        borderRadius: "8px",
+                        backgroundColor: isSubmitting ? "#A78BFA" : "#7C3AED",
+                        color: "#FFFFFF",
+                        fontSize: "14px",
+                        fontWeight: 700,
+                        border: "none",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px",
+                        cursor: isSubmitting ? "not-allowed" : "pointer",
+                        boxShadow: "0 2px 6px rgba(124, 58, 237, 0.25)",
+                      }}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 size={18} className="animate-spin" />
+                          <span>Processing Seat Reservation...</span>
+                        </>
+                      ) : (
+                        <>
+                          <CreditCard size={17} />
+                          <span>Pay ₹500 &amp; Confirm Seat</span>
+                          <ArrowRight size={16} />
+                        </>
+                      )}
+                    </button>
 
-              {/* ════════ SUBMIT ACTION ════════ */}
-              <div
-                style={{
-                  paddingTop: "14px",
-                  borderTop: "1px solid #E5E7EB",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "10px",
-                }}
-              >
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  style={{
-                    width: "100%",
-                    height: "46px",
-                    borderRadius: "8px",
-                    backgroundColor: isSubmitting
-                      ? isWomenMode ? "#F472B6" : "#A78BFA"
-                      : isWomenMode ? "#BE185D" : "#7C3AED",
-                    color: "#FFFFFF",
-                    fontSize: "14px",
-                    fontWeight: 700,
-                    border: "none",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "8px",
-                    cursor: isSubmitting ? "not-allowed" : "pointer",
-                    boxShadow: `0 2px 6px ${isWomenMode ? "rgba(190, 24, 93, 0.25)" : "rgba(124, 58, 237, 0.25)"}`,
-                  }}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 size={18} className="animate-spin" />
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "6px",
+                        fontSize: "11px",
+                        color: "#6B7280",
+                        textAlign: "center",
+                      }}
+                    >
+                      <ShieldCheck size={14} color="#7C3AED" />
                       <span>
-                        {isAmountMode ? "Processing Payment & Application..." : "Submitting Application..."}
+                        ₹500 is 100% deductible from actual fees • Immediate confirmation receipt upon payment.
                       </span>
-                    </>
-                  ) : isAmountMode ? (
-                    <>
-                      <CreditCard size={17} />
-                      <span>Pay ₹5,000 &amp; Submit Application</span>
-                      <ArrowRight size={16} />
-                    </>
-                  ) : (
-                    <>
-                      <span>Submit Application</span>
-                      <ArrowRight size={16} />
-                    </>
-                  )}
-                </button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                /* ═════════════════════════════════════════════════════════════════ */
+                /* BRANCH 2: REGULAR INTERNSHIP FORM (WOMEN / COMMON / AMOUNT TRACKS) */
+                /* ═════════════════════════════════════════════════════════════════ */
+                <>
+                  {/* ════════ SECTION 2: QUALIFICATION & EDUCATION ════════ */}
+                  <div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        paddingBottom: "8px",
+                        borderBottom: "1px solid #F3F4F6",
+                        marginBottom: "14px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: "22px",
+                          height: "22px",
+                          borderRadius: "6px",
+                          backgroundColor: isWomenMode ? "#FDF2F8" : "#EDE9FE",
+                          color: isWomenMode ? "#BE185D" : "#6D28D9",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "11px",
+                          fontWeight: 700,
+                        }}
+                      >
+                        2
+                      </div>
+                      <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
+                        Qualification (Min. 12th Completed)
+                      </div>
+                    </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "6px",
-                    fontSize: "11px",
-                    color: "#6B7280",
-                    textAlign: "center",
-                  }}
-                >
-                  <ShieldCheck size={14} color={isWomenMode ? "#BE185D" : "#7C3AED"} />
-                  <span>
-                    {isWomenMode
-                      ? "Exclusive Women’s Hiring Cohort • Safe & Equal Opportunity Recruitment."
-                      : isAmountMode
-                      ? "Application is only submitted once payment of ₹5,000 is verified."
-                      : "Free Application • Open to all candidates • Safe Recruitment."}
-                  </span>
-                </div>
-              </div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+                        gap: "12px",
+                      }}
+                    >
+                      <div className={errors.qualification ? "has-field-error" : ""}>
+                        <label
+                          htmlFor="qualification"
+                          style={{
+                            display: "block",
+                            fontSize: "12px",
+                            fontWeight: 600,
+                            color: "#374151",
+                            marginBottom: "4px",
+                          }}
+                        >
+                          Highest Qualification <span style={{ color: "#EF4444" }}>*</span>
+                        </label>
+                        <div style={{ position: "relative" }}>
+                          <select
+                            id="qualification"
+                            name="qualification"
+                            value={formData.qualification}
+                            onChange={handleInputChange}
+                            style={{
+                              width: "100%",
+                              height: "40px",
+                              padding: "0 28px 0 10px",
+                              fontSize: "13px",
+                              backgroundColor: "#FFFFFF",
+                              borderRadius: "8px",
+                              border: `1px solid ${errors.qualification ? "#EF4444" : "#E5E7EB"}`,
+                              color: formData.qualification ? "#111827" : "#9CA3AF",
+                              outline: "none",
+                              appearance: "none",
+                              cursor: "pointer",
+                            }}
+                          >
+                            <option value="" disabled>Select qualification...</option>
+                            {QUALIFICATION_OPTIONS.map((q) => (
+                              <option key={q} value={q} style={{ color: "#111827" }}>
+                                {q}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown
+                            size={14}
+                            style={{
+                              position: "absolute",
+                              right: "8px",
+                              top: "50%",
+                              transform: "translateY(-50%)",
+                              pointerEvents: "none",
+                              color: "#6B7280",
+                            }}
+                          />
+                        </div>
+                        {errors.qualification && (
+                          <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "3px", fontWeight: 500 }}>
+                            {errors.qualification}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className={errors.passingYear ? "has-field-error" : ""}>
+                        <label
+                          htmlFor="passingYear"
+                          style={{
+                            display: "block",
+                            fontSize: "12px",
+                            fontWeight: 600,
+                            color: "#374151",
+                            marginBottom: "4px",
+                          }}
+                        >
+                          Passing / Graduation Year <span style={{ color: "#EF4444" }}>*</span>
+                        </label>
+                        <div style={{ position: "relative" }}>
+                          <select
+                            id="passingYear"
+                            name="passingYear"
+                            value={formData.passingYear}
+                            onChange={handleInputChange}
+                            style={{
+                              width: "100%",
+                              height: "40px",
+                              padding: "0 28px 0 10px",
+                              fontSize: "13px",
+                              backgroundColor: "#FFFFFF",
+                              borderRadius: "8px",
+                              border: `1px solid ${errors.passingYear ? "#EF4444" : "#E5E7EB"}`,
+                              color: formData.passingYear ? "#111827" : "#9CA3AF",
+                              outline: "none",
+                              appearance: "none",
+                              cursor: "pointer",
+                            }}
+                          >
+                            <option value="" disabled>Select passing year...</option>
+                            {PASSING_YEARS.map((y) => (
+                              <option key={y} value={y} style={{ color: "#111827" }}>
+                                {y}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown
+                            size={14}
+                            style={{
+                              position: "absolute",
+                              right: "8px",
+                              top: "50%",
+                              transform: "translateY(-50%)",
+                              pointerEvents: "none",
+                              color: "#6B7280",
+                            }}
+                          />
+                        </div>
+                        {errors.passingYear && (
+                          <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "3px", fontWeight: 500 }}>
+                            {errors.passingYear}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ════════ SECTION 3: SKILLS / ROLE SELECTION ════════ */}
+                  <div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        paddingBottom: "8px",
+                        borderBottom: "1px solid #F3F4F6",
+                        marginBottom: "14px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: "22px",
+                          height: "22px",
+                          borderRadius: "6px",
+                          backgroundColor: isWomenMode ? "#FDF2F8" : "#EDE9FE",
+                          color: isWomenMode ? "#BE185D" : "#6D28D9",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "11px",
+                          fontWeight: 700,
+                        }}
+                      >
+                        3
+                      </div>
+                      <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
+                        {isAmountMode ? "Select Internship Track" : "Select Internship Track(s)"} <span style={{ color: "#EF4444" }}>*</span>
+                      </div>
+                    </div>
+
+                    <div className={errors.skills ? "has-field-error" : ""}>
+                      <label
+                        style={{
+                          display: "block",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          color: "#374151",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        {isAmountMode
+                          ? "Select the 1 role you are interested in applying for:"
+                          : "Tick the role(s) you are interested in applying for:"}
+                      </label>
+
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
+                          gap: "10px",
+                        }}
+                      >
+                        {TARGET_SKILLS.map((skill) => {
+                          const isChecked = formData.skills.includes(skill.title);
+                          const primaryColor = isWomenMode ? "#BE185D" : "#7C3AED";
+                          const lightBg = isWomenMode ? "#FDF2F8" : "#F5F3FF";
+
+                          return (
+                            <div
+                              key={skill.id}
+                              onClick={() => toggleSkill(skill.title)}
+                              style={{
+                                padding: "14px 12px",
+                                borderRadius: "10px",
+                                border: `1.5px solid ${isChecked ? primaryColor : "#E5E7EB"}`,
+                                backgroundColor: isChecked ? lightBg : "#FFFFFF",
+                                cursor: "pointer",
+                                transition: "all 0.2s ease",
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "6px",
+                                boxShadow: isChecked
+                                  ? `0 2px 8px ${isWomenMode ? "rgba(190, 24, 93, 0.08)" : "rgba(124, 58, 237, 0.08)"}`
+                                  : "none",
+                              }}
+                            >
+                              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                  {getSkillIcon(skill.id)}
+                                  <span
+                                    style={{
+                                      fontSize: "14px",
+                                      fontWeight: 700,
+                                      color: isChecked ? primaryColor : "#111827",
+                                    }}
+                                  >
+                                    {skill.title}
+                                  </span>
+                                </div>
+
+                                <div
+                                  style={{
+                                    width: "20px",
+                                    height: "20px",
+                                    borderRadius: isAmountMode ? "50%" : "6px",
+                                    border: `1.5px solid ${isChecked ? primaryColor : "#D1D5DB"}`,
+                                    backgroundColor: isChecked ? primaryColor : "#FFFFFF",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    color: "#FFFFFF",
+                                    transition: "all 0.2s ease",
+                                  }}
+                                >
+                                  {isChecked && (
+                                    isAmountMode ? (
+                                      <div
+                                        style={{
+                                          width: "8px",
+                                          height: "8px",
+                                          borderRadius: "50%",
+                                          backgroundColor: "#FFFFFF",
+                                        }}
+                                      />
+                                    ) : (
+                                      <Check size={14} strokeWidth={3} />
+                                    )
+                                  )}
+                                </div>
+                              </div>
+
+                              <div style={{ fontSize: "11px", color: "#6B7280", lineHeight: 1.35 }}>
+                                {skill.desc}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {errors.skills && (
+                        <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "6px", fontWeight: 500, display: "flex", alignItems: "center", gap: "4px" }}>
+                          <AlertCircle size={12} />
+                          <span>{errors.skills}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* ════════ SECTION 4: ABOUT YOURSELF ════════ */}
+                  <div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        paddingBottom: "8px",
+                        borderBottom: "1px solid #F3F4F6",
+                        marginBottom: "14px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: "22px",
+                          height: "22px",
+                          borderRadius: "6px",
+                          backgroundColor: isWomenMode ? "#FDF2F8" : "#EDE9FE",
+                          color: isWomenMode ? "#BE185D" : "#6D28D9",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "11px",
+                          fontWeight: 700,
+                        }}
+                      >
+                        4
+                      </div>
+                      <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
+                        About Yourself &amp; Introduction <span style={{ color: "#EF4444" }}>*</span>
+                      </div>
+                    </div>
+
+                    <div className={errors.aboutYourself ? "has-field-error" : ""} style={{ marginBottom: "12px" }}>
+                      <label
+                        htmlFor="aboutYourself"
+                        style={{
+                          display: "block",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          color: "#374151",
+                          marginBottom: "4px",
+                        }}
+                      >
+                        Tell us about yourself (Introduction, strengths &amp; background)
+                      </label>
+                      <textarea
+                        id="aboutYourself"
+                        name="aboutYourself"
+                        rows={4}
+                        value={formData.aboutYourself}
+                        onChange={handleInputChange}
+                        placeholder="Briefly introduce yourself: your background, strengths, practical projects or reels you've created, and why you are excited to join us..."
+                        style={{
+                          width: "100%",
+                          padding: "10px 12px",
+                          fontSize: "14px",
+                          backgroundColor: "#FFFFFF",
+                          borderRadius: "8px",
+                          border: `1px solid ${errors.aboutYourself ? "#EF4444" : "#E5E7EB"}`,
+                          color: "#111827",
+                          outline: "none",
+                          resize: "vertical",
+                          lineHeight: 1.5,
+                        }}
+                      />
+                      {errors.aboutYourself ? (
+                        <div style={{ fontSize: "11px", color: "#EF4444", marginTop: "3px", fontWeight: 500 }}>
+                          {errors.aboutYourself}
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: "11px", color: "#6B7280", marginTop: "3px" }}>
+                          Minimum 15 characters ({formData.aboutYourself.length} characters)
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="resumeUrl"
+                        style={{
+                          display: "block",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          color: "#374151",
+                          marginBottom: "4px",
+                        }}
+                      >
+                        Resume / Drive / Portfolio Link <span style={{ fontSize: "11px", fontWeight: 400, color: "#6B7280" }}>(Optional)</span>
+                      </label>
+                      <input
+                        type="url"
+                        id="resumeUrl"
+                        name="resumeUrl"
+                        value={formData.resumeUrl}
+                        onChange={handleInputChange}
+                        placeholder="https://drive.google.com/file/... or portfolio link"
+                        style={{
+                          width: "100%",
+                          height: "40px",
+                          padding: "0 12px",
+                          fontSize: "14px",
+                          backgroundColor: "#FFFFFF",
+                          borderRadius: "8px",
+                          border: "1px solid #E5E7EB",
+                          color: "#111827",
+                          outline: "none",
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* ════════ PAYMENT BOX (ONLY FOR AMOUNT MODE) ════════ */}
+                  {isAmountMode && (
+                    <div
+                      style={{
+                        backgroundColor: "#F9FAFB",
+                        borderRadius: "12px",
+                        border: "1px solid #E5E7EB",
+                        padding: "16px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          flexWrap: "wrap",
+                          gap: "8px",
+                          borderBottom: "1px solid #E5E7EB",
+                          paddingBottom: "12px",
+                          marginBottom: "12px",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <div
+                            style={{
+                              width: "32px",
+                              height: "32px",
+                              borderRadius: "8px",
+                              backgroundColor: "#EDE9FE",
+                              color: "#7C3AED",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <Receipt size={16} />
+                          </div>
+                          <div>
+                            <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
+                              Internship Enrollment &amp; Registration Fee
+                            </div>
+                            <div style={{ fontSize: "11px", color: "#6B7280" }}>
+                              Mandatory one-time registration fee required to submit application
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ textAlign: "right" }}>
+                          <div style={{ fontSize: "20px", fontWeight: 800, color: "#7C3AED" }}>
+                            ₹5,000
+                          </div>
+                          <div style={{ fontSize: "11px", color: "#059669", fontWeight: 600 }}>
+                            All inclusive • Live Agency Projects
+                          </div>
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                          gap: "8px",
+                          fontSize: "12px",
+                          color: "#4B5563",
+                          marginBottom: "12px",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <Check size={14} color="#10B981" />
+                          <span>Hands-on Live Client Projects</span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <Check size={14} color="#10B981" />
+                          <span>Industry Mentorship &amp; Guidance</span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <Check size={14} color="#10B981" />
+                          <span>Performance-based Stipend &amp; PPO</span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <Check size={14} color="#10B981" />
+                          <span>Official Experience Certificate</span>
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          backgroundColor: "#FFFFFF",
+                          borderRadius: "8px",
+                          padding: "8px 12px",
+                          border: "1px solid #E5E7EB",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          fontSize: "11px",
+                          color: "#6B7280",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <Lock size={13} color="#059669" />
+                          <span>100% Encrypted &amp; Secured via <strong>Razorpay</strong></span>
+                        </div>
+                        <div>UPI • Credit/Debit Cards • NetBanking</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ════════ SUBMIT ACTION ════════ */}
+                  <div
+                    style={{
+                      paddingTop: "14px",
+                      borderTop: "1px solid #E5E7EB",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "10px",
+                    }}
+                  >
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      style={{
+                        width: "100%",
+                        height: "46px",
+                        borderRadius: "8px",
+                        backgroundColor: isSubmitting
+                          ? isWomenMode ? "#F472B6" : "#A78BFA"
+                          : isWomenMode ? "#BE185D" : "#7C3AED",
+                        color: "#FFFFFF",
+                        fontSize: "14px",
+                        fontWeight: 700,
+                        border: "none",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px",
+                        cursor: isSubmitting ? "not-allowed" : "pointer",
+                        boxShadow: `0 2px 6px ${isWomenMode ? "rgba(190, 24, 93, 0.25)" : "rgba(124, 58, 237, 0.25)"}`,
+                      }}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 size={18} className="animate-spin" />
+                          <span>
+                            {isAmountMode ? "Processing Payment & Application..." : "Submitting Application..."}
+                          </span>
+                        </>
+                      ) : isAmountMode ? (
+                        <>
+                          <CreditCard size={17} />
+                          <span>Pay ₹5,000 &amp; Submit Application</span>
+                          <ArrowRight size={16} />
+                        </>
+                      ) : (
+                        <>
+                          <span>Submit Application</span>
+                          <ArrowRight size={16} />
+                        </>
+                      )}
+                    </button>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "6px",
+                        fontSize: "11px",
+                        color: "#6B7280",
+                        textAlign: "center",
+                      }}
+                    >
+                      <ShieldCheck size={14} color={isWomenMode ? "#BE185D" : "#7C3AED"} />
+                      <span>
+                        {isSeatConfirmationMode
+                          ? "100% Deductible Seat Confirmation • Razorpay Secure 256-bit SSL Encrypted"
+                          : isWomenMode
+                          ? "Exclusive Women’s Hiring Cohort • Safe & Equal Opportunity Recruitment."
+                          : isAmountMode
+                          ? "Application is only submitted once payment of ₹5,000 is verified."
+                          : "Free Application • Open to all candidates • Safe Recruitment."}
+                      </span>
+                    </div>
+                  </div>
+                </>
+              )}
             </form>
           </div>
         )}
