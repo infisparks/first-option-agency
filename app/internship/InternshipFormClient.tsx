@@ -39,6 +39,7 @@ import {
   triggerInternshipWhatsAppNotifications,
   PROGRAM_TITLES,
 } from "@/app/lib/whatsapp";
+import TenMinSlotBookingForm from "./TenMinSlotBookingForm";
 
 interface FormData {
   fullName: string;
@@ -85,6 +86,7 @@ export default function InternshipFormClient() {
   const searchParams = useSearchParams();
 
   // Determine Form Mode:
+  // 0. "10-min-slots": ?type=10-min-slots -> 10-minute mentor slot booking with Faiz Sir
   // 1. "seat-confirmation": ?type=seat-confirmation -> Seat booking/confirmation + compulsory ₹500 payment (100% deductible from fees)
   // 2. "amount": ?payment OR ?type=amount -> open for all + compulsory ₹5000 payment
   // 3. "common": ?type=common OR ?type=comon -> open for all + NO payment (free)
@@ -92,6 +94,21 @@ export default function InternshipFormClient() {
   const hasPaymentParam = searchParams.has("payment");
   const typeParam = (searchParams.get("type") || "").toLowerCase().trim();
   const statusParam = (searchParams.get("status") || "").toLowerCase().trim();
+
+  const isTenMinSlotsParam =
+    typeParam === "10-min-slots" ||
+    typeParam === "10-min-slot" ||
+    typeParam === "10minslots" ||
+    typeParam === "10minslot" ||
+    typeParam === "10min" ||
+    typeParam === "10-min" ||
+    typeParam === "slot" ||
+    typeParam === "slots";
+
+  // If 10-Min Slots mode is active, render dedicated slot booking interface
+  if (isTenMinSlotsParam) {
+    return <TenMinSlotBookingForm />;
+  }
 
   const isSeatConfirmationParam =
     typeParam === "seat-confirmation" ||

@@ -46,6 +46,7 @@ import {
   Check,
   Filter,
   Sparkles,
+  Clock,
 } from "lucide-react";
 
 // Types
@@ -65,7 +66,7 @@ interface InternshipRecord {
   submittedAt: string;
   type?: string;
   status?: string;
-  leadType?: "women" | "common" | "amount" | "seat-confirmation" | string;
+  leadType?: "women" | "common" | "amount" | "seat-confirmation" | "10-min-slots" | string;
   isSeatConfirmedCheckbox?: boolean;
   programTitle?: string;
   paymentStatus?: "Paid" | "Free" | "Unpaid" | "Pending" | string;
@@ -73,6 +74,13 @@ interface InternshipRecord {
   amountPaid?: number | string;
   orderId?: string;
   paidAt?: string;
+  slotDate?: string;
+  slotTime?: string;
+  mentorName?: string;
+  currentTechnology?: string;
+  isDuplicateSubmission?: boolean;
+  previousApplicationId?: string;
+  submissionCount?: number;
   callStatus?: string;
   callTags?: string[];
   callStatusUpdatedAt?: string;
@@ -158,7 +166,19 @@ interface UnifiedAdminProps {
 // If leadType is missing (all existing/old data), treat as "women"
 export const getInternshipLeadType = (
   app: InternshipRecord
-): "women" | "common" | "amount" | "seat-confirmation" => {
+): "women" | "common" | "amount" | "seat-confirmation" | "10-min-slots" => {
+  if (
+    app.leadType === "10-min-slots" ||
+    app.type === "10-min-slots" ||
+    app.type === "10-min-slot" ||
+    app.type === "10minslots" ||
+    app.type === "10min" ||
+    (typeof app.applicationId === "string" && app.applicationId.startsWith("FOA-SLOT-")) ||
+    (typeof app.programTitle === "string" && app.programTitle.toLowerCase().includes("10-min")) ||
+    Boolean(app.slotDate || app.slotTime)
+  ) {
+    return "10-min-slots";
+  }
   if (
     app.leadType === "seat-confirmation" ||
     app.type === "seat-confirmation" ||
@@ -213,7 +233,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
   // Search & Filter states
   const [internshipSearch, setInternshipSearch] = useState("");
   const [internshipTypeFilter, setInternshipTypeFilter] = useState<
-    "ALL" | "WOMEN" | "COMMON" | "AMOUNT" | "AMOUNT_PAID" | "AMOUNT_PENDING" | "SEAT_CONFIRMATION" | "SEAT_PAID" | "SEAT_PENDING"
+    "ALL" | "WOMEN" | "COMMON" | "AMOUNT" | "AMOUNT_PAID" | "AMOUNT_PENDING" | "SEAT_CONFIRMATION" | "SEAT_PAID" | "SEAT_PENDING" | "TEN_MIN_SLOTS"
   >("ALL");
 
   const [salesSearch, setSalesSearch] = useState("");
@@ -635,7 +655,10 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
       "City",
       "Qualification",
       "Passing Year",
-      "Skills",
+      "Skills / Tech",
+      "Mentor Name",
+      "Booked Slot Date",
+      "Booked Slot Time",
       "Payment Status",
       "Amount Paid (INR)",
       "Payment ID",
@@ -647,12 +670,15 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
 
     const rows = internships.map((app) => {
       const lType = getInternshipLeadType(app);
+      const isSlotLead = lType === "10-min-slots";
       const isSeatLead = lType === "seat-confirmation";
       const isAmountLead = lType === "amount";
       const isPaid = (isSeatLead || isAmountLead) && (app.paymentStatus === "Paid" || Boolean(app.paymentId));
       const isPaymentPending = (isSeatLead || isAmountLead) && !isPaid;
       const leadLabel =
-        isSeatLead
+        isSlotLead
+          ? "10-Min Mentor Slot (Faiz Sir)"
+          : isSeatLead
           ? isPaid
             ? "Seat Confirmation (₹500 Paid - Deductible)"
             : "Seat Confirmation (₹500 Pending)"
@@ -674,13 +700,16 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
         `"${app.callStatus || "Not Called"}"`,
         `"${app.callStatusUpdatedAt ? new Date(app.callStatusUpdatedAt).toLocaleString() : ""}"`,
         `"${app.fullName || ""}"`,
-        `"${app.gender || (lType === "women" ? "Female" : "Not specified")}"`,
+        `"${app.gender || (lType === "women" ? "Female" : isSlotLead ? "Mentee" : "Applicant")}"`,
         `"${app.email || ""}"`,
         `"${app.countryCode || "+91"} ${app.phone || ""}"`,
         `"${app.city || ""}"`,
-        `"${app.qualification || "N/A"}"`,
+        `"${app.qualification || (isSlotLead ? "10-Min Mentorship" : "N/A")}"`,
         `"${app.passingYear || "N/A"}"`,
-        `"${(app.skills || []).join(", ")}"`,
+        `"${app.currentTechnology || (app.skills || []).join(", ")}"`,
+        `"${app.mentorName || (isSlotLead ? "Faiz Sir" : "N/A")}"`,
+        `"${app.slotDate || "N/A"}"`,
+        `"${app.slotTime || "N/A"}"`,
         `"${isPaid ? "Paid" : isPaymentPending ? "Payment Pending" : "Free (No Payment)"}"`,
         `"${amountVal}"`,
         `"${isPaid ? (app.paymentId || "Verified") : isPaymentPending ? "Pending" : "N/A"}"`,
@@ -771,6 +800,10 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
   const womenCount = internships.filter((a) => getInternshipLeadType(a) === "women").length;
   const commonCount = internships.filter((a) => getInternshipLeadType(a) === "common").length;
 
+  // 10-Min Mentor Slot Leads (Faiz Sir)
+  const tenMinSlotLeads = internships.filter((a) => getInternshipLeadType(a) === "10-min-slots");
+  const tenMinSlotCount = tenMinSlotLeads.length;
+
   // ₹5k Amount Leads
   const amountLeads = internships.filter((a) => getInternshipLeadType(a) === "amount");
   const amountPaidCount = amountLeads.filter((a) => a.paymentStatus === "Paid" || Boolean(a.paymentId)).length;
@@ -793,6 +826,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
       (lType === "amount" || lType === "seat-confirmation") &&
       (app.paymentStatus === "Paid" || Boolean(app.paymentId));
 
+    if (internshipTypeFilter === "TEN_MIN_SLOTS" && lType !== "10-min-slots") return false;
     if (internshipTypeFilter === "WOMEN" && lType !== "women") return false;
     if (internshipTypeFilter === "COMMON" && lType !== "common") return false;
     if (internshipTypeFilter === "AMOUNT" && lType !== "amount") return false;
@@ -824,7 +858,11 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
       app.skills?.some((s) => s.toLowerCase().includes(q)) ||
       app.applicationId?.toLowerCase().includes(q) ||
       app.paymentId?.toLowerCase().includes(q) ||
-      app.callStatus?.toLowerCase().includes(q)
+      app.callStatus?.toLowerCase().includes(q) ||
+      app.slotDate?.toLowerCase().includes(q) ||
+      app.slotTime?.toLowerCase().includes(q) ||
+      app.currentTechnology?.toLowerCase().includes(q) ||
+      app.mentorName?.toLowerCase().includes(q)
     );
   });
 
@@ -1579,6 +1617,27 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
 
                     <button
                       type="button"
+                      onClick={() => setInternshipTypeFilter("TEN_MIN_SLOTS")}
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: "6px",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        border: internshipTypeFilter === "TEN_MIN_SLOTS" ? "1px solid #7C3AED" : "1px solid #E5E7EB",
+                        backgroundColor: internshipTypeFilter === "TEN_MIN_SLOTS" ? "#FAF5FF" : "#FFFFFF",
+                        color: internshipTypeFilter === "TEN_MIN_SLOTS" ? "#7C3AED" : "#4B5563",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
+                    >
+                      <Clock size={13} color="#7C3AED" />
+                      <span>10-Min Slots ({tenMinSlotCount})</span>
+                    </button>
+
+                    <button
+                      type="button"
                       onClick={() => setInternshipTypeFilter("SEAT_CONFIRMATION")}
                       style={{
                         padding: "6px 12px",
@@ -1960,10 +2019,17 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                   <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "12px" }}>
                     {filteredInternships.map((app) => {
                       const lType = getInternshipLeadType(app);
+                      const isSlotLead = lType === "10-min-slots";
                       const isSeatLead = lType === "seat-confirmation";
                       const isAmountLead = lType === "amount";
                       const isPaid = (isSeatLead || isAmountLead) && (app.paymentStatus === "Paid" || Boolean(app.paymentId));
                       const isPendingPayment = (isSeatLead || isAmountLead) && !isPaid;
+
+                      const cleanPhone = (app.phone || "").replace(/\D/g, "");
+                      const phoneMatches = internships.filter(
+                        (other) => (other.phone || "").replace(/\D/g, "") === cleanPhone && cleanPhone.length >= 10
+                      );
+                      const isDuplicate = Boolean(app.isDuplicateSubmission) || phoneMatches.length > 1;
 
                       return (
                         <div
@@ -1972,7 +2038,11 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                             backgroundColor: "#FFFFFF",
                             borderRadius: "12px",
                             border:
-                              isSeatLead
+                              isDuplicate
+                                ? "1px solid #FCD34D"
+                                : isSlotLead
+                                ? "1px solid #C4B5FD"
+                                : isSeatLead
                                 ? isPaid
                                   ? "1px solid #C4B5FD"
                                   : "1px solid #FDE68A"
@@ -1984,7 +2054,11 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                                 ? "1px solid #A7F3D0"
                                 : "1px solid #FDE68A",
                             padding: "16px",
-                            boxShadow: isSeatLead && isPaid ? "0 2px 8px rgba(124, 58, 237, 0.06)" : "0 1px 3px rgba(0,0,0,0.02)",
+                            boxShadow: isDuplicate
+                              ? "0 2px 8px rgba(245, 158, 11, 0.08)"
+                              : (isSeatLead && isPaid) || isSlotLead
+                              ? "0 2px 8px rgba(124, 58, 237, 0.06)"
+                              : "0 1px 3px rgba(0,0,0,0.02)",
                           }}
                         >
                           <div
@@ -2018,8 +2092,48 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                                 {app.fullName}
                               </span>
 
+                              {/* Duplicate / Double Form Alert Tag */}
+                              {isDuplicate && (
+                                <span
+                                  style={{
+                                    fontSize: "11px",
+                                    fontWeight: 700,
+                                    backgroundColor: "#FFFBEB",
+                                    color: "#B45309",
+                                    border: "1px solid #FDE68A",
+                                    padding: "2px 8px",
+                                    borderRadius: "999px",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "3px",
+                                  }}
+                                  title={`This candidate has submitted ${phoneMatches.length} total applications/bookings`}
+                                >
+                                  <AlertTriangle size={11} color="#D97706" />
+                                  <span>Double Form Bhara Hai ({phoneMatches.length > 1 ? `${phoneMatches.length} Forms` : "Repeat"})</span>
+                                </span>
+                              )}
+
                               {/* Lead Source Badge */}
-                              {isSeatLead ? (
+                              {isSlotLead ? (
+                                <span
+                                  style={{
+                                    fontSize: "11px",
+                                    fontWeight: 700,
+                                    backgroundColor: "#FAF5FF",
+                                    color: "#7C3AED",
+                                    border: "1px solid #DDD6FE",
+                                    padding: "2px 8px",
+                                    borderRadius: "999px",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "3px",
+                                  }}
+                                >
+                                  <Clock size={11} />
+                                  <span>10-Min Mentor Slot (Faiz Sir)</span>
+                                </span>
+                              ) : isSeatLead ? (
                                 <span
                                   style={{
                                     fontSize: "11px",
@@ -2111,7 +2225,7 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                                 </span>
                               )}
 
-                              {/* Gender Display */}
+                              {/* Gender / Role Display */}
                               <span
                                 style={{
                                   fontSize: "11px",
@@ -2122,11 +2236,29 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                                   fontWeight: 600,
                                 }}
                               >
-                                {app.gender || (lType === "women" ? "Female" : "Applicant")}
+                                {app.gender || (lType === "women" ? "Female" : isSlotLead ? "Mentee" : "Applicant")}
                               </span>
 
                               {/* Payment Status Display */}
-                              {isPaid ? (
+                              {isSlotLead ? (
+                                <span
+                                  style={{
+                                    fontSize: "11px",
+                                    fontWeight: 600,
+                                    backgroundColor: "#FAF5FF",
+                                    color: "#7C3AED",
+                                    border: "1px solid #DDD6FE",
+                                    padding: "2px 8px",
+                                    borderRadius: "999px",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "3px",
+                                  }}
+                                >
+                                  <Sparkles size={11} color="#7C3AED" />
+                                  <span>10-Min Session</span>
+                                </span>
+                              ) : isPaid ? (
                                 <span
                                   style={{
                                     fontSize: "11px",
@@ -2250,6 +2382,41 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                             </div>
                           </div>
 
+                          {/* 10-Min Mentor Slot Booking Info Banner */}
+                          {isSlotLead && (
+                            <div
+                              style={{
+                                backgroundColor: "#FAF5FF",
+                                border: "1px solid #DDD6FE",
+                                borderRadius: "8px",
+                                padding: "8px 12px",
+                                fontSize: "12px",
+                                color: "#111827",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                flexWrap: "wrap",
+                                gap: "8px",
+                                marginBottom: "10px",
+                              }}
+                            >
+                              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                                <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontWeight: 600 }}>
+                                  <Calendar size={13} color="#7C3AED" />
+                                  <span>{app.slotDate || "Date TBD"}</span>
+                                </span>
+                                <span style={{ color: "#9CA3AF" }}>•</span>
+                                <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontWeight: 600, color: "#6D28D9" }}>
+                                  <Clock size={13} color="#7C3AED" />
+                                  <span>{app.slotTime || "Time TBD"} (10 Mins)</span>
+                                </span>
+                              </div>
+                              <div style={{ fontSize: "11px", color: "#7C3AED", fontWeight: 700 }}>
+                                Mentor: Faiz Sir
+                              </div>
+                            </div>
+                          )}
+
                           {/* Payment details if paid */}
                           {isPaid && app.paymentId && (
                             <div
@@ -2336,16 +2503,18 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                             </div>
 
                             <div>
-                              <span style={{ color: "#6B7280" }}>City: </span>
+                              <span style={{ color: "#6B7280" }}>City / Location: </span>
                               <strong style={{ color: "#111827" }}>{app.city}</strong>
                             </div>
 
                             <div>
                               <span style={{ color: "#6B7280" }}>
-                                {isSeatLead ? "Application Type: " : "Qualification: "}
+                                {isSlotLead ? "Current Technology: " : isSeatLead ? "Application Type: " : "Qualification: "}
                               </span>
                               <strong style={{ color: "#111827" }}>
-                                {isSeatLead
+                                {isSlotLead
+                                  ? (app.currentTechnology || (app.skills || []).join(", ") || "N/A")
+                                  : isSeatLead
                                   ? "Internship Seat Confirmation (₹500)"
                                   : `${app.qualification || "N/A"} (${app.passingYear || "N/A"})`}
                               </strong>
@@ -2357,15 +2526,19 @@ export default function UnifiedAdminClient({ initialTab = "internship" }: Unifie
                               style={{
                                 fontSize: "11px",
                                 fontWeight: 600,
-                                color: isSeatLead ? "#7C3AED" : "#6B7280",
+                                color: isSlotLead || isSeatLead ? "#7C3AED" : "#6B7280",
                                 display: "block",
                                 marginBottom: "4px",
                               }}
                             >
-                              {isSeatLead ? "Selected Role for Seat Booking:" : "Tracks:"}
+                              {isSlotLead
+                                ? "Tech Stack / Topics:"
+                                : isSeatLead
+                                ? "Selected Role for Seat Booking:"
+                                : "Tracks:"}
                             </span>
                             <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
-                              {(app.skills || []).map((skill) => (
+                              {(app.skills || (app.currentTechnology ? [app.currentTechnology] : [])).map((skill) => (
                                 <span
                                   key={skill}
                                   style={{

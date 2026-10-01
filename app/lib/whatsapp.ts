@@ -18,13 +18,14 @@ export const WHATSAPP_TEMPLATES = {
   ADMIN_LEAD_ALERT: "internship_admin_lead_alert",
 };
 
-// 5 Form Program Titles
+// Form Program Titles
 export const PROGRAM_TITLES = {
   SALES: "Sales Consultant Program",
   WOMEN: "Women's Internship Drive",
   COMMON: "Internship Program",
   PAID: "Paid Internship Program",
   SEAT_CONFIRMATION: "Internship Seat Confirmation",
+  TEN_MIN_SLOTS: "10-Min Mentor Slot (Faiz Sir)",
 } as const;
 
 export type ProgramTitleType =
@@ -33,6 +34,7 @@ export type ProgramTitleType =
   | "Internship Program"
   | "Paid Internship Program"
   | "Internship Seat Confirmation"
+  | "10-Min Mentor Slot (Faiz Sir)"
   | string;
 
 export const DEFAULT_PORTAL_LINK = "https://firstoptionagency.com/admin";
@@ -167,17 +169,19 @@ export async function triggerApplicationWhatsAppNotifications({
 }
 
 /**
- * Helper for Internship Form (Women, Common, Paid, or Seat Confirmation)
+ * Helper for Internship Form (Women, Common, Paid, Seat Confirmation, or 10-Min Slots)
  */
 export async function triggerInternshipWhatsAppNotifications(
   params: Omit<ApplicationNotificationParams, "programTitle"> & {
     programTitle?: ProgramTitleType;
-    mode?: "women" | "common" | "amount" | "seat-confirmation";
+    mode?: "women" | "common" | "amount" | "seat-confirmation" | "10-min-slots";
   }
 ) {
   let title = params.programTitle;
   if (!title) {
-    if (params.mode === "seat-confirmation") {
+    if (params.mode === "10-min-slots") {
+      title = PROGRAM_TITLES.TEN_MIN_SLOTS;
+    } else if (params.mode === "seat-confirmation") {
       title = PROGRAM_TITLES.SEAT_CONFIRMATION;
     } else if (params.mode === "amount") {
       title = PROGRAM_TITLES.PAID;
