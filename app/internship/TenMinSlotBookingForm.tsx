@@ -14,7 +14,6 @@ import {
   Copy,
   Check,
   Video,
-  ShieldCheck,
   ShieldAlert,
   CalendarCheck,
   X,
@@ -767,6 +766,43 @@ export default function TenMinSlotBookingForm() {
         fontFamily: "var(--font-primary), Inter, system-ui, -apple-system, sans-serif",
       }}
     >
+      {/* ─── Responsive Styles ─── */}
+      <style>{`
+        .slot-grid-responsive {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 6px;
+        }
+        @media (min-width: 480px) {
+          .slot-grid-responsive {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+          }
+        }
+        @media (min-width: 640px) {
+          .slot-grid-responsive {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+          }
+        }
+        .form-container-card {
+          padding: 16px 14px;
+        }
+        @media (min-width: 640px) {
+          .form-container-card {
+            padding: 20px 18px;
+          }
+        }
+        .form-banner-responsive {
+          padding: 16px 14px;
+        }
+        @media (min-width: 640px) {
+          .form-banner-responsive {
+            padding: 20px 18px;
+          }
+        }
+      `}</style>
+
       {/* ─── Sticky Navbar ─── */}
       <header
         style={{
@@ -783,7 +819,7 @@ export default function TenMinSlotBookingForm() {
           style={{
             maxWidth: "680px",
             margin: "0 auto",
-            padding: "10px 16px",
+            padding: "10px 14px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -800,8 +836,8 @@ export default function TenMinSlotBookingForm() {
           >
             <div
               style={{
-                width: "36px",
-                height: "36px",
+                width: "34px",
+                height: "34px",
                 borderRadius: "8px",
                 background: "linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)",
                 color: "#FFFFFF",
@@ -809,14 +845,14 @@ export default function TenMinSlotBookingForm() {
                 alignItems: "center",
                 justifyContent: "center",
                 fontWeight: 800,
-                fontSize: "14px",
-                boxShadow: "0 4px 10px rgba(124, 58, 237, 0.25)",
+                fontSize: "13px",
+                boxShadow: "0 3px 8px rgba(124, 58, 237, 0.25)",
               }}
             >
               FOA
             </div>
             <div>
-              <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
+              <div style={{ fontSize: "13.5px", fontWeight: 700, color: "#111827" }}>
                 First Option Agency
               </div>
               <div
@@ -836,18 +872,18 @@ export default function TenMinSlotBookingForm() {
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: "6px",
-              fontSize: "13px",
+              gap: "5px",
+              fontSize: "12.5px",
               fontWeight: 600,
               color: "#7C3AED",
               textDecoration: "none",
-              padding: "6px 12px",
+              padding: "5px 10px",
               borderRadius: "6px",
               backgroundColor: "#F5F3FF",
               border: "1px solid #EDE9FE",
             }}
           >
-            <ArrowLeft size={14} />
+            <ArrowLeft size={13} />
             <span>Home</span>
           </Link>
         </div>
@@ -891,7 +927,7 @@ export default function TenMinSlotBookingForm() {
               maxHeight: "92vh",
               overflowY: "auto",
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.2)",
-              padding: "24px 20px",
+              padding: "24px 18px",
               textAlign: "center",
               position: "relative",
             }}
@@ -902,8 +938,8 @@ export default function TenMinSlotBookingForm() {
               aria-label="Close popup"
               style={{
                 position: "absolute",
-                top: "14px",
-                right: "14px",
+                top: "12px",
+                right: "12px",
                 width: "28px",
                 height: "28px",
                 borderRadius: "50%",
@@ -921,18 +957,18 @@ export default function TenMinSlotBookingForm() {
 
             <div
               style={{
-                width: "52px",
-                height: "52px",
+                width: "48px",
+                height: "48px",
                 borderRadius: "50%",
                 backgroundColor: "#FEF2F2",
                 border: "2px solid #FEE2E2",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                margin: "0 auto 12px auto",
+                margin: "0 auto 10px auto",
               }}
             >
-              <ShieldAlert size={26} color="#DC2626" />
+              <ShieldAlert size={24} color="#DC2626" />
             </div>
 
             <div
@@ -945,10 +981,10 @@ export default function TenMinSlotBookingForm() {
                 backgroundColor: "#FEF2F2",
                 border: "1px solid #FECACA",
                 color: "#991B1B",
-                fontSize: "11px",
+                fontSize: "10.5px",
                 fontWeight: 700,
                 textTransform: "uppercase",
-                marginBottom: "8px",
+                marginBottom: "6px",
               }}
             >
               Single Booking Policy
@@ -956,10 +992,10 @@ export default function TenMinSlotBookingForm() {
 
             <h2
               style={{
-                fontSize: "18px",
+                fontSize: "17px",
                 fontWeight: 700,
                 color: "#111827",
-                marginBottom: "6px",
+                marginBottom: "4px",
               }}
             >
               Slot Already Reserved
@@ -967,10 +1003,10 @@ export default function TenMinSlotBookingForm() {
 
             <p
               style={{
-                fontSize: "13px",
+                fontSize: "12.5px",
                 color: "#4B5563",
-                lineHeight: 1.45,
-                marginBottom: "16px",
+                lineHeight: 1.4,
+                marginBottom: "14px",
               }}
             >
               A 1-on-1 mentorship session is already reserved under this contact number. Each candidate is entitled to 1 active session.
@@ -983,11 +1019,11 @@ export default function TenMinSlotBookingForm() {
                 borderRadius: "10px",
                 padding: "12px 14px",
                 textAlign: "left",
-                marginBottom: "16px",
-                fontSize: "12.5px",
+                marginBottom: "14px",
+                fontSize: "12px",
                 display: "flex",
                 flexDirection: "column",
-                gap: "7px",
+                gap: "6px",
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -1037,17 +1073,17 @@ export default function TenMinSlotBookingForm() {
                   justifyContent: "center",
                   gap: "8px",
                   width: "100%",
-                  padding: "11px 16px",
+                  padding: "10px 14px",
                   borderRadius: "8px",
                   background: "linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)",
                   color: "#FFFFFF",
                   fontSize: "13px",
                   fontWeight: 700,
                   textDecoration: "none",
-                  boxShadow: "0 4px 12px rgba(124, 58, 237, 0.25)",
+                  boxShadow: "0 3px 10px rgba(124, 58, 237, 0.25)",
                 }}
               >
-                <Phone size={15} />
+                <Phone size={14} />
                 WhatsApp Support
               </a>
 
@@ -1056,12 +1092,12 @@ export default function TenMinSlotBookingForm() {
                 onClick={() => setExistingBooking(null)}
                 style={{
                   width: "100%",
-                  padding: "10px 16px",
+                  padding: "9px 14px",
                   borderRadius: "8px",
                   backgroundColor: "#F3F4F6",
                   border: "1px solid #E5E7EB",
                   color: "#374151",
-                  fontSize: "12.5px",
+                  fontSize: "12px",
                   fontWeight: 600,
                   cursor: "pointer",
                 }}
@@ -1077,7 +1113,7 @@ export default function TenMinSlotBookingForm() {
       <main
         style={{
           flex: 1,
-          padding: "16px 12px 36px 12px",
+          padding: "14px 10px 36px 10px",
           maxWidth: "680px",
           width: "100%",
           margin: "0 auto",
@@ -1086,37 +1122,14 @@ export default function TenMinSlotBookingForm() {
         <div
           style={{
             backgroundColor: "#FFFFFF",
-            borderRadius: "16px",
+            borderRadius: "14px",
             border: "1px solid #E5E7EB",
-            boxShadow: "0 4px 20px -2px rgba(124, 58, 237, 0.05)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
             overflow: "hidden",
           }}
         >
-          {/* Form Title Banner with Rich Gradient */}
-          <div
-            style={{
-              padding: "20px 18px",
-              borderBottom: "1px solid #EDE9FE",
-              background: "linear-gradient(135deg, #FAF5FF 0%, #F5F3FF 50%, #EDE9FE 100%)",
-              position: "relative",
-              overflow: "hidden",
-            }}
-          >
-            {/* Ambient Purple Glow */}
-            <div
-              style={{
-                position: "absolute",
-                top: "-20px",
-                right: "-20px",
-                width: "100px",
-                height: "100px",
-                borderRadius: "50%",
-                background: "rgba(124, 58, 237, 0.12)",
-                filter: "blur(20px)",
-                pointerEvents: "none",
-              }}
-            />
-
+          {/* Form Title Banner */}
+          <div className="form-banner-responsive" style={{ borderBottom: "1px solid #EDE9FE", background: "linear-gradient(135deg, #FAF5FF 0%, #F5F3FF 50%, #EDE9FE 100%)" }}>
             <div
               style={{
                 display: "inline-flex",
@@ -1124,22 +1137,22 @@ export default function TenMinSlotBookingForm() {
                 gap: "5px",
                 padding: "3px 10px",
                 borderRadius: "999px",
-                fontSize: "11px",
+                fontSize: "10.5px",
                 fontWeight: 800,
                 backgroundColor: "#FFFFFF",
                 color: "#6D28D9",
                 border: "1px solid #DDD6FE",
-                boxShadow: "0 2px 6px rgba(124, 58, 237, 0.1)",
-                marginBottom: "8px",
+                boxShadow: "0 1px 4px rgba(124, 58, 237, 0.08)",
+                marginBottom: "6px",
               }}
             >
-              <Sparkles size={12} color="#7C3AED" />
+              <Sparkles size={11} color="#7C3AED" />
               <span>1-ON-1 TECHNICAL MENTORSHIP SESSION</span>
             </div>
 
             <div
               style={{
-                fontSize: "20px",
+                fontSize: "18.5px",
                 fontWeight: 800,
                 color: "#111827",
                 lineHeight: 1.25,
@@ -1149,7 +1162,7 @@ export default function TenMinSlotBookingForm() {
               10-Minute Mentorship Booking Form
             </div>
 
-            <div style={{ fontSize: "13px", color: "#6B7280", marginTop: "4px", lineHeight: 1.45 }}>
+            <div style={{ fontSize: "12.5px", color: "#6B7280", marginTop: "4px", lineHeight: 1.4 }}>
               Please fill in your details and select your preferred 10-minute session slot below. Fields marked with * are required.
             </div>
           </div>
@@ -1158,11 +1171,11 @@ export default function TenMinSlotBookingForm() {
           <form
             onSubmit={handleConfirmBooking}
             noValidate
+            className="form-container-card"
             style={{
-              padding: "18px 16px",
               display: "flex",
               flexDirection: "column",
-              gap: "20px",
+              gap: "18px",
             }}
           >
             {/* ════════ SECTION 1: PERSONAL DETAILS ════════ */}
@@ -1174,7 +1187,7 @@ export default function TenMinSlotBookingForm() {
                   gap: "8px",
                   paddingBottom: "8px",
                   borderBottom: "1px solid #F3F4F6",
-                  marginBottom: "14px",
+                  marginBottom: "12px",
                 }}
               >
                 <div
@@ -1189,17 +1202,17 @@ export default function TenMinSlotBookingForm() {
                     justifyContent: "center",
                     fontSize: "11px",
                     fontWeight: 800,
-                    boxShadow: "0 2px 6px rgba(124, 58, 237, 0.25)",
+                    boxShadow: "0 2px 5px rgba(124, 58, 237, 0.25)",
                   }}
                 >
                   1
                 </div>
-                <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
+                <div style={{ fontSize: "13.5px", fontWeight: 700, color: "#111827" }}>
                   Personal Details
                 </div>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "11px" }}>
                 {/* Full Name */}
                 <div>
                   <label
@@ -1229,7 +1242,8 @@ export default function TenMinSlotBookingForm() {
                     placeholder="e.g. Rahul Sharma"
                     style={{
                       width: "100%",
-                      padding: "9px 12px",
+                      height: "38px",
+                      padding: "0 12px",
                       borderRadius: "8px",
                       border: `1px solid ${errors.fullName ? "#EF4444" : "#E5E7EB"}`,
                       fontSize: "13.5px",
@@ -1258,20 +1272,22 @@ export default function TenMinSlotBookingForm() {
                   >
                     Phone Number <span style={{ color: "#EF4444" }}>*</span>
                   </label>
-                  <div style={{ display: "flex", gap: "8px" }}>
+                  <div style={{ display: "flex", gap: "6px" }}>
                     <select
                       value={countryCode}
                       onChange={(e) => setCountryCode(e.target.value)}
                       style={{
-                        padding: "9px 8px",
+                        height: "38px",
+                        padding: "0 6px",
                         borderRadius: "8px",
                         border: "1px solid #E5E7EB",
-                        fontSize: "13px",
+                        fontSize: "12.5px",
                         color: "#111827",
                         backgroundColor: "#F9FAFB",
                         outline: "none",
-                        width: "90px",
+                        width: "86px",
                         cursor: "pointer",
+                        flexShrink: 0,
                       }}
                     >
                       {COUNTRY_CODES.map((c) => (
@@ -1287,7 +1303,9 @@ export default function TenMinSlotBookingForm() {
                       placeholder="10-digit mobile number"
                       style={{
                         flex: 1,
-                        padding: "9px 12px",
+                        minWidth: 0,
+                        height: "38px",
+                        padding: "0 12px",
                         borderRadius: "8px",
                         border: `1px solid ${errors.phone ? "#EF4444" : "#E5E7EB"}`,
                         fontSize: "13.5px",
@@ -1337,7 +1355,8 @@ export default function TenMinSlotBookingForm() {
                     placeholder="e.g. Next.js, React, Node.js, Python, MERN, Flutter, Figma..."
                     style={{
                       width: "100%",
-                      padding: "9px 12px",
+                      height: "38px",
+                      padding: "0 12px",
                       borderRadius: "8px",
                       border: `1px solid ${errors.currentTechnology ? "#EF4444" : "#E5E7EB"}`,
                       fontSize: "13.5px",
@@ -1364,7 +1383,7 @@ export default function TenMinSlotBookingForm() {
                   justifyContent: "space-between",
                   paddingBottom: "8px",
                   borderBottom: "1px solid #F3F4F6",
-                  marginBottom: "12px",
+                  marginBottom: "10px",
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -1380,12 +1399,12 @@ export default function TenMinSlotBookingForm() {
                       justifyContent: "center",
                       fontSize: "11px",
                       fontWeight: 800,
-                      boxShadow: "0 2px 6px rgba(124, 58, 237, 0.25)",
+                      boxShadow: "0 2px 5px rgba(124, 58, 237, 0.25)",
                     }}
                   >
                     2
                   </div>
-                  <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
+                  <div style={{ fontSize: "13.5px", fontWeight: 700, color: "#111827" }}>
                     Select Date
                   </div>
                 </div>
@@ -1397,9 +1416,9 @@ export default function TenMinSlotBookingForm() {
                 ref={dateStripContainerRef}
                 style={{
                   display: "flex",
-                  gap: "7px",
+                  gap: "6px",
                   overflowX: "auto",
-                  paddingBottom: "6px",
+                  paddingBottom: "4px",
                   WebkitOverflowScrolling: "touch",
                   scrollbarWidth: "none",
                 }}
@@ -1423,9 +1442,9 @@ export default function TenMinSlotBookingForm() {
                         }
                       }}
                       style={{
-                        flex: "0 0 66px",
-                        padding: "8px 4px",
-                        borderRadius: "10px",
+                        flex: "0 0 60px",
+                        padding: "6px 2px",
+                        borderRadius: "8px",
                         border: isSelected ? "1.5px solid #6D28D9" : "1px solid #E5E7EB",
                         background: isSelected
                           ? "linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)"
@@ -1436,25 +1455,25 @@ export default function TenMinSlotBookingForm() {
                         alignItems: "center",
                         gap: "1px",
                         cursor: "pointer",
-                        boxShadow: isSelected ? "0 4px 14px rgba(124, 58, 237, 0.3)" : "none",
+                        boxShadow: isSelected ? "0 3px 10px rgba(124, 58, 237, 0.25)" : "none",
                         transition: "all 0.15s ease",
                       }}
                     >
                       <span
                         style={{
-                          fontSize: "10px",
+                          fontSize: "9.5px",
                           fontWeight: 600,
                           opacity: isSelected ? 0.9 : 0.6,
                         }}
                       >
                         {item.isToday ? "Today" : item.isTomorrow ? "Tmrw" : item.dayOfWeek}
                       </span>
-                      <span style={{ fontSize: "14.5px", fontWeight: 800, lineHeight: 1.1 }}>
+                      <span style={{ fontSize: "14px", fontWeight: 800, lineHeight: 1.1 }}>
                         {item.dayNumber}
                       </span>
                       <span
                         style={{
-                          fontSize: "9px",
+                          fontSize: "8.5px",
                           fontWeight: 600,
                           opacity: isSelected ? 0.9 : 0.6,
                           textTransform: "uppercase",
@@ -1468,7 +1487,7 @@ export default function TenMinSlotBookingForm() {
               </div>
             </div>
 
-            {/* ════════ SECTION 3: SELECT TIME (CLEAN, COMPACT CHIPS) ════════ */}
+            {/* ════════ SECTION 3: SELECT TIME (FLAWLESS 3-4 COL RESPONSIVE GRID) ════════ */}
             <div>
               <div
                 style={{
@@ -1477,7 +1496,7 @@ export default function TenMinSlotBookingForm() {
                   justifyContent: "space-between",
                   paddingBottom: "8px",
                   borderBottom: "1px solid #F3F4F6",
-                  marginBottom: "12px",
+                  marginBottom: "10px",
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -1493,12 +1512,12 @@ export default function TenMinSlotBookingForm() {
                       justifyContent: "center",
                       fontSize: "11px",
                       fontWeight: 800,
-                      boxShadow: "0 2px 6px rgba(124, 58, 237, 0.25)",
+                      boxShadow: "0 2px 5px rgba(124, 58, 237, 0.25)",
                     }}
                   >
                     3
                   </div>
-                  <div style={{ fontSize: "14px", fontWeight: 700, color: "#111827" }}>
+                  <div style={{ fontSize: "13.5px", fontWeight: 700, color: "#111827" }}>
                     Select Time (10-Min Slot)
                   </div>
                 </div>
@@ -1521,29 +1540,28 @@ export default function TenMinSlotBookingForm() {
                     backgroundColor: "#FEF2F2",
                     border: "1px solid #FCA5A5",
                     borderRadius: "8px",
-                    padding: "8px 12px",
+                    padding: "7px 10px",
                     color: "#DC2626",
-                    fontSize: "12px",
-                    marginBottom: "10px",
+                    fontSize: "11.5px",
+                    marginBottom: "8px",
                     display: "flex",
                     alignItems: "center",
                     gap: "6px",
                   }}
                 >
-                  <AlertCircle size={14} />
+                  <AlertCircle size={13} />
                   <span>{errors.slotTime}</span>
                 </div>
               )}
 
-              {/* Clean, intuitive time chips grid without repetitive cluttered text */}
+              {/* Time chips grid with 3-4 columns on mobile */}
               <div
+                className="slot-grid-responsive"
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(88px, 1fr))",
-                  gap: "7px",
-                  maxHeight: "220px",
+                  maxHeight: "200px",
                   overflowY: "auto",
                   paddingRight: "2px",
+                  WebkitOverflowScrolling: "touch",
                 }}
               >
                 {TIME_SLOT_DEFINITIONS.map((slot) => {
@@ -1568,8 +1586,9 @@ export default function TenMinSlotBookingForm() {
                         }
                       }}
                       style={{
-                        padding: "10px 6px",
-                        borderRadius: "8px",
+                        height: "36px",
+                        padding: "0 4px",
+                        borderRadius: "7px",
                         border: isSelected
                           ? "1.5px solid #6D28D9"
                           : !isAvailable
@@ -1586,15 +1605,14 @@ export default function TenMinSlotBookingForm() {
                           ? "#9CA3AF"
                           : "#111827",
                         cursor: isAvailable ? "pointer" : "not-allowed",
-                        textAlign: "center",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontSize: "12.5px",
+                        fontSize: "12px",
                         fontWeight: isSelected ? 800 : isAvailable ? 600 : 500,
                         textDecoration: !isAvailable ? "line-through" : "none",
                         boxShadow: isSelected
-                          ? "0 4px 12px rgba(124, 58, 237, 0.3)"
+                          ? "0 3px 10px rgba(124, 58, 237, 0.28)"
                           : "none",
                         transition: "all 0.15s ease",
                       }}
@@ -1614,56 +1632,41 @@ export default function TenMinSlotBookingForm() {
                   background: "linear-gradient(135deg, #FAF5FF 0%, #F5F3FF 50%, #EDE9FE 100%)",
                   border: "1.5px solid #DDD6FE",
                   borderRadius: "12px",
-                  padding: "14px 16px",
-                  boxShadow: "0 6px 20px -4px rgba(124, 58, 237, 0.15)",
+                  padding: "12px 14px",
+                  boxShadow: "0 4px 16px -3px rgba(124, 58, 237, 0.14)",
                   display: "flex",
                   flexDirection: "column",
-                  gap: "8px",
+                  gap: "7px",
                   overflow: "hidden",
                 }}
               >
-                {/* Decorative background glow circle */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "-15px",
-                    right: "-15px",
-                    width: "80px",
-                    height: "80px",
-                    borderRadius: "50%",
-                    background: "rgba(124, 58, 237, 0.18)",
-                    filter: "blur(16px)",
-                    pointerEvents: "none",
-                  }}
-                />
-
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                     <div
                       style={{
-                        width: "22px",
-                        height: "22px",
-                        borderRadius: "6px",
+                        width: "20px",
+                        height: "20px",
+                        borderRadius: "5px",
                         background: "linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)",
                         color: "#FFFFFF",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        boxShadow: "0 2px 6px rgba(124, 58, 237, 0.25)",
+                        boxShadow: "0 2px 5px rgba(124, 58, 237, 0.25)",
                       }}
                     >
-                      <Sparkles size={12} />
+                      <Sparkles size={11} />
                     </div>
                     <span
                       style={{
-                        fontSize: "10.5px",
+                        fontSize: "10px",
                         fontWeight: 800,
                         color: "#6D28D9",
-                        letterSpacing: "0.05em",
+                        letterSpacing: "0.04em",
                         textTransform: "uppercase",
                       }}
                     >
-                      Selected Mentorship Slot
+                      Selected Slot
                     </span>
                   </div>
 
@@ -1671,39 +1674,37 @@ export default function TenMinSlotBookingForm() {
                     style={{
                       display: "inline-flex",
                       alignItems: "center",
-                      gap: "4px",
-                      fontSize: "10.5px",
+                      gap: "3px",
+                      fontSize: "10px",
                       fontWeight: 700,
                       color: "#059669",
                       backgroundColor: "#ECFDF5",
                       border: "1px solid #A7F3D0",
-                      padding: "2px 8px",
+                      padding: "2px 7px",
                       borderRadius: "999px",
-                      boxShadow: "0 1px 4px rgba(16, 185, 129, 0.12)",
                     }}
                   >
-                    <span style={{ width: "5px", height: "5px", borderRadius: "50%", backgroundColor: "#10B981" }} />
+                    <span style={{ width: "4px", height: "4px", borderRadius: "50%", backgroundColor: "#10B981" }} />
                     100% Free
                   </span>
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginTop: "2px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
                   <div
                     style={{
                       display: "inline-flex",
                       alignItems: "center",
-                      gap: "6px",
-                      fontSize: "13px",
+                      gap: "5px",
+                      fontSize: "12.5px",
                       fontWeight: 700,
                       color: "#111827",
                       backgroundColor: "#FFFFFF",
-                      padding: "5px 10px",
-                      borderRadius: "7px",
+                      padding: "4px 8px",
+                      borderRadius: "6px",
                       border: "1px solid #E5E7EB",
-                      boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
                     }}
                   >
-                    <CalendarIcon size={14} color="#7C3AED" />
+                    <CalendarIcon size={13} color="#7C3AED" />
                     <span>{dateOptions.find((d) => d.dateKey === selectedDateKey)?.displayDate}</span>
                   </div>
 
@@ -1711,18 +1712,17 @@ export default function TenMinSlotBookingForm() {
                     style={{
                       display: "inline-flex",
                       alignItems: "center",
-                      gap: "6px",
-                      fontSize: "13px",
+                      gap: "5px",
+                      fontSize: "12.5px",
                       fontWeight: 700,
                       color: "#6D28D9",
                       backgroundColor: "#FFFFFF",
-                      padding: "5px 10px",
-                      borderRadius: "7px",
+                      padding: "4px 8px",
+                      borderRadius: "6px",
                       border: "1px solid #DDD6FE",
-                      boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
                     }}
                   >
-                    <Clock size={14} color="#7C3AED" />
+                    <Clock size={13} color="#7C3AED" />
                     <span>{selectedSlotTime}</span>
                   </div>
                 </div>
@@ -1731,24 +1731,23 @@ export default function TenMinSlotBookingForm() {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "10px",
-                    fontSize: "11px",
+                    gap: "8px",
+                    fontSize: "10.5px",
                     color: "#6B7280",
                     borderTop: "1px dashed #DDD6FE",
-                    paddingTop: "6px",
-                    marginTop: "2px",
+                    paddingTop: "5px",
                   }}
                 >
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                    <Video size={12} color="#7C3AED" /> 1-on-1 Live Video Call
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                    <Video size={11} color="#7C3AED" /> 1-on-1 Live Video Call
                   </span>
                   <span>•</span>
-                  <span>10 Minutes Technical Review</span>
+                  <span>10-Minute Technical Review</span>
                 </div>
               </div>
             )}
 
-            {/* ════════ SUBMIT BUTTON WITH VIBRANT GRADIENT ════════ */}
+            {/* ════════ SUBMIT BUTTON ════════ */}
             <button
               type="submit"
               disabled={isSubmitting}
@@ -1758,7 +1757,7 @@ export default function TenMinSlotBookingForm() {
                 justifyContent: "center",
                 gap: "8px",
                 width: "100%",
-                padding: "12px",
+                height: "42px",
                 borderRadius: "8px",
                 background: isSubmitting
                   ? "#9CA3AF"
@@ -1769,24 +1768,24 @@ export default function TenMinSlotBookingForm() {
                 border: "none",
                 cursor: isSubmitting ? "not-allowed" : "pointer",
                 transition: "all 0.15s ease",
-                boxShadow: isSubmitting ? "none" : "0 4px 14px rgba(124, 58, 237, 0.3)",
+                boxShadow: isSubmitting ? "none" : "0 3px 12px rgba(124, 58, 237, 0.25)",
               }}
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 size={16} className="animate-spin" />
-                  <span>Booking Your 10-Min Slot...</span>
+                  <Loader2 size={15} className="animate-spin" />
+                  <span>Booking Slot...</span>
                 </>
               ) : (
                 <>
-                  <CheckCircle2 size={16} />
+                  <CheckCircle2 size={15} />
                   <span>Confirm & Book 10-Min Mentorship Slot</span>
                 </>
               )}
             </button>
 
             {/* Privacy & Trust Note */}
-            <div style={{ textAlign: "center", fontSize: "11px", color: "#6B7280" }}>
+            <div style={{ textAlign: "center", fontSize: "10.5px", color: "#6B7280" }}>
               🔒 Instant WhatsApp confirmation & Google Meet link dispatched upon booking.
             </div>
           </form>
