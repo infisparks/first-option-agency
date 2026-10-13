@@ -92,14 +92,14 @@ export default {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 2. POST /create-order -> Create Razorpay Order for ₹1 (Test Mode)
+    // 2. POST /create-order -> Create Razorpay Order for ₹5,000
     // ─────────────────────────────────────────────────────────────
     if (request.method === "POST" && pathname === "/create-order") {
       try {
         const body = await request.json().catch(() => ({}));
         const applicationId = body.applicationId || `FOA-INT-${Date.now()}`;
-        const amountInRupees = Number(body.amount) || 1; // 1 Rs for testing
-        const amountInPaise = amountInRupees * 100; // 100 paise = ₹1
+        const amountInRupees = 5000;
+        const amountInPaise = amountInRupees * 100; // 500000
 
         // Razorpay Basic Auth Header
         const basicAuth = btoa(`${keyId}:${keySecret}`);
@@ -198,11 +198,6 @@ export default {
           const programTitle = notes.programTitle || "Paid Internship Program";
 
           if (applicationId) {
-            // Read actual amount paid from Razorpay payment entity (in paise -> rupees)
-            const actualAmountPaid = paymentEntity?.amount
-              ? Math.round(paymentEntity.amount / 100)
-              : 1;
-
             // Update Firebase Realtime Database record directly via REST API
             const updateUrl = `${rtdbUrl}/internship_applications/${applicationId}.json`;
 
@@ -215,7 +210,7 @@ export default {
                 paymentStatus: "Paid",
                 paymentId: paymentId,
                 orderId: orderId,
-                amountPaid: actualAmountPaid,
+                amountPaid: 5000,
                 programTitle: programTitle,
                 paidAt: new Date().toISOString(),
                 webhookVerified: true,
