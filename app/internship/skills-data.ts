@@ -6,24 +6,14 @@ export interface SkillOption {
 
 export const TARGET_SKILLS: SkillOption[] = [
   {
-    id: "sales_consultant",
-    title: "Sales Consultant",
-    desc: "Client outreach, lead communication & deal closing",
-  },
-  {
-    id: "meta_ads_manager",
-    title: "Meta Ads Manager",
-    desc: "Facebook & Instagram performance marketing & ad campaigns",
-  },
-  {
-    id: "video_editing",
-    title: "Video Editing",
-    desc: "Commercial video editing, reels, shorts & creative post-production",
-  },
-  {
     id: "agentic_ai",
     title: "Agentic AI",
     desc: "Autonomous AI agents, prompt engineering, LLMs & workflow automations",
+  },
+  {
+    id: "digital_marketing",
+    title: "Digital Marketing",
+    desc: "Performance marketing, social media campaigns, SEO & lead generation",
   },
 ];
 

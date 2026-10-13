@@ -23,6 +23,7 @@ import {
   FileCheck,
   Heart,
   Bot,
+  Megaphone,
 } from "lucide-react";
 import {
   TARGET_SKILLS,
@@ -394,7 +395,7 @@ export default function InternshipFormClient() {
     if (isSeatConfirmationMode) {
       const targetAppId = pendingAppIdRef.current || generatedId;
       pendingAppIdRef.current = targetAppId;
-      const amountInRupees = 500;
+      const amountInRupees = 1; // ₹1 for payment testing
 
       // 1. Immediately Save Candidate Form to Firebase RTDB with paymentStatus: "Pending"
       const initialPendingRecord: InternshipApplicationPayload = {
@@ -447,14 +448,14 @@ export default function InternshipFormClient() {
         return;
       }
 
-      const amountInPaise = amountInRupees * 100; // 50000 paise = ₹500
+      const amountInPaise = amountInRupees * 100; // 100 paise = ₹1 (Test Mode)
 
       const options = {
         key: "rzp_live_TXvv4nCnkVjFWm",
         amount: amountInPaise,
         currency: "INR",
         name: "First Option Agency",
-        description: "Seat Confirmation Deposit (₹500 - 100% Deductible)",
+        description: "Seat Confirmation Deposit (₹1 - Test Mode)",
         image: "/meta-logo.webp",
         prefill: {
           name: formData.fullName,
@@ -547,7 +548,7 @@ export default function InternshipFormClient() {
             // Fire Meta Pixel Purchase & Lead events
             if (typeof window !== "undefined" && (window as any).fbq) {
               (window as any).fbq("track", "Purchase", {
-                value: 500,
+                value: 1,
                 currency: "INR",
                 content_name: "Internship Seat Confirmation Deposit",
               });
@@ -566,7 +567,7 @@ export default function InternshipFormClient() {
           ondismiss: function () {
             setIsSubmitting(false);
             setPaymentError(
-              `Your seat confirmation details have been saved (Application ID: ${targetAppId}). Payment was not completed. Click "Pay ₹500 & Confirm Seat" below to complete payment and reserve your seat.`
+              `Your seat confirmation details have been saved (Application ID: ${targetAppId}). Payment was not completed. Click "Pay ₹1 & Confirm Seat" below to complete payment and reserve your seat.`
             );
           },
         },
@@ -597,7 +598,7 @@ export default function InternshipFormClient() {
     if (isAmountMode) {
       const targetAppId = pendingAppIdRef.current || generatedId;
       pendingAppIdRef.current = targetAppId;
-      const amountInRupees = 5000;
+      const amountInRupees = 1; // ₹1 for payment testing
 
       // 1. Immediately Save Candidate Form to Firebase RTDB with paymentStatus: "Pending"
       // Ensures 100% data capture even if user closes/cancels payment modal
@@ -650,14 +651,14 @@ export default function InternshipFormClient() {
         return;
       }
 
-      const amountInPaise = amountInRupees * 100;
+      const amountInPaise = amountInRupees * 100; // 100 paise = ₹1 (Test Mode)
 
       const options = {
         key: "rzp_live_TXvv4nCnkVjFWm",
         amount: amountInPaise,
         currency: "INR",
         name: "First Option Agency",
-        description: "Internship Registration & Application Fee (₹5,000)",
+        description: "Internship Registration & Application Fee (₹1 - Test Mode)",
         image: "/meta-logo.webp",
         prefill: {
           name: formData.fullName,
@@ -750,7 +751,7 @@ export default function InternshipFormClient() {
             // Fire Meta Pixel Purchase & Lead events if pixel is initialized
             if (typeof window !== "undefined" && (window as any).fbq) {
               (window as any).fbq("track", "Purchase", {
-                value: 5000,
+                value: 1,
                 currency: "INR",
                 content_name: "Internship Program Paid Seat",
               });
@@ -769,7 +770,7 @@ export default function InternshipFormClient() {
           ondismiss: function () {
             setIsSubmitting(false);
             setPaymentError(
-              `Your application details have been saved (Application ID: ${targetAppId}). Payment was not completed. Click "Proceed to Pay ₹5,000 & Submit" to complete payment and confirm your seat.`
+              `Your application details have been saved (Application ID: ${targetAppId}). Payment was not completed. Click "Proceed to Pay ₹1 & Submit" to complete payment and confirm your seat.`
             );
           },
         },
@@ -925,14 +926,16 @@ export default function InternshipFormClient() {
   // Skill Icon helper
   const getSkillIcon = (id: string) => {
     switch (id) {
+      case "agentic_ai":
+        return <Bot size={18} color={isWomenMode ? "#BE185D" : "#7C3AED"} />;
+      case "digital_marketing":
+        return <Megaphone size={18} color={isWomenMode ? "#BE185D" : "#7C3AED"} />;
       case "sales_consultant":
         return <TrendingUp size={18} color={isWomenMode ? "#BE185D" : "#7C3AED"} />;
       case "meta_ads_manager":
         return <Target size={18} color={isWomenMode ? "#BE185D" : "#7C3AED"} />;
       case "video_editing":
         return <Video size={18} color={isWomenMode ? "#BE185D" : "#7C3AED"} />;
-      case "agentic_ai":
-        return <Bot size={18} color={isWomenMode ? "#BE185D" : "#7C3AED"} />;
       default:
         return <Check size={18} color={isWomenMode ? "#BE185D" : "#7C3AED"} />;
     }
@@ -1107,12 +1110,12 @@ export default function InternshipFormClient() {
               {isSeatConfirmationMode ? (
                 <>
                   <FileCheck size={12} />
-                  <span>Seat Reserved &amp; ₹500 Paid</span>
+                  <span>Seat Reserved &amp; ₹1 Paid</span>
                 </>
               ) : isAmountMode ? (
                 <>
                   <FileCheck size={12} />
-                  <span>Submitted &amp; Payment Confirmed</span>
+                  <span>Submitted &amp; ₹1 Payment Confirmed</span>
                 </>
               ) : isWomenMode ? (
                 <span>Women’s Drive • Received</span>
@@ -1126,9 +1129,9 @@ export default function InternshipFormClient() {
             </div>
             <div style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.4, marginBottom: "12px", maxWidth: "400px", margin: "0 auto 12px auto" }}>
               {isSeatConfirmationMode
-                ? "Your ₹500 seat confirmation fee was verified. Your seat is officially reserved and this ₹500 will be deducted from your actual course & internship fees."
+                ? "Your ₹1 seat confirmation fee was verified. Your seat is officially reserved and this fee will be deducted from your actual course & internship fees."
                 : isAmountMode
-                ? "Your ₹5,000 fee was verified. Your application is officially registered."
+                ? "Your ₹1 fee was verified. Your application is officially registered."
                 : "Your application is received. Our recruitment team is reviewing your profile."}
             </div>
 
@@ -1323,7 +1326,7 @@ export default function InternshipFormClient() {
                       borderRadius: "999px",
                     }}
                   >
-                    PAID ₹500 INR (100% DEDUCTIBLE)
+                    PAID ₹1 INR (100% DEDUCTIBLE)
                   </span>
                 </div>
               )}
@@ -1355,7 +1358,7 @@ export default function InternshipFormClient() {
                       borderRadius: "999px",
                     }}
                   >
-                    PAID ₹5,000 INR
+                    PAID ₹1 INR
                   </span>
                 </div>
               )}
@@ -1520,11 +1523,11 @@ export default function InternshipFormClient() {
                 <Sparkles size={12} />
                 <span>
                   {isSeatConfirmationMode
-                    ? "SEAT RESERVATION • ₹500 CONFIRMATION DEPOSIT (100% DEDUCTIBLE)"
+                    ? "SEAT RESERVATION • ₹1 CONFIRMATION DEPOSIT (100% DEDUCTIBLE)"
                     : isWomenMode
                     ? "EXCLUSIVELY FOR FEMALE CANDIDATES / GIRLS"
                     : isAmountMode
-                    ? "INTERNSHIP DRIVE 2026 • REGISTRATION & ENROLLMENT"
+                    ? "INTERNSHIP DRIVE 2026 • REGISTRATION & ENROLLMENT (TEST ₹1)"
                     : "INTERNSHIP DRIVE 2026 • OPEN FOR ALL CANDIDATES"}
                 </span>
               </div>
@@ -1549,11 +1552,11 @@ export default function InternshipFormClient() {
 
               <div style={{ fontSize: "13px", color: "#6B7280", marginTop: "4px", lineHeight: 1.45 }}>
                 {isSeatConfirmationMode
-                  ? "Fill in your details, select your desired role track, and pay ₹500 to reserve your seat. This ₹500 fee is 100% deductible from your actual fees."
+                  ? "Fill in your details, select your desired role track, and pay ₹1 to reserve your seat. This ₹1 fee is 100% deductible from your actual fees."
                   : isWomenMode
                   ? "Please fill in your details and tick your interested role tracks below. Fields marked with * are required."
                   : isAmountMode
-                  ? "Fill out your application details below. After filling the form, an enrollment fee of ₹5,000 is required via Razorpay to submit."
+                  ? "Fill out your application details below. After filling the form, an enrollment fee of ₹1 is required via Razorpay to submit."
                   : "Fill in your details and select your role track(s) below. Free application open to all eligible candidates."}
               </div>
             </div>
@@ -2124,7 +2127,7 @@ export default function InternshipFormClient() {
 
                       <div style={{ textAlign: "right" }}>
                         <div style={{ fontSize: "22px", fontWeight: 800, color: "#7C3AED" }}>
-                          ₹500
+                          ₹1
                         </div>
                         <div
                           style={{
@@ -2158,7 +2161,7 @@ export default function InternshipFormClient() {
                     >
                       <Sparkles size={16} color="#7C3AED" style={{ flexShrink: 0, marginTop: "2px" }} />
                       <div style={{ fontSize: "12.5px", color: "#4C1D95", lineHeight: 1.45, fontWeight: 600 }}>
-                        Important Note: This ₹500 fee is for seat booking &amp; reservation. This entire ₹500 amount will be directly deducted from your actual course &amp; internship fees upon enrollment.
+                        Important Note: This ₹1 fee is for seat booking &amp; reservation (Test Mode). This entire ₹1 amount will be directly deducted from your actual course &amp; internship fees upon enrollment.
                       </div>
                     </div>
 
@@ -2179,7 +2182,7 @@ export default function InternshipFormClient() {
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                         <Check size={14} color="#10B981" />
-                        <span>₹500 deducted directly from total fees</span>
+                        <span>₹1 deducted directly from total fees</span>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                         <Check size={14} color="#10B981" />
@@ -2251,7 +2254,7 @@ export default function InternshipFormClient() {
                         lineHeight: 1.45,
                       }}
                     >
-                      I confirm and understand that this ₹500 is for seat confirmation &amp; slot booking, and this ₹500 fee will be deducted directly from my actual course &amp; internship fees amount. <span style={{ color: "#EF4444" }}>*</span>
+                      I confirm and understand that this ₹1 is for seat confirmation &amp; slot booking (Test Mode), and this fee will be deducted directly from my actual course &amp; internship fees amount. <span style={{ color: "#EF4444" }}>*</span>
                     </label>
                   </div>
                   {errors.seatBookingConfirmed && (
@@ -2261,7 +2264,7 @@ export default function InternshipFormClient() {
                     </div>
                   )}
 
-                  {/* ── SECTION 5: SUBMIT & PAY ₹500 BUTTON ── */}
+                  {/* ── SECTION 5: SUBMIT & PAY ₹1 BUTTON ── */}
                   <div
                     style={{
                       paddingTop: "14px",
@@ -2299,7 +2302,7 @@ export default function InternshipFormClient() {
                       ) : (
                         <>
                           <CreditCard size={17} />
-                          <span>Pay ₹500 &amp; Confirm Seat</span>
+                          <span>Pay ₹1 &amp; Confirm Seat</span>
                           <ArrowRight size={16} />
                         </>
                       )}
@@ -2318,7 +2321,7 @@ export default function InternshipFormClient() {
                     >
                       <ShieldCheck size={14} color="#7C3AED" />
                       <span>
-                        ₹500 is 100% deductible from actual fees • Immediate confirmation receipt upon payment.
+                        ₹1 is 100% deductible from actual fees • Immediate confirmation receipt upon payment.
                       </span>
                     </div>
                   </div>
@@ -2790,10 +2793,10 @@ export default function InternshipFormClient() {
 
                         <div style={{ textAlign: "right" }}>
                           <div style={{ fontSize: "20px", fontWeight: 800, color: "#7C3AED" }}>
-                            ₹5,000
+                            ₹1
                           </div>
                           <div style={{ fontSize: "11px", color: "#059669", fontWeight: 600 }}>
-                            All inclusive • Live Agency Projects
+                            Test Mode • Live Agency Projects
                           </div>
                         </div>
                       </div>
@@ -2890,7 +2893,7 @@ export default function InternshipFormClient() {
                       ) : isAmountMode ? (
                         <>
                           <CreditCard size={17} />
-                          <span>Pay ₹5,000 &amp; Submit Application</span>
+                          <span>Pay ₹1 &amp; Submit Application</span>
                           <ArrowRight size={16} />
                         </>
                       ) : (
@@ -2919,7 +2922,7 @@ export default function InternshipFormClient() {
                           : isWomenMode
                           ? "Exclusive Women’s Hiring Cohort • Safe & Equal Opportunity Recruitment."
                           : isAmountMode
-                          ? "Application is only submitted once payment of ₹5,000 is verified."
+                          ? "Application is only submitted once payment of ₹1 is verified."
                           : "Free Application • Open to all candidates • Safe Recruitment."}
                       </span>
                     </div>
